@@ -1,107 +1,48 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "QS(0039) HashiCorp Nomad License: Apache 2.0 (Please do not remove) Nov,22,2016",
-    "Parameters": {
-        "KeyPair": {
-            "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
-            "Type": "AWS::EC2::KeyPair::KeyName",
-            "Default": "id_rsa_aws",
-            "ConstraintDescription": "Must be the name of an existing EC2 KeyPair."
-        },
-        "NomadInstanceType": {
-            "Type": "String",
-            "Description": "nomad node instance type",
-            "AllowedValues": [
-                "t2.micro",
-                "t2.small",
-                "t2.medium",
-                "t2.large",
-                "m4.large",
-                "m4.xlarge",
-                "m4.2xlarge",
-                "m4.4xlarge",
-                "m4.10xlarge",
-                "m3.medium",
-                "m3.large",
-                "m3.xlarge",
-                "m3.2xlarge",
-                "c4.large",
-                "c4.xlarge",
-                "c4.2xlarge",
-                "c4.4xlarge",
-                "c4.8xlarge",
-                "c3.large",
-                "c3.xlarge",
-                "c3.2xlarge",
-                "c3.4xlarge",
-                "c3.8xlarge",
-                "r3.large",
-                "r3.xlarge",
-                "r3.2xlarge",
-                "r3.4xlarge",
-                "r3.8xlarge",
-                "i2.xlarge",
-                "i2.2xlarge",
-                "i2.4xlarge",
-                "i2.8xlarge"
-            ],
-            "ConstraintDescription": "Choose an instance type. m3.medium or larger recommended.",
-            "Default": "m3.medium"
-        },
-        "QuickStartS3URL": {
-            "ConstraintDescription": "S3Url",
-            "Default": "https://s3.amazonaws.com",
-            "Description": "AWS S3 Root Url",
-            "Type": "String"
-        },
-        "QSS3BucketName": {
-            "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$",
-            "ConstraintDescription": "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).",
-            "Default": "quickstart-reference",
-            "Description": "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).",
-            "Type": "String"
-        },
-        "QSS3KeyPrefix": {
-            "AllowedPattern": "^[0-9a-zA-Z-]+(/[0-9a-zA-Z-]+)*$",
-            "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with forward slash (/) because they are automatically appended.",
-            "Default": "hashicorp/nomad/latest",
-            "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with forward slash (/) because they are automatically appended.",
-            "Type": "String"
-        },
-        "EmailAddress": {
-            "Type": "String",
-            "Description": "Email Address for SNS Topic. Alarms for Nomad instance memory utilzation",
-            "Default": "none@example.com"
-        },
-        "PrivateSubnet1ID": {
-            "Description": "ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-xxxxxxxx)",
-            "Type": "AWS::EC2::Subnet::Id"
-        },
-        "PrivateSubnet2ID": {
-            "Description": "ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-xxxxxxxx)",
-            "Type": "AWS::EC2::Subnet::Id"
-        },
-        "NomadSeedPrivateIP": {
-            "Default": "",
-            "Type": "String",
-            "Description": "NomadSeedPrivateIP"
-        },
-        "VPCID": {
-            "Description": "VPC ID",
-            "Type": "AWS::EC2::VPC::Id"
-        },
-        "VPCCIDR": {
-            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
-            "Description": "CIDR Block for the VPC",
-            "Type": "String"
-        },
-        "AccessCIDR": {
-            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
-            "Description": "The CIDR IP range that is permitted to access Nomad Note: a value of 0.0.0.0/0 will allow access from ANY ip address",
-            "Type": "String"
-        }
-    },
+    "Description": "HashiCorp Nomad License: Apache 2.0 (Please do not remove) Nov,14,2016",
     "Mappings": {
+        "AWSAMIRegionMap": {
+            "AMI": {
+                "US1404HVM": "ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-20161020"
+            },
+            "ap-northeast-1": {
+                "US1404HVM": "ami-c88325a9"
+            },
+            "ap-northeast-2": {
+                "US1404HVM": "ami-8ce236e2"
+            },
+            "ap-south-1": {
+                "US1404HVM": "ami-0155216e"
+            },
+            "ap-southeast-1": {
+                "US1404HVM": "ami-1c2e887f"
+            },
+            "ap-southeast-2": {
+                "US1404HVM": "ami-bf3d00dc"
+            },
+            "eu-central-1": {
+                "US1404HVM": "ami-9c09f0f3"
+            },
+            "eu-west-1": {
+                "US1404HVM": "ami-1c4a046f"
+            },
+            "sa-east-1": {
+                "US1404HVM": "ami-900b96fc"
+            },
+            "us-east-1": {
+                "US1404HVM": "ami-c8580bdf"
+            },
+            "us-east-2": {
+                "US1404HVM": "ami-b7075dd2"
+            },
+            "us-west-1": {
+                "US1404HVM": "ami-61074c01"
+            },
+            "us-west-2": {
+                "US1404HVM": "ami-01f05461"
+            }
+        },
         "AWSInfoRegionMap": {
             "ap-northeast-1": {
                 "Partition": "aws",
@@ -155,52 +96,369 @@
                 "Partition": "aws",
                 "QuickStartS3URL": "https://s3.amazonaws.com"
             }
+        }
+    },
+    "Parameters": {
+        "AccessCIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
+            "Description": "The CIDR IP range that is permitted to access Nomad Note: a value of 0.0.0.0/0 will allow access from ANY ip address",
+            "Type": "String"
         },
-        "AWSAMIRegionMap": {
-            "AMI": {
-                "US1404HVM": "ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-20161213"
-            },
-            "ap-northeast-1": {
-                "US1404HVM": "ami-5dd8b73a"
-            },
-            "ap-northeast-2": {
-                "US1404HVM": "ami-7669be18"
-            },
-            "ap-south-1": {
-                "US1404HVM": "ami-19f78076"
-            },
-            "ap-southeast-1": {
-                "US1404HVM": "ami-35bc1356"
-            },
-            "ap-southeast-2": {
-                "US1404HVM": "ami-8083bbe3"
-            },
-            "eu-central-1": {
-                "US1404HVM": "ami-7612d319"
-            },
-            "eu-west-1": {
-                "US1404HVM": "ami-b9b394ca"
-            },
-            "sa-east-1": {
-                "US1404HVM": "ami-8bcc54e7"
-            },
-            "us-east-1": {
-                "US1404HVM": "ami-5ac2cd4d"
-            },
-            "us-east-2": {
-                "US1404HVM": "ami-41d48e24"
-            },
-            "us-west-1": {
-                "US1404HVM": "ami-7790c617"
-            },
-            "us-west-2": {
-                "US1404HVM": "ami-30e65350"
-            }
+        "ConsulSeedPrivateIP": {
+            "Description": "The IP of the Consul Seed server, or any server in the Consul cluster for bootstrapping",
+            "Type": "String"
+        },
+        "EmailAddress": {
+            "Default": "none@example.com",
+            "Description": "Email Address for SNS Topic. Alarms for Nomad instance memory utilzation",
+            "Type": "String"
+        },
+        "KeyPair": {
+            "ConstraintDescription": "Must be the name of an existing EC2 KeyPair.",
+            "Default": "id_rsa_aws",
+            "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        },
+        "MinNomadClientNodes": {
+            "Default": "1",
+            "Description": "Sets the min capacity for client nodes. For Nomad, enter 0",
+            "Type": "String"
+        },
+        "NomadClientNodes": {
+            "Default": "3",
+            "Description": "Sets DesiredCapacity and MaxSize ",
+            "Type": "String"
+        },
+        "NomadInstanceType": {
+            "AllowedValues": [
+                "t2.micro",
+                "t2.small",
+                "t2.medium",
+                "t2.large",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge",
+                "m3.medium",
+                "m3.large",
+                "m3.xlarge",
+                "m3.2xlarge",
+                "c4.large",
+                "c4.xlarge",
+                "c4.2xlarge",
+                "c4.4xlarge",
+                "c4.8xlarge",
+                "c3.large",
+                "c3.xlarge",
+                "c3.2xlarge",
+                "c3.4xlarge",
+                "c3.8xlarge",
+                "r3.large",
+                "r3.xlarge",
+                "r3.2xlarge",
+                "r3.4xlarge",
+                "r3.8xlarge",
+                "i2.xlarge",
+                "i2.2xlarge",
+                "i2.4xlarge",
+                "i2.8xlarge"
+            ],
+            "ConstraintDescription": "Choose an instance type. m3.medium or larger recommended.",
+            "Default": "m3.medium",
+            "Description": "nomad node instance type",
+            "Type": "String"
+        },
+        "NomadServerNodes": {
+            "AllowedValues": [
+                "3",
+                "5",
+                "7"
+            ],
+            "Default": "3",
+            "Description": "Sets DesiredCapacity and MaxSize ",
+            "Type": "String"
+        },
+        "PrivateSubnet1ID": {
+            "Description": "ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-xxxxxxxx)",
+            "Type": "AWS::EC2::Subnet::Id"
+        },
+        "PrivateSubnet2ID": {
+            "Description": "ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-xxxxxxxx)",
+            "Type": "AWS::EC2::Subnet::Id"
+        },
+        "PrivateSubnet3ID": {
+            "Description": "ID of the private subnet 3 in Availability Zone 2 (e.g., subnet-xxxxxxxx)",
+            "Type": "AWS::EC2::Subnet::Id"
+        },
+        "QSS3BucketName": {
+            "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$",
+            "ConstraintDescription": "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).",
+            "Default": "quickstart-reference",
+            "Description": "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).",
+            "Type": "String"
+        },
+        "QSS3KeyPrefix": {
+            "AllowedPattern": "^[0-9a-zA-Z-]+(/[0-9a-zA-Z-]+)*$",
+            "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with forward slash (/) because they are automatically appended.",
+            "Default": "hashicorp/nomad/latest",
+            "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with forward slash (/) because they are automatically appended.",
+            "Type": "String"
+        },
+        "QuickStartS3URL": {
+            "ConstraintDescription": "S3Url",
+            "Default": "https://s3.amazonaws.com",
+            "Description": "AWS S3 Root Url",
+            "Type": "String"
+        },
+        "VPCCIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
+            "Description": "CIDR Block for the VPC",
+            "Type": "String"
+        },
+        "VPCID": {
+            "Description": "VPC ID",
+            "Type": "AWS::EC2::VPC::Id"
         }
     },
     "Resources": {
+        "NomadClientASG": {
+            "Properties": {
+                "DesiredCapacity": {
+                    "Ref": "NomadClientNodes"
+                },
+                "LaunchConfigurationName": {
+                    "Ref": "NomadClientLaunchConfig"
+                },
+                "MaxSize": {
+                    "Ref": "NomadClientNodes"
+                },
+                "MinSize": {
+                    "Ref": "MinNomadClientNodes"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "PropagateAtLaunch": "true",
+                        "Value": {
+                            "Fn::Join": [
+                                "-",
+                                [
+                                    {
+                                        "Ref": "AWS::StackName"
+                                    },
+                                    "NomadClient"
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "VPCZoneIdentifier": [
+                    {
+                        "Ref": "PrivateSubnet1ID"
+                    },
+                    {
+                        "Ref": "PrivateSubnet2ID"
+                    },
+                    {
+                        "Ref": "PrivateSubnet3ID"
+                    }
+                ]
+            },
+            "Type": "AWS::AutoScaling::AutoScalingGroup"
+        },
+        "NomadClientLaunchConfig": {
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "commands": {
+                        "01_chmod_and_chown_nomad": {
+                            "command": "chmod 0755 /usr/local/bin/nomad && chown root:root /usr/local/bin/nomad"
+                        }
+                    },
+                    "configSets": {
+                        "nomad_install": [
+                            "install_nomad",
+                            "run_nomad",
+                            "install_cloudwatch_logs_and_mon_scripts"
+                        ]
+                    },
+                    "install_cloudwatch_logs_and_mon_scripts": {
+                        "commands": {
+                            "01_run_awslogs_agent_setup.py": {
+                                "command": {
+                                    "Fn::Sub": [
+                                        "python /usr/local/awslogs-agent-setup.py -n -r ${Region} -c https://s3.amazonaws.com/quickstart-reference/hashicorp/vault/latest/scripts/awslogs-config-file",
+                                        {
+                                            "Region": {
+                                                "Ref": "AWS::Region"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "02_make_mon_put_instance_data_exececutable": {
+                                "command": "chmod +x /usr/local/aws-scripts-mon/mon-put-instance-data.pl"
+                            }
+                        },
+                        "files": {
+                            "/etc/cron.hourly/cloudwatch-monitoring": {
+                                "content": [
+                                    "*/5 * * * * /usr/local/aws-scripts-mon/mon-put-instance-data.pl --mem-util --mem-used --from-cron"
+                                ],
+                                "group": "root",
+                                "mode": "000700",
+                                "owner": "root"
+                            },
+                            "/usr/local/awslogs-agent-setup.py": {
+                                "group": "root",
+                                "mode": "000700",
+                                "owner": "root",
+                                "source": "https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py"
+                            }
+                        },
+                        "packages": {
+                            "apt": {
+                                "apt-transport-https": [],
+                                "ca-certificates": [],
+                                "curl": [],
+                                "libdatetime-perl": [],
+                                "libwww-perl": [],
+                                "software-properties-common": [],
+                                "unzip": []
+                            }
+                        },
+                        "sources": {
+                            "/usr/local": "http://aws-cloudwatch.s3.amazonaws.com/downloads/CloudWatchMonitoringScripts-1.2.1.zip"
+                        }
+                    },
+                    "install_nomad": {
+                        "sources": {
+                            "/usr/local/bin": "https://releases.hashicorp.com/nomad/0.5.4/nomad_0.5.4_linux_amd64.zip"
+                        }
+                    }
+                },
+                "run_nomad": {
+                    "commands": {
+                        "01_register_nomad_binary": {
+                            "command": "start nomad"
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "IamInstanceProfile": {
+                    "Ref": "nomadinstanceprofile"
+                },
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "AWSAMIRegionMap",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "US1404HVM"
+                    ]
+                },
+                "InstanceType": {
+                    "Ref": "NomadInstanceType"
+                },
+                "KeyName": {
+                    "Ref": "KeyPair"
+                },
+                "SecurityGroups": [
+                    {
+                        "Ref": "NomadSecGroup"
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -x\n",
+                                "apt-get -y update\n",
+                                "apt-get -y install  python-setuptools linux-image-extra-$(uname -r) linux-image-extra-virtual \n",
+                                "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \n",
+                                "add-apt-repository  \"deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" \n",
+                                "apt-get -y update \n",
+                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
+                                "SEEDIP=\"",
+                                {
+                                    "Ref": "ConsulSeedPrivateIP"
+                                },
+                                "\"\n",
+                                "wget https://s3.amazonaws.com/quickstart-reference/hashicorp/consul/latest/scripts/consul_client_bootstrap.sh\n",
+                                "chmod 755 ./consul_client_bootstrap.sh\n",
+                                "./consul_client_bootstrap.sh --s3url https://s3.amazonaws.com --s3bucket quickstart-reference --s3prefix hashicorp/consul/latest --seedip ${SEEDIP}",
+                                "\n",
+                                "/usr/local/bin/cfn-init",
+                                " --verbose ",
+                                " --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                " --resource NomadClient",
+                                " --configsets nomad_install",
+                                " --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n",
+                                "apt-get -y install docker-ce \n",
+                                "NOMAD_BOOTSTRAP_FILE=install_client.sh\n",
+                                "NOMAD_BOOTSTRAP=",
+                                {
+                                    "Ref": "QuickStartS3URL"
+                                },
+                                "/",
+                                {
+                                    "Ref": "QSS3BucketName"
+                                },
+                                "/",
+                                {
+                                    "Ref": "QSS3KeyPrefix"
+                                },
+                                "/scripts/",
+                                "${NOMAD_BOOTSTRAP_FILE}",
+                                "\n",
+                                "wget ${NOMAD_BOOTSTRAP} \n",
+                                "chmod 755 ./${NOMAD_BOOTSTRAP_FILE} \n",
+                                "./${NOMAD_BOOTSTRAP_FILE} \n",
+                                "/usr/local/bin/cfn-signal -e $? ",
+                                "  --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                " --resource NomadClient ",
+                                " --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n"
+                            ]
+                        ]
+                    }
+                }
+            },
+            "Type": "AWS::AutoScaling::LaunchConfiguration"
+        },
+        "NomadLogGroup": {
+            "Properties": {
+                "LogGroupName": {
+                    "Fn::Join": [
+                        "-",
+                        [
+                            {
+                                "Ref": "AWS::StackName"
+                            },
+                            "Nomad-Audit-Logs"
+                        ]
+                    ]
+                },
+                "RetentionInDays": 7
+            },
+            "Type": "AWS::Logs::LogGroup"
+        },
         "NomadSNSTopic": {
-            "Type": "AWS::SNS::Topic",
             "Properties": {
                 "Subscription": [
                     {
@@ -210,31 +468,28 @@
                         "Protocol": "email"
                     }
                 ]
-            }
+            },
+            "Type": "AWS::SNS::Topic"
         },
         "NomadSecGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
-                "GroupDescription": "Enables SSH access to the Nomad Seed.",
-                "VpcId": {
-                    "Ref": "VPCID"
-                },
+                "GroupDescription": "Enables SSH access to the Nomad servers",
                 "SecurityGroupIngress": [
                     {
-                        "IpProtocol": "tcp",
-                        "FromPort": "22",
-                        "ToPort": "22",
                         "CidrIp": {
                             "Ref": "AccessCIDR"
-                        }
+                        },
+                        "FromPort": "22",
+                        "IpProtocol": "tcp",
+                        "ToPort": "22"
                     },
                     {
-                        "IpProtocol": "tcp",
-                        "FromPort": "0",
-                        "ToPort": "65535",
                         "CidrIp": {
                             "Ref": "VPCCIDR"
-                        }
+                        },
+                        "FromPort": "0",
+                        "IpProtocol": "tcp",
+                        "ToPort": "65535"
                     }
                 ],
                 "Tags": [
@@ -242,125 +497,231 @@
                         "Key": "Name",
                         "Value": "NomadSecGroup"
                     }
-                ]
-            }
-        },
-        "Nomad1MemoryAlarm": {
-            "Type": "AWS::CloudWatch::Alarm",
-            "Properties": {
-                "AlarmDescription": "Memory alarm for my instance",
-                "AlarmActions": [
-                    {
-                        "Ref": "NomadSNSTopic"
-                    }
                 ],
-                "MetricName": "MemoryUtilization",
-                "Namespace": "System/Linux",
-                "Statistic": "Average",
-                "Period": "60",
-                "EvaluationPeriods": "3",
-                "Threshold": "75",
-                "ComparisonOperator": "GreaterThanThreshold",
-                "Dimensions": [
+                "VpcId": {
+                    "Ref": "VPCID"
+                }
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "NomadServerASG": {
+            "Properties": {
+                "DesiredCapacity": {
+                    "Ref": "NomadServerNodes"
+                },
+                "LaunchConfigurationName": {
+                    "Ref": "NomadServerLaunchConfig"
+                },
+                "MaxSize": {
+                    "Ref": "NomadServerNodes"
+                },
+                "MinSize": "3",
+                "Tags": [
                     {
-                        "Name": "InstanceId",
+                        "Key": "Name",
+                        "PropagateAtLaunch": "true",
                         "Value": {
-                            "Ref": "Nomad1"
-                        }
-                    }
-                ]
-            }
-        },
-        "Nomad2MemoryAlarm": {
-            "Type": "AWS::CloudWatch::Alarm",
-            "Properties": {
-                "AlarmDescription": "Memory alarm for my instance",
-                "AlarmActions": [
-                    {
-                        "Ref": "NomadSNSTopic"
-                    }
-                ],
-                "MetricName": "MemoryUtilization",
-                "Namespace": "System/Linux",
-                "Statistic": "Average",
-                "Period": "60",
-                "EvaluationPeriods": "3",
-                "Threshold": "75",
-                "ComparisonOperator": "GreaterThanThreshold",
-                "Dimensions": [
-                    {
-                        "Name": "InstanceId",
-                        "Value": {
-                            "Ref": "Nomad2"
-                        }
-                    }
-                ]
-            }
-        },
-        "NomadLogGroup": {
-            "Type": "AWS::Logs::LogGroup",
-            "Properties": {
-                "LogGroupName": "Nomad-Audit-Logs",
-                "RetentionInDays": 7
-            }
-        },
-        "nomadinstancerole": {
-            "Type": "AWS::IAM::Role",
-            "Properties": {
-                "AssumeRolePolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Statement": [
-                        {
-                            "Effect": "Allow",
-                            "Principal": {
-                                "Service": [
-                                    "ec2.amazonaws.com"
+                            "Fn::Join": [
+                                "-",
+                                [
+                                    {
+                                        "Ref": "AWS::StackName"
+                                    },
+                                    "NomadServer"
                                 ]
-                            },
-                            "Action": [
-                                "sts:AssumeRole"
                             ]
                         }
-                    ]
-                },
-                "Path": "/",
-                "Policies": [
+                    }
+                ],
+                "VPCZoneIdentifier": [
                     {
-                        "PolicyName": "root",
-                        "PolicyDocument": {
-                            "Version": "2012-10-17",
-                            "Statement": [
-                                {
-                                    "Effect": "Allow",
-                                    "Action": [
-                                        "logs:CreateLogGroup",
-                                        "logs:CreateLogStream",
-                                        "logs:PutLogEvents",
-                                        "logs:DescribeLogStreams"
-                                    ],
-                                    "Resource": [
-                                        "arn:aws:logs:*:*:*"
-                                    ]
-                                },
-                                {
-                                    "Effect": "Allow",
-                                    "Action": [
-                                        "cloudwatch:PutMetricData",
-                                        "cloudwatch:GetMetricStatistics",
-                                        "cloudwatch:ListMetrics"
-                                    ],
-                                    "Resource": [
-                                        "*"
+                        "Ref": "PrivateSubnet1ID"
+                    },
+                    {
+                        "Ref": "PrivateSubnet2ID"
+                    },
+                    {
+                        "Ref": "PrivateSubnet3ID"
+                    }
+                ]
+            },
+            "Type": "AWS::AutoScaling::AutoScalingGroup"
+        },
+        "NomadServerLaunchConfig": {
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "commands": {
+                        "01_chmod_and_chown_nomad": {
+                            "command": "chmod 0755 /usr/local/bin/nomad && chown root:root /usr/local/bin/nomad"
+                        }
+                    },
+                    "configSets": {
+                        "nomad_install": [
+                            "install_nomad",
+                            "run_nomad",
+                            "install_cloudwatch_logs_and_mon_scripts"
+                        ]
+                    },
+                    "install_cloudwatch_logs_and_mon_scripts": {
+                        "commands": {
+                            "01_run_awslogs_agent_setup.py": {
+                                "command": {
+                                    "Fn::Sub": [
+                                        "python /usr/local/awslogs-agent-setup.py -n -r ${Region} -c https://s3.amazonaws.com/quickstart-reference/hashicorp/vault/latest/scripts/awslogs-config-file",
+                                        {
+                                            "Region": {
+                                                "Ref": "AWS::Region"
+                                            }
+                                        }
                                     ]
                                 }
-                            ]
+                            },
+                            "02_make_mon_put_instance_data_exececutable": {
+                                "command": "chmod +x /usr/local/aws-scripts-mon/mon-put-instance-data.pl"
+                            }
+                        },
+                        "files": {
+                            "/etc/cron.hourly/cloudwatch-monitoring": {
+                                "content": [
+                                    "*/5 * * * * /usr/local/aws-scripts-mon/mon-put-instance-data.pl --mem-util --mem-used --from-cron"
+                                ],
+                                "group": "root",
+                                "mode": "000700",
+                                "owner": "root"
+                            },
+                            "/usr/local/awslogs-agent-setup.py": {
+                                "group": "root",
+                                "mode": "000700",
+                                "owner": "root",
+                                "source": "https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py"
+                            }
+                        },
+                        "packages": {
+                            "apt": {
+                                "apt-transport-https": [],
+                                "ca-certificates": [],
+                                "curl": [],
+                                "libdatetime-perl": [],
+                                "libwww-perl": [],
+                                "software-properties-common": [],
+                                "unzip": []
+                            }
+                        },
+                        "sources": {
+                            "/usr/local": "http://aws-cloudwatch.s3.amazonaws.com/downloads/CloudWatchMonitoringScripts-1.2.1.zip"
+                        }
+                    },
+                    "install_nomad": {
+                        "sources": {
+                            "/usr/local/bin": "https://releases.hashicorp.com/nomad/0.5.4/nomad_0.5.4_linux_amd64.zip"
                         }
                     }
-                ]
-            }
+                },
+                "run_nomad": {
+                    "commands": {
+                        "01_register_nomad_binary": {
+                            "command": "start nomad"
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "IamInstanceProfile": {
+                    "Ref": "nomadinstanceprofile"
+                },
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "AWSAMIRegionMap",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "US1404HVM"
+                    ]
+                },
+                "InstanceType": {
+                    "Ref": "NomadInstanceType"
+                },
+                "KeyName": {
+                    "Ref": "KeyPair"
+                },
+                "SecurityGroups": [
+                    {
+                        "Ref": "NomadSecGroup"
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -x\n",
+                                "apt-get -y update\n",
+                                "apt-get -y install  python-setuptools linux-image-extra-$(uname -r) linux-image-extra-virtual \n",
+                                "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - \n",
+                                "add-apt-repository \"deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" \n",
+                                "apt-get -y update \n",
+                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
+                                "SEEDIP=\"",
+                                {
+                                    "Ref": "ConsulSeedPrivateIP"
+                                },
+                                "\"\n",
+                                "wget https://s3.amazonaws.com/quickstart-reference/hashicorp/consul/latest/scripts/consul_client_bootstrap.sh\n",
+                                "chmod 755 ./consul_client_bootstrap.sh\n",
+                                "./consul_client_bootstrap.sh --s3url https://s3.amazonaws.com --s3bucket quickstart-reference --s3prefix hashicorp/consul/latest --seedip ${SEEDIP}",
+                                "\n",
+                                "/usr/local/bin/cfn-init",
+                                " --verbose ",
+                                " --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                " --resource NomadServer",
+                                " --configsets nomad_install",
+                                " --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n",
+                                "apt-get -y install docker-ce \n",
+                                "NOMAD_BOOTSTRAP_FILE=install_server.sh\n",
+                                "NOMAD_BOOTSTRAP=",
+                                {
+                                    "Ref": "QuickStartS3URL"
+                                },
+                                "/",
+                                {
+                                    "Ref": "QSS3BucketName"
+                                },
+                                "/",
+                                {
+                                    "Ref": "QSS3KeyPrefix"
+                                },
+                                "/scripts/",
+                                "${NOMAD_BOOTSTRAP_FILE}",
+                                "\n",
+                                "wget ${NOMAD_BOOTSTRAP} \n",
+                                "chmod 755 ./${NOMAD_BOOTSTRAP_FILE} \n",
+                                "./${NOMAD_BOOTSTRAP_FILE} \n",
+                                "/usr/local/bin/cfn-signal -e $? ",
+                                "  --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                " --resource NomadServer ",
+                                " --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n"
+                            ]
+                        ]
+                    }
+                }
+            },
+            "Type": "AWS::AutoScaling::LaunchConfiguration"
         },
         "nomadinstanceprofile": {
-            "Type": "AWS::IAM::InstanceProfile",
             "Properties": {
                 "Path": "/",
                 "Roles": [
@@ -368,498 +729,74 @@
                         "Ref": "nomadinstancerole"
                     }
                 ]
-            }
+            },
+            "Type": "AWS::IAM::InstanceProfile"
         },
-        "Nomad1": {
-            "Type": "AWS::EC2::Instance",
-            "Metadata": {
-                "AWS::CloudFormation::Init": {
-                    "configSets": {
-                        "nomad_install": [
-                            "install_nomad",
-                            "run_nomad",
-                            "install_cloudwatch_logs_and_mon_scripts"
-                        ]
-                    },
-                    "install_cloudwatch_logs_and_mon_scripts": {
-                        "packages": {
-                            "apt": {
-                                "unzip": [],
-                                "libwww-perl": [],
-                                "libdatetime-perl": []
+        "nomadinstancerole": {
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "sts:AssumeRole"
+                            ],
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com"
+                                ]
                             }
-                        },
-                        "sources": {
-                            "/usr/local": "http://aws-cloudwatch.s3.amazonaws.com/downloads/CloudWatchMonitoringScripts-1.2.1.zip"
-                        },
-                        "files": {
-                            "/etc/cron.hourly/cloudwatch-monitoring.sh": {
-                                "source": "https://s3.amazonaws.com/quickstart-reference/hashicorp/nomad/latest/scripts/cloudwatch-monitoring.sh",
-                                "mode": "000700",
-                                "owner": "root",
-                                "group": "root"
-                            },
-                            "/usr/local/awslogs-agent-setup.py": {
-                                "source": "https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py",
-                                "mode": "000700",
-                                "owner": "root",
-                                "group": "root"
-                            }
-                        },
-                        "commands": {
-                            "01_run_awslogs_agent_setup.py": {
-                                "command": {
-                                    "Fn::Sub": [
-                                        "python /usr/local/awslogs-agent-setup.py -n -r ${Region} -c https://s3.amazonaws.com/quickstart-reference/hashicorp/nomad/latest/scripts/awslogs-config-file",
-                                        {
-                                            "Region": {
-                                                "Ref": "AWS::Region"
-                                            }
-                                        }
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Action": [
+                                        "logs:CreateLogGroup",
+                                        "logs:CreateLogStream",
+                                        "logs:PutLogEvents",
+                                        "logs:DescribeLogStreams"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": [
+                                        "arn:aws:logs:*:*:*"
                                     ]
                                 }
-                            },
-                            "02_make_mon_put_instance_data_exececutable": {
-                                "command": "chmod +x /usr/local/aws-scripts-mon/mon-put-instance-data.pl"
-                            },
-                            "03_install_crontab": {
-                                "command": "crontab  /etc/cron.hourly/cloudwatch-monitoring.sh"
-                            }
-                        }
-                    },
-                    "install_nomad": {
-                        "sources": {
-                            "/usr/local/bin": "https://releases.hashicorp.com/nomad/0.6.2/nomad_0.6.2_linux_amd64.zip"
+                            ],
+                            "Version": "2012-10-17"
                         },
-                        "files": {
-                            "/etc/nomad.d/nomad.hcl": {
-                                "source": "https://s3.amazonaws.com/quickstart-reference/hashicorp/nomad/latest/scripts/nomad.hcl",
-                                "mode": "000700",
-                                "owner": "root",
-                                "group": "root"
-                            },
-                            "/etc/init/nomad.conf": {
-                                "source": "https://s3.amazonaws.com/quickstart-reference/hashicorp/nomad/latest/scripts/nomad-upstart.conf",
-                                "mode": "000700",
-                                "owner": "root",
-                                "group": "root"
-                            }
-                        },
-                        "commands": {
-                            "01_chmod_and_chown_nomad": {
-                                "command": "chmod 0755 /usr/local/bin/nomad && chown root:root /usr/local/bin/nomad"
-                            }
-                        }
-                    },
-                    "run_nomad": {
-                        "commands": {
-                            "01_register_nomad_binary": {
-                                "command": "start nomad"
-                            }
-                        }
-                    }
-                }
-            },
-            "Properties": {
-                "InstanceType": {
-                    "Ref": "NomadInstanceType"
-                },
-                "KeyName": {
-                    "Ref": "KeyPair"
-                },
-                "NetworkInterfaces": [
-                    {
-                        "DeleteOnTermination": "true",
-                        "DeviceIndex": 0,
-                        "SubnetId": {
-                            "Ref": "PrivateSubnet1ID"
-                        },
-                        "GroupSet": [
-                            {
-                                "Ref": "NomadSecGroup"
-                            }
-                        ]
-                    }
-                ],
-                "ImageId": {
-                    "Fn::FindInMap": [
-                        "AWSAMIRegionMap",
-                        {
-                            "Ref": "AWS::Region"
-                        },
-                        "US1404HVM"
-                    ]
-                },
-                "BlockDeviceMappings": [
-                    {
-                        "DeviceName": "/dev/sda1",
-                        "Ebs": {
-                            "VolumeSize": "20",
-                            "VolumeType": "gp2"
-                        }
-                    }
-                ],
-                "UserData": {
-                    "Fn::Base64": {
-                        "Fn::Join": [
-                            "",
-                            [
-                                "#!/bin/bash -x\n",
-                                "apt-get -y update\n",
-                                "apt-get -y install  python-setuptools\n",
-                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
-                                "mkdir -p /opt/nomad/policies/ /opt/nomad/scripts/ /etc/nomad.d/\n",
-                                "SEEDIP=\"",
-                                {
-                                    "Ref": "NomadSeedPrivateIP"
-                                },
-                                "\"\n",
-                                "wget https://s3.amazonaws.com/quickstart-reference/hashicorp/consul/latest/scripts/consul_client_bootstrap.sh\n",
-                                "chmod 755 ./consul_client_bootstrap.sh\n",
-                                "./consul_client_bootstrap.sh --s3url https://s3.amazonaws.com --s3bucket quickstart-reference --s3prefix hashicorp/consul/latest --seedip ${SEEDIP}",
-                                "\n",
-                                "/usr/local/bin/cfn-init",
-                                " --verbose ",
-                                " --stack ",
-                                {
-                                    "Ref": "AWS::StackName"
-                                },
-                                " --resource Nomad1",
-                                " --configsets nomad_install",
-                                " --region ",
-                                {
-                                    "Ref": "AWS::Region"
-                                },
-                                "\n",
-                                "/usr/local/bin/cfn-signal -e $? ",
-                                "  --stack ",
-                                {
-                                    "Ref": "AWS::StackName"
-                                },
-                                " --resource Nomad1 ",
-                                " --region ",
-                                {
-                                    "Ref": "AWS::Region"
-                                },
-                                "\n"
-                            ]
-                        ]
-                    }
-                },
-                "IamInstanceProfile": {
-                    "Ref": "nomadinstanceprofile"
-                },
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": {
-                            "Fn::Join": [
-                                "-",
-                                [
-                                    {
-                                        "Ref": "AWS::StackName"
-                                    },
-                                    "Nomad1"
-                                ]
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        "Nomad1RecoveryAlarm": {
-            "Type": "AWS::CloudWatch::Alarm",
-            "Properties": {
-                "AlarmDescription": "EC2 Autorecovery for Nomad1 node. Autorecover if we fail EC2 status checks for 5 minutes.",
-                "Namespace": "AWS/EC2",
-                "MetricName": "StatusCheckFailed_System",
-                "Statistic": "Minimum",
-                "Period": "60",
-                "EvaluationPeriods": "5",
-                "ComparisonOperator": "GreaterThanThreshold",
-                "Threshold": "0",
-                "AlarmActions": [
-                    {
-                        "Ref": "NomadSNSTopic"
+                        "PolicyName": "root"
                     },
                     {
-                        "Fn::Join": [
-                            "",
-                            [
-                                "arn:aws:automate:",
+                        "PolicyDocument": {
+                            "Statement": [
                                 {
-                                    "Ref": "AWS::Region"
-                                },
-                                ":ec2:recover"
-                            ]
-                        ]
-                    }
-                ],
-                "Dimensions": [
-                    {
-                        "Name": "InstanceId",
-                        "Value": {
-                            "Ref": "Nomad1"
-                        }
-                    }
-                ]
-            }
-        },
-        "Nomad2": {
-            "Type": "AWS::EC2::Instance",
-            "Metadata": {
-                "AWS::CloudFormation::Init": {
-                    "configSets": {
-                        "nomad_install": [
-                            "install_nomad",
-                            "run_nomad",
-                            "install_cloudwatch_logs_and_mon_scripts"
-                        ]
-                    },
-                    "install_cloudwatch_logs_and_mon_scripts": {
-                        "packages": {
-                            "apt": {
-                                "unzip": [],
-                                "libwww-perl": [],
-                                "libdatetime-perl": []
-                            }
-                        },
-                        "sources": {
-                            "/usr/local": "http://aws-cloudwatch.s3.amazonaws.com/downloads/CloudWatchMonitoringScripts-1.2.1.zip"
-                        },
-                        "files": {
-                            "/etc/cron.hourly/cloudwatch-monitoring.sh": {
-                                "source": "https://s3.amazonaws.com/quickstart-reference/hashicorp/nomad/latest/scripts/cloudwatch-monitoring.sh",
-                                "mode": "000700",
-                                "owner": "root",
-                                "group": "root"
-                            },
-                            "/usr/local/awslogs-agent-setup.py": {
-                                "source": "https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py",
-                                "mode": "000700",
-                                "owner": "root",
-                                "group": "root"
-                            }
-                        },
-                        "commands": {
-                            "01_run_awslogs_agent_setup.py": {
-                                "command": {
-                                    "Fn::Sub": [
-                                        "python /usr/local/awslogs-agent-setup.py -n -r ${Region} -c https://s3.amazonaws.com/quickstart-reference/hashicorp/nomad/latest/scripts/awslogs-config-file",
-                                        {
-                                            "Region": {
-                                                "Ref": "AWS::Region"
-                                            }
-                                        }
-                                    ]
+                                    "Action": [
+                                        "ecr:GetAuthorizationToken",
+                                        "ecr:BatchCheckLayerAvailability",
+                                        "ecr:GetDownloadUrlForLayer",
+                                        "ecr:GetRepositoryPolicy",
+                                        "ecr:DescribeRepositories",
+                                        "ecr:ListImages",
+                                        "ecr:DescribeImages",
+                                        "ecr:BatchGetImage"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": "*"
                                 }
-                            },
-                            "02_make_mon_put_instance_data_exececutable": {
-                                "command": "chmod +x /usr/local/aws-scripts-mon/mon-put-instance-data.pl"
-                            },
-                            "03_install_crontab": {
-                                "command": "crontab  /etc/cron.hourly/cloudwatch-monitoring.sh"
-                            }
-                        }
-                    },
-                    "install_nomad": {
-                        "sources": {
-                            "/usr/local/bin": "https://releases.hashicorp.com/nomad/0.6.2/nomad_0.6.2_linux_amd64.zip"
+                            ],
+                            "Version": "2012-10-17"
                         },
-                        "files": {
-                            "/etc/nomad.d/nomad.hcl": {
-                                "source": "https://s3.amazonaws.com/quickstart-reference/hashicorp/nomad/latest/scripts/nomad.hcl",
-                                "mode": "000700",
-                                "owner": "root",
-                                "group": "root"
-                            },
-                            "/etc/init/nomad.conf": {
-                                "source": "https://s3.amazonaws.com/quickstart-reference/hashicorp/nomad/latest/scripts/nomad-upstart.conf",
-                                "mode": "000700",
-                                "owner": "root",
-                                "group": "root"
-                            }
-                        },
-                        "commands": {
-                            "01_chmod_and_chown_nomad": {
-                                "command": "chmod 0755 /usr/local/bin/nomad && chown root:root /usr/local/bin/nomad"
-                            }
-                        }
-                    },
-                    "run_nomad": {
-                        "commands": {
-                            "01_register_nomad_binary": {
-                                "command": "start nomad"
-                            }
-                        }
+                        "PolicyName": "ECR_readonly"
                     }
-                }
+                ]
             },
-            "Properties": {
-                "InstanceType": {
-                    "Ref": "NomadInstanceType"
-                },
-                "KeyName": {
-                    "Ref": "KeyPair"
-                },
-                "NetworkInterfaces": [
-                    {
-                        "DeleteOnTermination": "true",
-                        "DeviceIndex": 0,
-                        "SubnetId": {
-                            "Ref": "PrivateSubnet2ID"
-                        },
-                        "GroupSet": [
-                            {
-                                "Ref": "NomadSecGroup"
-                            }
-                        ]
-                    }
-                ],
-                "ImageId": {
-                    "Fn::FindInMap": [
-                        "AWSAMIRegionMap",
-                        {
-                            "Ref": "AWS::Region"
-                        },
-                        "US1404HVM"
-                    ]
-                },
-                "BlockDeviceMappings": [
-                    {
-                        "DeviceName": "/dev/sda1",
-                        "Ebs": {
-                            "VolumeSize": "20",
-                            "VolumeType": "gp2"
-                        }
-                    }
-                ],
-                "UserData": {
-                    "Fn::Base64": {
-                        "Fn::Join": [
-                            "",
-                            [
-                                "#!/bin/bash -x\n",
-                                "mkdir -p /opt/nomad/policies/ /opt/nomad/scripts/ /etc/nomad.d/\n",
-                                "apt-get -y update\n",
-                                "#install the cfn-init tools\n",
-                                "apt-get install python-setuptools\n",
-                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
-                                "SEEDIP=\"",
-                                {
-                                    "Ref": "NomadSeedPrivateIP"
-                                },
-                                "\"\n",
-                                "wget https://s3.amazonaws.com/quickstart-reference/hashicorp/consul/latest/scripts/consul_client_bootstrap.sh\n",
-                                "chmod 755 ./consul_client_bootstrap.sh\n",
-                                "./consul_client_bootstrap.sh --s3url https://s3.amazonaws.com --s3bucket quickstart-reference --s3prefix hashicorp/consul/latest --seedip ${SEEDIP}",
-                                "\n",
-                                "/usr/local/bin/cfn-init",
-                                " --verbose ",
-                                " --stack ",
-                                {
-                                    "Ref": "AWS::StackName"
-                                },
-                                " --resource Nomad2",
-                                " --configsets nomad_install",
-                                " --region ",
-                                {
-                                    "Ref": "AWS::Region"
-                                },
-                                "\n",
-                                "/usr/local/bin/cfn-signal -e $? ",
-                                " --stack ",
-                                {
-                                    "Ref": "AWS::StackName"
-                                },
-                                "  --resource Nomad2 ",
-                                "  --region ",
-                                {
-                                    "Ref": "AWS::Region"
-                                },
-                                "\n"
-                            ]
-                        ]
-                    }
-                },
-                "IamInstanceProfile": {
-                    "Ref": "nomadinstanceprofile"
-                },
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": {
-                            "Fn::Join": [
-                                "-",
-                                [
-                                    {
-                                        "Ref": "AWS::StackName"
-                                    },
-                                    "Nomad2"
-                                ]
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        "Nomad2RecoveryAlarm": {
-            "Type": "AWS::CloudWatch::Alarm",
-            "Properties": {
-                "AlarmDescription": "EC2 Autorecovery for Nomad2 node. Autorecover if we fail EC2 status checks for 5 minutes.",
-                "Namespace": "AWS/EC2",
-                "MetricName": "StatusCheckFailed_System",
-                "Statistic": "Minimum",
-                "Period": "60",
-                "EvaluationPeriods": "5",
-                "ComparisonOperator": "GreaterThanThreshold",
-                "Threshold": "0",
-                "AlarmActions": [
-                    {
-                        "Ref": "NomadSNSTopic"
-                    },
-                    {
-                        "Fn::Join": [
-                            "",
-                            [
-                                "arn:aws:automate:",
-                                {
-                                    "Ref": "AWS::Region"
-                                },
-                                ":ec2:recover"
-                            ]
-                        ]
-                    }
-                ],
-                "Dimensions": [
-                    {
-                        "Name": "InstanceId",
-                        "Value": {
-                            "Ref": "Nomad2"
-                        }
-                    }
-                ]
-            }
-        }
-    },
-    "Outputs": {
-        "NomadNode1PrivateIp": {
-            "Description": "Private IP of Nomad Node #1",
-            "Value": {
-                "Fn::GetAtt": [
-                    "Nomad1",
-                    "PrivateIp"
-                ]
-            }
-        },
-        "NomadNode2PrivateIp": {
-            "Description": "Private IP of Nomad Node #2",
-            "Value": {
-                "Fn::GetAtt": [
-                    "Nomad2",
-                    "PrivateIp"
-                ]
-            }
+            "Type": "AWS::IAM::Role"
         }
     }
 }

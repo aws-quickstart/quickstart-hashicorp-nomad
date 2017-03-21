@@ -2,10 +2,12 @@
 set -ex
 
 # This script will automatically install nomad, put it in /usr/local/bin, and create /etc/nomad.d directory
+NOMAD_VER=0.5.5
 HOSTNAME=`hostname`
 LOCAL_IP=`curl http://169.254.169.254/latest/meta-data/local-ipv4`
-curl -sSL https://releases.hashicorp.com/nomad/0.5.4/nomad_0.5.4_linux_amd64.zip -o /tmp/nomad.zip
-HASHI_SOURCE_SHA256SUM=`curl https://releases.hashicorp.com/nomad/0.5.4/nomad_0.5.4_SHA256SUMS?_ga=1.245768324.1608334354.1478014704 | grep nomad_0.5.4_linux_amd64.zip | awk -F' ' '{print $1}'`
+DATACENTER=`curl http://169.254.169.254/latest/dynamic/instance-identity/document | jq .region -r`
+curl -sSL https://releases.hashicorp.com/nomad/${NOMAD_VER}/nomad_${NOMAD_VER}_linux_amd64.zip -o /tmp/nomad.zip
+HASHI_SOURCE_SHA256SUM=`curl https://releases.hashicorp.com/nomad/${NOMAD_VER}/nomad_${NOMAD_VER}_SHA256SUMS | grep nomad_${NOMAD_VER}_linux_amd64.zip | awk -F' ' '{print $1}'`
 DOWNLOAD_SHA256SUM=`sha256sum /tmp/nomad.zip | awk -F' ' '{print $1}'`
 
 if [[ "${DOWNLOAD_SHA256SUM}" != "${HASHI_SOURCE_SHA256SUM}" ]]

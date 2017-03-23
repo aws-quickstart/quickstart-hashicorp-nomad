@@ -40,6 +40,9 @@ datacenter = "$DATACENTER-$1"
 
 client {
   enabled = true
+  options {
+    "docker.auth.config" = "/root/.docker/config.json"
+  }
 }
 
 

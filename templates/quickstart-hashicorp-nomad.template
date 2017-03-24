@@ -274,9 +274,9 @@
             },
             "Type": "AWS::SNS::Topic"
         },
-        "NomadSecGroup": {
+        "PublicNomadSecGroup": {
             "Properties": {
-                "GroupDescription": "Enables SSH access to the Nomad servers",
+                "GroupDescription": "Enables SSH and HTTP/S access to the Nomad public client nodes",
                 "SecurityGroupIngress": [
                     {
                         "CidrIp": {
@@ -286,6 +286,39 @@
                         "IpProtocol": "tcp",
                         "ToPort": "22"
                     },
+                    {
+                        "CidrIp": {
+                            "Ref": "AccessCIDR"
+                        },
+                        "FromPort": "80",
+                        "IpProtocol": "tcp",
+                        "ToPort": "80"
+                    },
+                    {
+                        "CidrIp": {
+                            "Ref": "AccessCIDR"
+                        },
+                        "FromPort": "443",
+                        "IpProtocol": "tcp",
+                        "ToPort": "443"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "PublicNomadSecGroup"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPCID"
+                }
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "NomadSecGroup": {
+            "Properties": {
+                "GroupDescription": "Enables all access within the VPC to the Nomad clusters",
+                "SecurityGroupIngress": [
                     {
                         "CidrIp": {
                             "Ref": "VPCCIDR"
@@ -360,12 +393,10 @@
                     },
                     "configSets": {
                         "nomad_install": [
-                            "install_nomad",
-                            "run_nomad",
-                            "install_cloudwatch_logs_and_mon_scripts"
+                            "install_cloudwatch_logs_and_scripts"
                         ]
                     },
-                    "install_cloudwatch_logs_and_mon_scripts": {
+                    "install_cloudwatch_logs_and_scripts": {
                         "commands": {
                             "01_run_awslogs_agent_setup.py": {
                                 "command": {
@@ -385,9 +416,7 @@
                         },
                         "files": {
                             "/etc/cron.hourly/cloudwatch-monitoring": {
-                                "content": [
-                                    "*/5 * * * * /usr/local/aws-scripts-mon/mon-put-instance-data.pl --mem-util --mem-used --from-cron"
-                                ],
+                                "content": "/usr/local/aws-scripts-mon/mon-put-instance-data.pl --mem-util --mem-used --from-cron",
                                 "group": "root",
                                 "mode": "000700",
                                 "owner": "root"
@@ -582,8 +611,6 @@
                     },
                     "configSets": {
                         "nomad_install": [
-                            "install_nomad",
-                            "run_nomad",
                             "install_cloudwatch_logs_and_mon_scripts"
                         ]
                     },
@@ -607,11 +634,32 @@
                         },
                         "files": {
                             "/etc/cron.hourly/cloudwatch-monitoring": {
-                                "content": [
-                                    "*/5 * * * * /usr/local/aws-scripts-mon/mon-put-instance-data.pl --mem-util --mem-used --from-cron"
-                                ],
+                                "content": "/usr/local/aws-scripts-mon/mon-put-instance-data.pl --mem-util --mem-used --from-cron",
                                 "group": "root",
                                 "mode": "000700",
+                                "owner": "root"
+                             },
+                            "/etc/cron.hourly/ecr-cred-refresh": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "\n",
+                                        [
+                                            "#!/bin/bash",
+                                            {
+                                                "Fn::Sub": [
+                                                    "$(aws ecr get-login --region ${Region})",
+                                                    {
+                                                        "Region": {
+                                                            "Ref": "AWS::Region"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    ]
+                                },
+                                "group": "root",
+                                "mode": "00700",
                                 "owner": "root"
                             },
                             "/usr/local/awslogs-agent-setup.py": {
@@ -683,6 +731,7 @@
                                 "chmod 755 ./consul_client_bootstrap.sh\n",
                                 "./consul_client_bootstrap.sh --s3url https://s3.amazonaws.com --s3bucket quickstart-reference --s3prefix hashicorp/consul/latest --seedip ${SEEDIP}",
                                 "\n",
+                                "echo 'This is the home directory' $HOME \n",
                                 "/usr/local/bin/cfn-init",
                                 " --verbose ",
                                 " --stack ",
@@ -716,26 +765,6 @@
                                 "wget ${NOMAD_BOOTSTRAP} \n",
                                 "chmod 755 ./${NOMAD_BOOTSTRAP_FILE} \n",
                                 "./${NOMAD_BOOTSTRAP_FILE} private\n",
-                                "ECR_CRED_BOOTSTRAP_FILE=Dockerfile\n",
-                                "ECR_CRED_BOOTSTRAP=",
-                                {
-                                    "Ref": "QuickStartS3URL"
-                                },
-                                "/",
-                                {
-                                    "Ref": "QSS3BucketName"
-                                },
-                                "/",
-                                {
-                                    "Ref": "QSS3KeyPrefix"
-                                },
-                                "/scripts/",
-                                "${ECR_CRED_BOOTSTRAP_FILE}",
-                                "\n",
-                                "wget ${ECR_CRED_BOOTSTRAP} \n",
-                                "chmod 755 ./${ECR_BOOTSTRAP_FILE} \n",
-                                "#docker build -t ecr_cred_helper . \n",
-                                "#docker run -it --rm -v /usr/local/bin:/go/src/github.com/awslabs/amazon-ecr-credential-helper/bin/local/ -v ~:/data ecr_cred_helper \n",
                                 "/usr/local/bin/cfn-signal -e $? ",
                                 "  --stack ",
                                 {
@@ -824,12 +853,10 @@
                     },
                     "configSets": {
                         "nomad_install": [
-                            "install_nomad",
-                            "run_nomad",
-                            "install_cloudwatch_logs_and_mon_scripts"
+                            "install_cloudwatch_logs_and_scripts"
                         ]
                     },
-                    "install_cloudwatch_logs_and_mon_scripts": {
+                    "install_cloudwatch_logs_and_scripts": {
                         "commands": {
                             "01_run_awslogs_agent_setup.py": {
                                 "command": {
@@ -849,11 +876,32 @@
                         },
                         "files": {
                             "/etc/cron.hourly/cloudwatch-monitoring": {
-                                "content": [
-                                    "*/5 * * * * /usr/local/aws-scripts-mon/mon-put-instance-data.pl --mem-util --mem-used --from-cron"
-                                ],
+                                "content": "/usr/local/aws-scripts-mon/mon-put-instance-data.pl --mem-util --mem-used --from-cron",
                                 "group": "root",
                                 "mode": "000700",
+                                "owner": "root"
+                            },
+                            "/etc/cron.hourly/ecr-cred-refresh": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "\n",
+                                        [
+                                            "#!/bin/bash",
+                                            {
+                                                "Fn::Sub": [
+                                                    "$(aws ecr get-login --region ${Region})",
+                                                    {
+                                                        "Region": {
+                                                            "Ref": "AWS::Region"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    ]
+                                },
+                                "group": "root",
+                                "mode": "00700",
                                 "owner": "root"
                             },
                             "/usr/local/awslogs-agent-setup.py": {
@@ -902,6 +950,9 @@
                 "SecurityGroups": [
                     {
                         "Ref": "NomadSecGroup"
+		    },
+		    {
+		        "Ref": "PublicNomadSecGroup"
                     }
                 ],
                 "UserData": {
@@ -911,10 +962,12 @@
                             [
                                 "#!/bin/bash -x\n",
                                 "apt-get -y update\n",
-                                "apt-get -y install  python-setuptools linux-image-extra-$(uname -r) linux-image-extra-virtual \n",
+                                "apt-get -y install python-pip python-setuptools linux-image-extra-$(uname -r) linux-image-extra-virtual \n",
                                 "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \n",
                                 "add-apt-repository  \"deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" \n",
                                 "apt-get -y update \n",
+                                "which pip && sleep 10\n",
+                                "/usr/bin/pip install awscli\n",
                                 "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
                                 "SEEDIP=\"",
                                 {
@@ -958,26 +1011,6 @@
                                 "wget ${NOMAD_BOOTSTRAP} \n",
                                 "chmod 755 ./${NOMAD_BOOTSTRAP_FILE} \n",
                                 "./${NOMAD_BOOTSTRAP_FILE} public \n",
-                                "ECR_CRED_BOOTSTRAP_FILE=Dockerfile\n",
-                                "ECR_CRED_BOOTSTRAP=",
-                                {
-                                    "Ref": "QuickStartS3URL"
-                                },
-                                "/",
-                                {
-                                    "Ref": "QSS3BucketName"
-                                },
-                                "/",
-                                {
-                                    "Ref": "QSS3KeyPrefix"
-                                },
-                                "/scripts/",
-                                "${ECR_CRED_BOOTSTRAP_FILE}",
-                                "\n",
-                                "wget ${ECR_CRED_BOOTSTRAP} \n",
-                                "chmod 755 ./${ECR_BOOTSTRAP_FILE} \n",
-                                "#docker build -t ecr_cred_helper . \n",
-                                "#docker run -it --rm -v /usr/local/bin:/go/src/github.com/awslabs/amazon-ecr-credential-helper/bin/local/ -v ~:/data ecr_cred_helper \n",
                                 "/usr/local/bin/cfn-signal -e $? ",
                                 "  --stack ",
                                 {

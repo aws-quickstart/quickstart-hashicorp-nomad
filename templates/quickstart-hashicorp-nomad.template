@@ -282,14 +282,6 @@
                         "CidrIp": {
                             "Ref": "AccessCIDR"
                         },
-                        "FromPort": "22",
-                        "IpProtocol": "tcp",
-                        "ToPort": "22"
-                    },
-                    {
-                        "CidrIp": {
-                            "Ref": "AccessCIDR"
-                        },
                         "FromPort": "80",
                         "IpProtocol": "tcp",
                         "ToPort": "80"

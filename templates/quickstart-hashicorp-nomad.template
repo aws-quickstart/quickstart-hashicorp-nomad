@@ -4,43 +4,52 @@
     "Mappings": {
         "AWSAMIRegionMap": {
             "AMI": {
-                "US1404HVM": "ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-20161020"
+                "US1604HVM": "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20170330"
             },
             "ap-northeast-1": {
-                "US1404HVM": "ami-c88325a9"
+                "US1604HVM": "ami-53624634"
             },
             "ap-northeast-2": {
-                "US1404HVM": "ami-8ce236e2"
+                "US1604HVM": "ami-8a7face4"
             },
             "ap-south-1": {
-                "US1404HVM": "ami-0155216e"
+                "US1604HVM": "ami-6c681b03"
             },
             "ap-southeast-1": {
-                "US1404HVM": "ami-1c2e887f"
+                "US1604HVM": "ami-dd07bbbe"
             },
             "ap-southeast-2": {
-                "US1404HVM": "ami-bf3d00dc"
+                "US1604HVM": "ami-c3dfd0a0"
+            },
+            "ca-central-1": {
+                "US1604HVM": "ami-af0fb2cb"
+            },
+            "cn-north-1": {
+                "US1604HVM": "ami-a163b4cc"
             },
             "eu-central-1": {
-                "US1404HVM": "ami-9c09f0f3"
+                "US1604HVM": "ami-e9c01086"
             },
             "eu-west-1": {
-                "US1404HVM": "ami-1c4a046f"
+                "US1604HVM": "ami-c0cff0a6"
+            },
+            "eu-west-2": {
+                "US1604HVM": "ami-036b7f67"
             },
             "sa-east-1": {
-                "US1404HVM": "ami-900b96fc"
+                "US1604HVM": "ami-c21370ae"
             },
             "us-east-1": {
-                "US1404HVM": "ami-c8580bdf"
+                "US1604HVM": "ami-4dd2575b"
             },
             "us-east-2": {
-                "US1404HVM": "ami-b7075dd2"
+                "US1604HVM": "ami-38f5d15d"
             },
             "us-west-1": {
-                "US1404HVM": "ami-61074c01"
+                "US1604HVM": "ami-e6095386"
             },
             "us-west-2": {
-                "US1404HVM": "ami-01f05461"
+                "US1604HVM": "ami-fa27b39a"
             }
         },
         "AWSInfoRegionMap": {
@@ -61,6 +70,14 @@
                 "QuickStartS3URL": "https://s3.amazonaws.com"
             },
             "ap-southeast-2": {
+                "Partition": "aws",
+                "QuickStartS3URL": "https://s3.amazonaws.com"
+            },
+            "ca-central-1": {
+                "Partition": "aws",
+                "QuickStartS3URL": "https://s3.amazonaws.com"
+            },
+            "cn-north-1": {
                 "Partition": "aws",
                 "QuickStartS3URL": "https://s3.amazonaws.com"
             },
@@ -104,13 +121,12 @@
             "Description": "The CIDR IP range that is permitted to access Nomad Note: a value of 0.0.0.0/0 will allow access from ANY ip address",
             "Type": "String"
         },
-        "ConsulSeedPrivateIP": {
-            "Description": "The IP of the Consul Seed server, or any server in the Consul cluster for bootstrapping",
+        "ConsulEc2RetryTagKey": {
+            "Description": "The Amazon EC2 instance tag key to filter on when joining to other Consul nodes.",
             "Type": "String"
         },
-        "EmailAddress": {
-            "Default": "none@example.com",
-            "Description": "Email Address for SNS Topic. Alarms for Nomad instance memory utilzation",
+        "ConsulEc2RetryTagValue": {
+            "Description": "The Amazon EC2 instance tag value to filter on when joining to other Consul nodes.",
             "Type": "String"
         },
         "KeyPair": {
@@ -120,11 +136,6 @@
             "Type": "AWS::EC2::KeyPair::KeyName"
         },
         "MinPrivateNomadClientNodes": {
-            "Default": "1",
-            "Description": "Sets the min capacity for client nodes. For Nomad, enter 0",
-            "Type": "String"
-        },
-        "MinPublicNomadClientNodes": {
             "Default": "1",
             "Description": "Sets the min capacity for client nodes. For Nomad, enter 0",
             "Type": "String"
@@ -196,23 +207,6 @@
             "Description": "ID of the private subnet 3 in Availability Zone 2 (e.g., subnet-xxxxxxxx)",
             "Type": "AWS::EC2::Subnet::Id"
         },
-        "PublicNomadClientNodes": {
-            "Default": "3",
-            "Description": "Sets DesiredCapacity and MaxSize ",
-            "Type": "String"
-        },
-        "PublicSubnet1ID": {
-            "Description": "ID of the public subnet 1 in Availability Zone 1 (e.g., subnet-xxxxxxxx)",
-            "Type": "AWS::EC2::Subnet::Id"
-        },
-        "PublicSubnet2ID": {
-            "Description": "ID of the public subnet 2 in Availability Zone 2 (e.g., subnet-xxxxxxxx)",
-            "Type": "AWS::EC2::Subnet::Id"
-        },
-        "PublicSubnet3ID": {
-            "Description": "ID of the public subnet 3 in Availability Zone 2 (e.g., subnet-xxxxxxxx)",
-            "Type": "AWS::EC2::Subnet::Id"
-        },
         "QSS3BucketName": {
             "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$",
             "ConstraintDescription": "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).",
@@ -260,52 +254,6 @@
                 "RetentionInDays": 7
             },
             "Type": "AWS::Logs::LogGroup"
-        },
-        "NomadSNSTopic": {
-            "Properties": {
-                "Subscription": [
-                    {
-                        "Endpoint": {
-                            "Ref": "EmailAddress"
-                        },
-                        "Protocol": "email"
-                    }
-                ]
-            },
-            "Type": "AWS::SNS::Topic"
-        },
-        "PublicNomadSecGroup": {
-            "Properties": {
-                "GroupDescription": "Enables SSH and HTTP/S access to the Nomad public client nodes",
-                "SecurityGroupIngress": [
-                    {
-                        "CidrIp": {
-                            "Ref": "AccessCIDR"
-                        },
-                        "FromPort": "80",
-                        "IpProtocol": "tcp",
-                        "ToPort": "80"
-                    },
-                    {
-                        "CidrIp": {
-                            "Ref": "AccessCIDR"
-                        },
-                        "FromPort": "443",
-                        "IpProtocol": "tcp",
-                        "ToPort": "443"
-                    }
-                ],
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": "PublicNomadSecGroup"
-                    }
-                ],
-                "VpcId": {
-                    "Ref": "VPCID"
-                }
-            },
-            "Type": "AWS::EC2::SecurityGroup"
         },
         "NomadSecGroup": {
             "Properties": {
@@ -404,6 +352,21 @@
                             },
                             "02_make_mon_put_instance_data_exececutable": {
                                 "command": "chmod +x /usr/local/aws-scripts-mon/mon-put-instance-data.pl"
+                            },
+                            "03_install_awscli": {
+                                "command": "pip install awscli"
+                            },
+                            "04_ecr_login": {
+                                "command": {
+                                    "Fn::Sub": [
+                                        "$(aws ecr get-login --region ${Region})",
+                                        {
+                                            "Region": {
+                                                "Ref": "AWS::Region"
+                                            }
+                                        }
+                                    ]
+                                }
                             }
                         },
                         "files": {
@@ -411,6 +374,21 @@
                                 "content": "/usr/local/aws-scripts-mon/mon-put-instance-data.pl --mem-util --mem-used --from-cron",
                                 "group": "root",
                                 "mode": "000700",
+                                "owner": "root"
+                            },
+                            "/etc/cron.hourly/ecr-cred-refresh": {
+                                "content": {
+                                    "Fn::Sub": [
+                                        "$(aws ecr get-login --region ${Region})\n",
+                                        {
+                                            "Region": {
+                                                "Ref": "AWS::Region"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "group": "root",
+                                "mode": "00700",
                                 "owner": "root"
                             },
                             "/usr/local/awslogs-agent-setup.py": {
@@ -447,7 +425,7 @@
                         {
                             "Ref": "AWS::Region"
                         },
-                        "US1404HVM"
+                        "US1604HVM"
                     ]
                 },
                 "InstanceType": {
@@ -472,30 +450,58 @@
                                 "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - \n",
                                 "add-apt-repository \"deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" \n",
                                 "apt-get -y update \n",
+                                "/usr/bin/pip install awscli\n",
+                                "sleep 5 && which awscli\n",
                                 "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
-                                "SEEDIP=\"",
                                 {
-                                    "Ref": "ConsulSeedPrivateIP"
+                                    "Fn::Sub": [
+                                        "wget https://s3.amazonaws.com/${QSS3BucketName}/${QSS3KeyPrefix}/submodules/quickstart-hashicorp-consul/scripts/consul_client_bootstrap.sh\n",
+                                        {
+                                            "QSS3BucketName": {
+                                                "Ref": "QSS3BucketName"
+                                            },
+                                            "QSS3KeyPrefix": {
+                                                "Ref": "QSS3KeyPrefix"
+                                            }
+                                        }
+                                    ]
                                 },
-                                "\"\n",
-                                "wget https://s3.amazonaws.com/quickstart-reference/hashicorp/consul/latest/scripts/consul_client_bootstrap.sh\n",
+                                "",
                                 "chmod 755 ./consul_client_bootstrap.sh\n",
-                                "./consul_client_bootstrap.sh --s3url https://s3.amazonaws.com --s3bucket quickstart-reference --s3prefix hashicorp/consul/latest --seedip ${SEEDIP}",
+                                {
+                                    "Fn::Sub": [
+                                        "./consul_client_bootstrap.sh --consul_tag_key ${ConsulEc2RetryTagKey} --consul_tag_value ${ConsulEc2RetryTagValue} --s3url https://s3.amazonaws.com --s3bucket ${QSS3BucketName} --s3prefix ${QSS3KeyPrefix}",
+                                        {
+                                            "ConsulEc2RetryTagKey": {
+                                                "Ref": "ConsulEc2RetryTagKey"
+                                            },
+                                            "ConsulEc2RetryTagValue": {
+                                                "Ref": "ConsulEc2RetryTagValue"
+                                            },
+                                            "QSS3BucketName": {
+                                                "Ref": "QSS3BucketName"
+                                            },
+                                            "QSS3KeyPrefix": {
+                                                "Ref": "QSS3KeyPrefix"
+                                            }
+                                        }
+                                    ]
+                                },
                                 "\n",
+                                "apt-get -y install docker-ce \n",
                                 "/usr/local/bin/cfn-init",
                                 " --verbose ",
                                 " --stack ",
                                 {
                                     "Ref": "AWS::StackName"
                                 },
-                                " --resource NomadServer",
+                                " --resource NomadServerLaunchConfig",
                                 " --configsets nomad_install",
                                 " --region ",
                                 {
                                     "Ref": "AWS::Region"
                                 },
                                 "\n",
-                                "apt-get -y install docker-ce \n",
                                 "NOMAD_BOOTSTRAP_FILE=install_server.sh\n",
                                 "NOMAD_BOOTSTRAP=",
                                 {
@@ -622,6 +628,21 @@
                             },
                             "02_make_mon_put_instance_data_exececutable": {
                                 "command": "chmod +x /usr/local/aws-scripts-mon/mon-put-instance-data.pl"
+                            },
+                            "03_install_awscli": {
+                                "command": "pip install awscli"
+                            },
+                            "04_ecr_login": {
+                                "command": {
+                                    "Fn::Sub": [
+                                        "$(aws ecr get-login --region ${Region})",
+                                        {
+                                            "Region": {
+                                                "Ref": "AWS::Region"
+                                            }
+                                        }
+                                    ]
+                                }
                             }
                         },
                         "files": {
@@ -630,24 +651,16 @@
                                 "group": "root",
                                 "mode": "000700",
                                 "owner": "root"
-                             },
+                            },
                             "/etc/cron.hourly/ecr-cred-refresh": {
                                 "content": {
-                                    "Fn::Join": [
-                                        "\n",
-                                        [
-                                            "#!/bin/bash",
-                                            {
-                                                "Fn::Sub": [
-                                                    "$(aws ecr get-login --region ${Region})",
-                                                    {
-                                                        "Region": {
-                                                            "Ref": "AWS::Region"
-                                                        }
-                                                    }
-                                                ]
+                                    "Fn::Sub": [
+                                        "aws ecr get-login --region ${Region} |  bash",
+                                        {
+                                            "Region": {
+                                                "Ref": "AWS::Region"
                                             }
-                                        ]
+                                        }
                                     ]
                                 },
                                 "group": "root",
@@ -688,7 +701,7 @@
                         {
                             "Ref": "AWS::Region"
                         },
-                        "US1404HVM"
+                        "US1604HVM"
                     ]
                 },
                 "InstanceType": {
@@ -713,31 +726,59 @@
                                 "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \n",
                                 "add-apt-repository  \"deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" \n",
                                 "apt-get -y update \n",
+                                "/usr/bin/pip install awscli\n",
+                                "sleep 5 && which awscli\n",
                                 "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
-                                "SEEDIP=\"",
                                 {
-                                    "Ref": "ConsulSeedPrivateIP"
+                                    "Fn::Sub": [
+                                        "wget https://s3.amazonaws.com/${QSS3BucketName}/${QSS3KeyPrefix}/submodules/quickstart-hashicorp-consul/scripts/consul_client_bootstrap.sh\n",
+                                        {
+                                            "QSS3BucketName": {
+                                                "Ref": "QSS3BucketName"
+                                            },
+                                            "QSS3KeyPrefix": {
+                                                "Ref": "QSS3KeyPrefix"
+                                            }
+                                        }
+                                    ]
                                 },
-                                "\"\n",
-                                "wget https://s3.amazonaws.com/quickstart-reference/hashicorp/consul/latest/scripts/consul_client_bootstrap.sh\n",
+                                "",
                                 "chmod 755 ./consul_client_bootstrap.sh\n",
-                                "./consul_client_bootstrap.sh --s3url https://s3.amazonaws.com --s3bucket quickstart-reference --s3prefix hashicorp/consul/latest --seedip ${SEEDIP}",
+                                {
+                                    "Fn::Sub": [
+                                        "./consul_client_bootstrap.sh --consul_tag_key ${ConsulEc2RetryTagKey} --consul_tag_value ${ConsulEc2RetryTagValue} --s3url https://s3.amazonaws.com --s3bucket ${QSS3BucketName} --s3prefix ${QSS3KeyPrefix}",
+                                        {
+                                            "ConsulEc2RetryTagKey": {
+                                                "Ref": "ConsulEc2RetryTagKey"
+                                            },
+                                            "ConsulEc2RetryTagValue": {
+                                                "Ref": "ConsulEc2RetryTagValue"
+                                            },
+                                            "QSS3BucketName": {
+                                                "Ref": "QSS3BucketName"
+                                            },
+                                            "QSS3KeyPrefix": {
+                                                "Ref": "QSS3KeyPrefix"
+                                            }
+                                        }
+                                    ]
+                                },
                                 "\n",
                                 "echo 'This is the home directory' $HOME \n",
+                                "apt-get -y install docker-ce \n",
                                 "/usr/local/bin/cfn-init",
                                 " --verbose ",
                                 " --stack ",
                                 {
                                     "Ref": "AWS::StackName"
                                 },
-                                " --resource PrivateNomadClient",
+                                " --resource PrivateNomadClientLaunchConfig",
                                 " --configsets nomad_install",
                                 " --region ",
                                 {
                                     "Ref": "AWS::Region"
                                 },
                                 "\n",
-                                "apt-get -y install docker-ce \n",
                                 "NOMAD_BOOTSTRAP_FILE=install_client.sh\n",
                                 "NOMAD_BOOTSTRAP=",
                                 {
@@ -763,252 +804,6 @@
                                     "Ref": "AWS::StackName"
                                 },
                                 " --resource PrivateNomadClient ",
-                                " --region ",
-                                {
-                                    "Ref": "AWS::Region"
-                                },
-                                "\n"
-                            ]
-                        ]
-                    }
-                }
-            },
-            "Type": "AWS::AutoScaling::LaunchConfiguration"
-        },
-        "PublicNomadClientASG": {
-            "Properties": {
-                "DesiredCapacity": {
-                    "Ref": "PublicNomadClientNodes"
-                },
-                "LaunchConfigurationName": {
-                    "Ref": "PublicNomadClientLaunchConfig"
-                },
-                "MaxSize": {
-                    "Ref": "PublicNomadClientNodes"
-                },
-                "MinSize": {
-                    "Ref": "MinPublicNomadClientNodes"
-                },
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "PropagateAtLaunch": "true",
-                        "Value": {
-                            "Fn::Join": [
-                                "-",
-                                [
-                                    {
-                                        "Ref": "AWS::StackName"
-                                    },
-                                    "PublicNomadClient"
-                                ]
-                            ]
-                        }
-                    },
-                    {
-                        "Key": "Datacenter",
-                        "PropagateAtLaunch": "true",
-                        "Value": {
-                            "Fn::Join": [
-                                "-",
-                                [
-                                    {
-                                        "Ref": "AWS::Region"
-                                    },
-                                    "public"
-                                ]
-                            ]
-                        }
-                    }
-                ],
-                "VPCZoneIdentifier": [
-                    {
-                        "Ref": "PublicSubnet1ID"
-                    },
-                    {
-                        "Ref": "PublicSubnet2ID"
-                    },
-                    {
-                        "Ref": "PublicSubnet3ID"
-                    }
-                ]
-            },
-            "Type": "AWS::AutoScaling::AutoScalingGroup"
-        },
-        "PublicNomadClientLaunchConfig": {
-            "Metadata": {
-                "AWS::CloudFormation::Init": {
-                    "commands": {
-                        "01_chmod_and_chown_nomad": {
-                            "command": "chmod 0755 /usr/local/bin/nomad && chown root:root /usr/local/bin/nomad"
-                        }
-                    },
-                    "configSets": {
-                        "nomad_install": [
-                            "install_cloudwatch_logs_and_scripts"
-                        ]
-                    },
-                    "install_cloudwatch_logs_and_scripts": {
-                        "commands": {
-                            "01_run_awslogs_agent_setup.py": {
-                                "command": {
-                                    "Fn::Sub": [
-                                        "python /usr/local/awslogs-agent-setup.py -n -r ${Region} -c https://s3.amazonaws.com/quickstart-reference/hashicorp/vault/latest/scripts/awslogs-config-file",
-                                        {
-                                            "Region": {
-                                                "Ref": "AWS::Region"
-                                            }
-                                        }
-                                    ]
-                                }
-                            },
-                            "02_make_mon_put_instance_data_exececutable": {
-                                "command": "chmod +x /usr/local/aws-scripts-mon/mon-put-instance-data.pl"
-                            }
-                        },
-                        "files": {
-                            "/etc/cron.hourly/cloudwatch-monitoring": {
-                                "content": "/usr/local/aws-scripts-mon/mon-put-instance-data.pl --mem-util --mem-used --from-cron",
-                                "group": "root",
-                                "mode": "000700",
-                                "owner": "root"
-                            },
-                            "/etc/cron.hourly/ecr-cred-refresh": {
-                                "content": {
-                                    "Fn::Join": [
-                                        "\n",
-                                        [
-                                            "#!/bin/bash",
-                                            {
-                                                "Fn::Sub": [
-                                                    "$(aws ecr get-login --region ${Region})",
-                                                    {
-                                                        "Region": {
-                                                            "Ref": "AWS::Region"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    ]
-                                },
-                                "group": "root",
-                                "mode": "00700",
-                                "owner": "root"
-                            },
-                            "/usr/local/awslogs-agent-setup.py": {
-                                "group": "root",
-                                "mode": "000700",
-                                "owner": "root",
-                                "source": "https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py"
-                            }
-                        },
-                        "packages": {
-                            "apt": {
-                                "apt-transport-https": [],
-                                "ca-certificates": [],
-                                "curl": [],
-                                "libdatetime-perl": [],
-                                "libwww-perl": [],
-                                "software-properties-common": [],
-                                "unzip": []
-                            }
-                        },
-                        "sources": {
-                            "/usr/local": "http://aws-cloudwatch.s3.amazonaws.com/downloads/CloudWatchMonitoringScripts-1.2.1.zip"
-                        }
-                    }
-                }
-            },
-            "Properties": {
-                "IamInstanceProfile": {
-                    "Ref": "nomadinstanceprofile"
-                },
-                "ImageId": {
-                    "Fn::FindInMap": [
-                        "AWSAMIRegionMap",
-                        {
-                            "Ref": "AWS::Region"
-                        },
-                        "US1404HVM"
-                    ]
-                },
-                "InstanceType": {
-                    "Ref": "NomadInstanceType"
-                },
-                "KeyName": {
-                    "Ref": "KeyPair"
-                },
-                "SecurityGroups": [
-                    {
-                        "Ref": "NomadSecGroup"
-		    },
-		    {
-		        "Ref": "PublicNomadSecGroup"
-                    }
-                ],
-                "UserData": {
-                    "Fn::Base64": {
-                        "Fn::Join": [
-                            "",
-                            [
-                                "#!/bin/bash -x\n",
-                                "apt-get -y update\n",
-                                "apt-get -y install python-pip python-setuptools linux-image-extra-$(uname -r) linux-image-extra-virtual \n",
-                                "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \n",
-                                "add-apt-repository  \"deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" \n",
-                                "apt-get -y update \n",
-                                "which pip && sleep 10\n",
-                                "/usr/bin/pip install awscli\n",
-                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
-                                "SEEDIP=\"",
-                                {
-                                    "Ref": "ConsulSeedPrivateIP"
-                                },
-                                "\"\n",
-                                "wget https://s3.amazonaws.com/quickstart-reference/hashicorp/consul/latest/scripts/consul_client_bootstrap.sh\n",
-                                "chmod 755 ./consul_client_bootstrap.sh\n",
-                                "./consul_client_bootstrap.sh --s3url https://s3.amazonaws.com --s3bucket quickstart-reference --s3prefix hashicorp/consul/latest --seedip ${SEEDIP}",
-                                "\n",
-                                "/usr/local/bin/cfn-init",
-                                " --verbose ",
-                                " --stack ",
-                                {
-                                    "Ref": "AWS::StackName"
-                                },
-                                " --resource PublicNomadClientLaunchConfig",
-                                " --configsets nomad_install",
-                                " --region ",
-                                {
-                                    "Ref": "AWS::Region"
-                                },
-                                "\n",
-                                "apt-get -y install docker-ce \n",
-                                "NOMAD_BOOTSTRAP_FILE=install_client.sh\n",
-                                "NOMAD_BOOTSTRAP=",
-                                {
-                                    "Ref": "QuickStartS3URL"
-                                },
-                                "/",
-                                {
-                                    "Ref": "QSS3BucketName"
-                                },
-                                "/",
-                                {
-                                    "Ref": "QSS3KeyPrefix"
-                                },
-                                "/scripts/",
-                                "${NOMAD_BOOTSTRAP_FILE}",
-                                "\n",
-                                "wget ${NOMAD_BOOTSTRAP} \n",
-                                "chmod 755 ./${NOMAD_BOOTSTRAP_FILE} \n",
-                                "./${NOMAD_BOOTSTRAP_FILE} public \n",
-                                "/usr/local/bin/cfn-signal -e $? ",
-                                "  --stack ",
-                                {
-                                    "Ref": "AWS::StackName"
-                                },
-                                " --resource PublicNomadClient ",
                                 " --region ",
                                 {
                                     "Ref": "AWS::Region"

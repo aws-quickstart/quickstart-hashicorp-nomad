@@ -5,7 +5,7 @@ set -ex
 NOMAD_VER=0.5.5
 HOSTNAME=`hostname`
 LOCAL_IP=`curl http://169.254.169.254/latest/meta-data/local-ipv4`
-DATACENTER=`curl http://169.254.169.254/latest/dynamic/instance-identity/document | jq .region -r`
+DATACENTER=`curl http://169.254.169.254/latest/dynamic/instance-identity/document | grep region | awk -F'"' '{print $4}'`
 curl -sSL https://releases.hashicorp.com/nomad/${NOMAD_VER}/nomad_${NOMAD_VER}_linux_amd64.zip -o /tmp/nomad.zip
 HASHI_SOURCE_SHA256SUM=`curl https://releases.hashicorp.com/nomad/${NOMAD_VER}/nomad_${NOMAD_VER}_SHA256SUMS | grep nomad_${NOMAD_VER}_linux_amd64.zip | awk -F' ' '{print $1}'`
 DOWNLOAD_SHA256SUM=`sha256sum /tmp/nomad.zip | awk -F' ' '{print $1}'`
@@ -46,39 +46,26 @@ advertise {
   rpc = "$LOCAL_IP"
   serf = "$LOCAL_IP"
 }
-consul {
-  # The address to the Consul agent.
-  address = "127.0.0.1:8500"
-
-  # The service name to register the server with Consul.
-  server_service_name = "nomad"
-
-  # Enables automatically registering the services.
-  auto_advertise = true
-
-  # Enabling the server to bootstrap using Consul.
-  server_auto_join = true
-}
 EOF
 
-tee /etc/init/nomad.conf > /dev/null <<EOF
-description "Nomad"
-start on runlevel [2345]
-stop on runlevel [!2345]
-respawn
-console log
-script
-  if [ -f "/etc/service/nomad" ]; then
-    . /etc/service/nomad
-  fi
-  exec /usr/local/bin/nomad agent \
-    -config="/opt/nomad/config/server.hcl" \
-    >>/var/log/nomad.log 2>&1
-end script
+tee /etc/systemd/system/nomad.service > /dev/null <<EOF
+[Unit]
+Description=Nomad
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Restart=on-failure
+ExecStart=/usr/local/bin/nomad agent -config="/opt/nomad/config"
+ExecReload=/bin/kill -HUP $MAINPID
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=multi-user.target
 EOF
 
 #######################################
 # START SERVICES
 #######################################
 
-service nomad start
+systemctl start nomad

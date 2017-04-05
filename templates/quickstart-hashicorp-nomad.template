@@ -137,7 +137,7 @@
         },
         "MinPrivateNomadClientNodes": {
             "Default": "1",
-            "Description": "Sets the min capacity for client nodes. For Nomad, enter 0",
+            "Description": "Sets the min capacity for client nodes.",
             "Type": "String"
         },
         "NomadInstanceType": {

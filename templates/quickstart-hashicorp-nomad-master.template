@@ -436,9 +436,6 @@
                             "Outputs.PublicSubnet3ID"
                         ]
                     },
-                    "QSS3KeyPrefix": {
-                        "Ref": "QSS3KeyPrefix"
-                    },
                     "QuickStartS3URL": {
                         "Fn::Join": [
                             "/",
@@ -543,6 +540,9 @@
                             "Outputs.PrivateSubnet3AID"
                         ]
                     },
+		    "QSS3BucketName": {
+			"Ref": "QSS3BucketName"
+		    },
                     "QSS3KeyPrefix": {
                         "Ref": "QSS3KeyPrefix"
                     },

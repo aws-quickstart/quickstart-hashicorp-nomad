@@ -355,18 +355,6 @@
                             },
                             "03_install_awscli": {
                                 "command": "pip install awscli"
-                            },
-                            "04_ecr_login": {
-                                "command": {
-                                    "Fn::Sub": [
-                                        "$(aws ecr get-login --region ${Region})",
-                                        {
-                                            "Region": {
-                                                "Ref": "AWS::Region"
-                                            }
-                                        }
-                                    ]
-                                }
                             }
                         },
                         "files": {
@@ -446,12 +434,10 @@
                             [
                                 "#!/bin/bash -x\n",
                                 "apt-get -y update\n",
-                                "apt-get -y install  python-setuptools linux-image-extra-$(uname -r) linux-image-extra-virtual \n",
+                                "apt-get -y install  python-setuptools python-pip\n",
                                 "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - \n",
                                 "add-apt-repository \"deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" \n",
                                 "apt-get -y update \n",
-                                "/usr/bin/pip install awscli\n",
-                                "sleep 5 && which awscli\n",
                                 "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
                                 {
                                     "Fn::Sub": [
@@ -467,6 +453,7 @@
                                     ]
                                 },
                                 "",
+                                "sleep 5 && which awscli\n",
                                 "chmod 755 ./consul_client_bootstrap.sh\n",
                                 {
                                     "Fn::Sub": [
@@ -631,18 +618,6 @@
                             },
                             "03_install_awscli": {
                                 "command": "pip install awscli"
-                            },
-                            "04_ecr_login": {
-                                "command": {
-                                    "Fn::Sub": [
-                                        "$(aws ecr get-login --region ${Region})",
-                                        {
-                                            "Region": {
-                                                "Ref": "AWS::Region"
-                                            }
-                                        }
-                                    ]
-                                }
                             }
                         },
                         "files": {
@@ -655,7 +630,7 @@
                             "/etc/cron.hourly/ecr-cred-refresh": {
                                 "content": {
                                     "Fn::Sub": [
-                                        "aws ecr get-login --region ${Region} |  bash",
+                                        "#!/bin/bash\naws ecr get-login --region=${Region} |  bash",
                                         {
                                             "Region": {
                                                 "Ref": "AWS::Region"
@@ -722,13 +697,26 @@
                             [
                                 "#!/bin/bash -x\n",
                                 "apt-get -y update\n",
-                                "apt-get -y install  python-setuptools linux-image-extra-$(uname -r) linux-image-extra-virtual \n",
+                                "apt-get -y install  python-setuptools python-pip\n",
                                 "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \n",
                                 "add-apt-repository  \"deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" \n",
                                 "apt-get -y update \n",
-                                "/usr/bin/pip install awscli\n",
-                                "sleep 5 && which awscli\n",
                                 "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
+                                "/usr/local/bin/cfn-init",
+                                " --verbose ",
+                                " --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                " --resource PrivateNomadClientLaunchConfig",
+                                " --configsets nomad_install",
+                                " --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n",
+                                "# /usr/bin/pip install awscli\n",
+                                "sleep 5 && which awscli\n",
                                 {
                                     "Fn::Sub": [
                                         "wget https://s3.amazonaws.com/${QSS3BucketName}/${QSS3KeyPrefix}/submodules/quickstart-hashicorp-consul/scripts/consul_client_bootstrap.sh\n",
@@ -766,19 +754,6 @@
                                 "\n",
                                 "echo 'This is the home directory' $HOME \n",
                                 "apt-get -y install docker-ce \n",
-                                "/usr/local/bin/cfn-init",
-                                " --verbose ",
-                                " --stack ",
-                                {
-                                    "Ref": "AWS::StackName"
-                                },
-                                " --resource PrivateNomadClientLaunchConfig",
-                                " --configsets nomad_install",
-                                " --region ",
-                                {
-                                    "Ref": "AWS::Region"
-                                },
-                                "\n",
                                 "NOMAD_BOOTSTRAP_FILE=install_client.sh\n",
                                 "NOMAD_BOOTSTRAP=",
                                 {
@@ -798,6 +773,17 @@
                                 "wget ${NOMAD_BOOTSTRAP} \n",
                                 "chmod 755 ./${NOMAD_BOOTSTRAP_FILE} \n",
                                 "./${NOMAD_BOOTSTRAP_FILE} private\n",
+                                "apt-get -y install docker-ce \n",
+                                {
+                                    "Fn::Sub": [
+                                        "aws ecr get-login --region=${Region} |  bash\n",
+                                        {
+                                            "Region": {
+                                                "Ref": "AWS::Region"
+                                            }
+                                        }
+                                    ]
+                                },
                                 "/usr/local/bin/cfn-signal -e $? ",
                                 "  --stack ",
                                 {
@@ -866,6 +852,38 @@
                             "Version": "2012-10-17"
                         },
                         "PolicyName": "root"
+                    },
+                    {
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Action": "ec2:Describe*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Action": "elasticloadbalancing:Describe*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Action": [
+                                        "cloudwatch:ListMetrics",
+                                        "cloudwatch:GetMetricStatistics",
+                                        "cloudwatch:Describe*"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Action": "autoscaling:Describe*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                }
+                            ],
+                            "Version": "2012-10-17"
+                        },
+                        "PolicyName": "EC2ReadOnly"
                     },
                     {
                         "PolicyDocument": {

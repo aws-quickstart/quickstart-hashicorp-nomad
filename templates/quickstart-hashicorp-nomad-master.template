@@ -452,6 +452,19 @@
                             ]
                         ]
                     },
+		    "QSS3BucketName":
+                            {
+                                "Ref": "QSS3BucketName"
+                            },
+		    "QSS3KeyPrefix": {
+		        "Fn::Join": [
+			    "/",
+			    [
+			        { "Ref": "QSS3KeyPrefix" },
+				"submodules/quickstart-hashicorp-consul"
+			    ]
+			]
+		    },
                     "VPCCIDR": {
                         "Ref": "VPCCIDR"
                     },

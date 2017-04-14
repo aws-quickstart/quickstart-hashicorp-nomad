@@ -1,15 +1,11 @@
 [
     {
         "ParameterKey": "AccessCIDR",
-        "ParameterValue": "NEED_VALUE"
+        "ParameterValue": "1.2.3.4/32"
     },
     {
         "ParameterKey": "AvailabilityZones",
-        "ParameterValue": "NEED_VALUE"
-    },
-    {
-        "ParameterKey": "BastionAMIOS",
-        "ParameterValue": "Ubuntu-Server-16.04-LTS-HVM"
+        "ParameterValue": "$[alfred_genaz_3]"
     },
     {
         "ParameterKey": "ConsulClientNodes",
@@ -25,7 +21,7 @@
     },
     {
         "ParameterKey": "KeyPairName",
-        "ParameterValue": "NEED_VALUE"
+        "ParameterValue": "cikey"
     },
     {
         "ParameterKey": "MinPrivateNomadClientNodes",
@@ -77,7 +73,7 @@
     },
     {
         "ParameterKey": "QSS3KeyPrefix",
-        "ParameterValue": "hashicorp/vault/latest"
+        "ParameterValue": "hashicorp/nomad/latest"
     },
     {
         "ParameterKey": "VPCCIDR",

@@ -364,21 +364,6 @@
                                 "mode": "000700",
                                 "owner": "root"
                             },
-                            "/etc/cron.hourly/ecr-cred-refresh": {
-                                "content": {
-                                    "Fn::Sub": [
-                                        "$(aws ecr get-login --region ${Region})\n",
-                                        {
-                                            "Region": {
-                                                "Ref": "AWS::Region"
-                                            }
-                                        }
-                                    ]
-                                },
-                                "group": "root",
-                                "mode": "00700",
-                                "owner": "root"
-                            },
                             "/usr/local/awslogs-agent-setup.py": {
                                 "group": "root",
                                 "mode": "000700",

@@ -405,33 +405,7 @@
                         }
                     },
                     "configSets": {
-                        "nomad_install": [
-                            "install_cloudwatch_logs_and_scripts"
-                        ]
-                    },
-                    "install_cloudwatch_logs_and_scripts": {
-                        "commands": {
-                            "02_make_mon_put_instance_data_exececutable": {
-                                "command": "chmod +x /usr/local/aws-scripts-mon/mon-put-instance-data.pl"
-                            },
-                            "03_install_awscli": {
-                                "command": "pip install awscli"
-                            }
-                        },
-                        "files": {
-                            "/etc/cron.hourly/cloudwatch-monitoring": {
-                                "content": "/usr/local/aws-scripts-mon/mon-put-instance-data.pl --mem-util --mem-used --from-cron",
-                                "group": "root",
-                                "mode": "000700",
-                                "owner": "root"
-                            },
-                            "/usr/local/awslogs-agent-setup.py": {
-                                "group": "root",
-                                "mode": "000700",
-                                "owner": "root",
-                                "source": "https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py"
-                            }
-                        },
+
                         "packages": {
                             "apt": {
                                 "apt-transport-https": [],
@@ -442,9 +416,6 @@
                                 "software-properties-common": [],
                                 "unzip": []
                             }
-                        },
-                        "sources": {
-                            "/usr/local": "http://aws-cloudwatch.s3.amazonaws.com/downloads/CloudWatchMonitoringScripts-1.2.1.zip"
                         }
                     }
                 }

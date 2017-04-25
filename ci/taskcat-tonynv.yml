@@ -2,7 +2,7 @@ global:
   marketplace-ami: false
   owner: quickstart-eng@amazon.com
   qsname: quickstart-hashicorp-nomad
-  s3bucket: taskcat-tonynv
+  s3bucket: tonynv
   regions:
     - ap-northeast-1
     - ap-northeast-2

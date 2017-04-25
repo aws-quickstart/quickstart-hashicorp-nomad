@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "HashiCorp Nomad License: Apache 2.0 (Please do not remove) Nov,14,2016",
+    "Description": "QS(5035) HashiCorp Nomad License: Apache 2.0 (Please do not remove) April,24,2016",
     "Mappings": {
         "AWSAMIRegionMap": {
             "AMI": {

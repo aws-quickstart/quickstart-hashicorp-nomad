@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Hashicorp Consul+Nomad, License: Apache 2.0 (Please do not remove) Jan,18,2016",
+    "Description": "Hashicorp Consul+Nomad, License: Apache 2.0 (Please do not remove) April,24,2016",
     "Mappings": {
         "AWSInfoRegionMap": {
             "ap-northeast-1": {

@@ -175,8 +175,8 @@
                 "i2.4xlarge",
                 "i2.8xlarge"
             ],
-            "ConstraintDescription": "Choose an instance type. m3.medium or larger recommended.",
-            "Default": "m3.medium",
+            "ConstraintDescription": "Choose an instance type. m4.large or larger recommended.",
+            "Default": "m4.large",
             "Description": "nomad node instance type",
             "Type": "String"
         },

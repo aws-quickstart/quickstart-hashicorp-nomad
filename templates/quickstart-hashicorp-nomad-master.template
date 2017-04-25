@@ -73,8 +73,7 @@
                         "PublicSubnet1CIDR",
                         "PublicSubnet2CIDR",
                         "PublicSubnet3CIDR",
-                        "AccessCIDR",
-                        "NATInstanceType"
+                        "AccessCIDR"
                     ]
                 },
                 {
@@ -127,9 +126,6 @@
                 },
                 "KeyPairName": {
                     "default": "Key Name"
-                },
-                "NATInstanceType": {
-                    "default": "NAT Instance Type"
                 },
                 "NomadServerNodes": {
                     "default": "Nomad Server Nodes"
@@ -245,21 +241,6 @@
         "MinPrivateNomadClientNodes": {
             "Default": "1",
             "Description": "Sets the min capacity for client nodes.",
-            "Type": "String"
-        },
-        "NATInstanceType": {
-            "AllowedValues": [
-                "t2.nano",
-                "t2.micro",
-                "t2.small",
-                "t2.medium",
-                "t2.large",
-                "m3.medium",
-                "m3.large",
-                "m4.large"
-            ],
-            "Default": "t2.small",
-            "Description": "Amazon EC2 instance type for the NAT Instances. This is only used if the region does not support NAT gateways.",
             "Type": "String"
         },
         "NomadInstanceType": {
@@ -722,9 +703,7 @@
                     "KeyPairName": {
                         "Ref": "KeyPairName"
                     },
-                    "NATInstanceType": {
-                        "Ref": "NATInstanceType"
-                    },
+                    "NATInstanceType": "t2.small",
                     "NumberOfAZs": "3",
                     "PrivateSubnet1ACIDR": {
                         "Ref": "PrivateSubnet1CIDR"

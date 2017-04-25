@@ -457,7 +457,7 @@
                                 "  --stack ", {
                                     "Ref": "AWS::StackName"
                                 },
-                                " --resource NomadServer ",
+                                " --resource NomadServerASG ",
                                 " --region ", {
                                     "Ref": "AWS::Region"
                                 },
@@ -673,7 +673,7 @@
                                 "  --stack ", {
                                     "Ref": "AWS::StackName"
                                 },
-                                " --resource PrivateNomadClient ",
+                                " --resource PrivateNomadClientASG ",
                                 " --region ", {
                                     "Ref": "AWS::Region"
                                 },

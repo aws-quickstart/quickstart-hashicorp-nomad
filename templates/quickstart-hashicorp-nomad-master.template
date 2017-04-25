@@ -1,62 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "Hashicorp Consul+Nomad, License: Apache 2.0 (Please do not remove) April,24,2016",
-    "Mappings": {
-        "AWSInfoRegionMap": {
-            "ap-northeast-1": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "ap-northeast-2": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "ap-south-1": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "ap-southeast-1": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "ap-southeast-2": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "eu-central-1": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "eu-west-1": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "sa-east-1": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "us-east-1": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "us-east-2": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "us-gov-west-1": {
-                "Partition": "aws-us-gov",
-                "QuickStartS3URL": "https://s3-us-gov-west-1.amazonaws.com"
-            },
-            "us-west-1": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "us-west-2": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            }
-        }
-    },
     "Metadata": {
         "AWS::CloudFormation::Interface": {
             "ParameterGroups": [{
@@ -350,6 +294,22 @@
             "Type": "String"
         }
     },
+    "Conditions": {
+        "GovCloudCondition": {
+            "Fn::Equals": [{
+                    "Ref": "AWS::Region"
+                },
+                "us-gov-west-1"
+            ]
+        },
+        "NestedStackCondition": {
+            "Fn::Equals": [{
+                    "Ref": "QSS3KeyPrefix"
+                },
+                "hashicorp/nomad/latest"
+            ]
+        }
+    },
     "Resources": {
         "HashiCorpConsulStack": {
             "DependsOn": "LinuxBastionHostStack",
@@ -438,27 +398,28 @@
                         ]
                     },
                     "QuickStartS3URL": {
-                        "Fn::Join": [
-                            "/", [{
-                                "Fn::FindInMap": [
-                                    "AWSInfoRegionMap", {
-                                        "Ref": "AWS::Region"
-                                    },
-                                    "QuickStartS3URL"
-                                ]
-                            }]
+                        "Fn::Sub": [
+                            "https://${S3Region}.amazonaws.com/", {
+                                "S3Region": {
+                                    "Fn::If": [
+                                        "GovCloudCondition",
+                                        "s3-us-gov-west-1",
+                                        "s3"
+                                    ]
+                                }
+                            }
                         ]
                     },
                     "QSS3BucketName": {
                         "Ref": "QSS3BucketName"
                     },
                     "QSS3KeyPrefix": {
-                        "Fn::Join": [
-                            "/", [{
+                        "Fn::Sub": [
+                            "${QSS3KeyPrefix}/submodules/quickstart-hashicorp-consul", {
+                                "QSS3KeyPrefix": {
                                     "Ref": "QSS3KeyPrefix"
-                                },
-                                "submodules/quickstart-hashicorp-consul"
-                            ]
+                                }
+                            }
                         ]
                     },
                     "VPCCIDR": {
@@ -472,23 +433,19 @@
                     }
                 },
                 "TemplateURL": {
-                    "Fn::Join": [
-                        "/", [{
-                                "Fn::FindInMap": [
-                                    "AWSInfoRegionMap", {
-                                        "Ref": "AWS::Region"
-                                    },
-                                    "QuickStartS3URL"
+                    "Fn::Sub": [
+                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}/submodules/quickstart-hashicorp-consul/templates/quickstart-hashicorp-consul.template", {
+                            "S3Region": {
+                                "Fn::If": [
+                                    "GovCloudCondition",
+                                    "s3-us-gov-west-1",
+                                    "s3"
                                 ]
-                            }, {
-                                "Ref": "QSS3BucketName"
-                            }, {
-                                "Ref": "QSS3KeyPrefix"
-                            },
-                            "submodules/quickstart-hashicorp-consul/templates/quickstart-hashicorp-consul.template"
-                        ]
+                            }
+                        }
                     ]
                 }
+
             },
             "Type": "AWS::CloudFormation::Stack"
         },
@@ -550,18 +507,7 @@
                     "QSS3KeyPrefix": {
                         "Ref": "QSS3KeyPrefix"
                     },
-                    "QuickStartS3URL": {
-                        "Fn::Join": [
-                            "/", [{
-                                "Fn::FindInMap": [
-                                    "AWSInfoRegionMap", {
-                                        "Ref": "AWS::Region"
-                                    },
-                                    "QuickStartS3URL"
-                                ]
-                            }]
-                        ]
-                    },
+
                     "VPCCIDR": {
                         "Ref": "VPCCIDR"
                     },
@@ -573,21 +519,16 @@
                     }
                 },
                 "TemplateURL": {
-                    "Fn::Join": [
-                        "/", [{
-                                "Fn::FindInMap": [
-                                    "AWSInfoRegionMap", {
-                                        "Ref": "AWS::Region"
-                                    },
-                                    "QuickStartS3URL"
+                    "Fn::Sub": [
+                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}/templates/quickstart-hashicorp-nomad.template", {
+                            "S3Region": {
+                                "Fn::If": [
+                                    "GovCloudCondition",
+                                    "s3-us-gov-west-1",
+                                    "s3"
                                 ]
-                            }, {
-                                "Ref": "QSS3BucketName"
-                            }, {
-                                "Ref": "QSS3KeyPrefix"
-                            },
-                            "templates/quickstart-hashicorp-nomad.template"
-                        ]
+                            }
+                        }
                     ]
                 }
             },
@@ -617,12 +558,12 @@
                         "Ref": "QSS3BucketName"
                     },
                     "QSS3KeyPrefix": {
-                        "Fn::Join": [
-                            "/", [{
+                        "Fn::Sub": [
+                            "${QSS3KeyPrefix}/submodules/quickstart-linux-bastion/", {
+                                "QSS3KeyPrefix": {
                                     "Ref": "QSS3KeyPrefix"
-                                },
-                                "submodules/quickstart-linux-bastion/"
-                            ]
+                                }
+                            }
                         ]
                     },
                     "RemoteAccessCIDR": {
@@ -635,23 +576,18 @@
                         ]
                     }
                 },
+
                 "TemplateURL": {
-                    "Fn::Join": [
-                        "/", [{
-                                "Fn::FindInMap": [
-                                    "AWSInfoRegionMap", {
-                                        "Ref": "AWS::Region"
-                                    },
-                                    "QuickStartS3URL"
+                    "Fn::Sub": [
+                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}/submodules/quickstart-linux-bastion/templates/linux-bastion.template", {
+                            "S3Region": {
+                                "Fn::If": [
+                                    "GovCloudCondition",
+                                    "s3-us-gov-west-1",
+                                    "s3"
                                 ]
-                            }, {
-                                "Ref": "QSS3BucketName"
-                            }, {
-                                "Ref": "QSS3KeyPrefix"
-                            },
-                            "submodules/quickstart-linux-bastion",
-                            "templates/linux-bastion.template"
-                        ]
+                            }
+                        }
                     ]
                 }
             },
@@ -695,23 +631,19 @@
                     }
                 },
                 "TemplateURL": {
-                    "Fn::Join": [
-                        "/", [{
-                                "Fn::FindInMap": [
-                                    "AWSInfoRegionMap", {
-                                        "Ref": "AWS::Region"
-                                    },
-                                    "QuickStartS3URL"
+                    "Fn::Sub": [
+                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}/submodules/quickstart-aws-vpc/templates/aws-vpc.template", {
+                            "S3Region": {
+                                "Fn::If": [
+                                    "GovCloudCondition",
+                                    "s3-us-gov-west-1",
+                                    "s3"
                                 ]
-                            }, {
-                                "Ref": "QSS3BucketName"
-                            }, {
-                                "Ref": "QSS3KeyPrefix"
-                            },
-                            "submodules/quickstart-aws-vpc/templates/aws-vpc.template"
-                        ]
+                            }
+                        }
                     ]
                 }
+
             },
             "Type": "AWS::CloudFormation::Stack"
         }

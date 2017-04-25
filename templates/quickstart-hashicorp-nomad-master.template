@@ -152,11 +152,6 @@
             "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved (3 AZs are used for this deployment)",
             "Type": "List<AWS::EC2::AvailabilityZone::Name>"
         },
-        "BastionAMIOS": {
-          "Description": "The Linux distribution for the AMI to be used for the bastion instances. See https://github.com/aws-quickstart/quickstart-linux-bastion for available options.",
-          "Type": "String",
-          "Default": "Ubuntu-Server-16.04-LTS-HVM"
-        },
         "ConsulClientNodes": {
             "Default": "3",
             "Description": "Sets DesiredCapacity and MaxSize ",
@@ -615,9 +610,7 @@
             "DependsOn": "VPCStack",
             "Properties": {
                 "Parameters": {
-                    "BastionAMIOS": {
-                        "Ref": "BastionAMIOS"
-                    },
+                    "BastionAMIOS": "Ubuntu-Server-16.04-LTS-HVM",
                     "KeyPairName": {
                         "Ref": "KeyPairName"
                     },

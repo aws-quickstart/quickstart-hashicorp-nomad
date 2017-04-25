@@ -59,55 +59,50 @@
     },
     "Metadata": {
         "AWS::CloudFormation::Interface": {
-            "ParameterGroups": [
-                {
-                    "Label": {
-                        "default": " VPC Network Configuration"
-                    },
-                    "Parameters": [
-                        "AvailabilityZones",
-                        "VPCCIDR",
-                        "PrivateSubnet1CIDR",
-                        "PrivateSubnet2CIDR",
-                        "PrivateSubnet3CIDR",
-                        "PublicSubnet1CIDR",
-                        "PublicSubnet2CIDR",
-                        "PublicSubnet3CIDR",
-                        "AccessCIDR"
-                    ]
+            "ParameterGroups": [{
+                "Label": {
+                    "default": " VPC Network Configuration"
                 },
-                {
-                    "Label": {
-                        "default": "Nomad Setup"
-                    },
-                    "Parameters": [
-                        "KeyPairName",
-                        "NomadInstanceType",
-                        "NomadServerNodes",
-                        "PrivateNomadClientNodes",
-                        "MinPrivateNomadClientNodes"
-                    ]
+                "Parameters": [
+                    "AvailabilityZones",
+                    "VPCCIDR",
+                    "PrivateSubnet1CIDR",
+                    "PrivateSubnet2CIDR",
+                    "PrivateSubnet3CIDR",
+                    "PublicSubnet1CIDR",
+                    "PublicSubnet2CIDR",
+                    "PublicSubnet3CIDR",
+                    "AccessCIDR"
+                ]
+            }, {
+                "Label": {
+                    "default": "Nomad Setup"
                 },
-                               {
-                    "Label": {
-                        "default": "Consul Setup"
-                    },
-                    "Parameters": [
-                        "ConsulClientNodes",
-                        "ConsulServerNodes",
-                        "ConsulInstanceType"
-                    ]
+                "Parameters": [
+                    "KeyPairName",
+                    "NomadInstanceType",
+                    "NomadServerNodes",
+                    "PrivateNomadClientNodes",
+                    "MinPrivateNomadClientNodes"
+                ]
+            }, {
+                "Label": {
+                    "default": "Consul Setup"
                 },
-                {
-                    "Label": {
-                        "default": "AWS Quick Start Configuration"
-                    },
-                    "Parameters": [
-                        "QSS3BucketName",
-                        "QSS3KeyPrefix"
-                    ]
-                }
-            ],
+                "Parameters": [
+                    "ConsulClientNodes",
+                    "ConsulServerNodes",
+                    "ConsulInstanceType"
+                ]
+            }, {
+                "Label": {
+                    "default": "AWS Quick Start Configuration"
+                },
+                "Parameters": [
+                    "QSS3BucketName",
+                    "QSS3KeyPrefix"
+                ]
+            }],
             "ParameterLabels": {
                 "AccessCIDR": {
                     "default": "Permitted IP range"
@@ -365,8 +360,7 @@
                     },
                     "AvailabilityZones": {
                         "Fn::Join": [
-                            ",",
-                            {
+                            ",", {
                                 "Ref": "AvailabilityZones"
                             }
                         ]
@@ -445,33 +439,28 @@
                     },
                     "QuickStartS3URL": {
                         "Fn::Join": [
-                            "/",
-                            [
-                                {
-                                    "Fn::FindInMap": [
-                                        "AWSInfoRegionMap",
-                                        {
-                                            "Ref": "AWS::Region"
-                                        },
-                                        "QuickStartS3URL"
-                                    ]
-                                }
+                            "/", [{
+                                "Fn::FindInMap": [
+                                    "AWSInfoRegionMap", {
+                                        "Ref": "AWS::Region"
+                                    },
+                                    "QuickStartS3URL"
+                                ]
+                            }]
+                        ]
+                    },
+                    "QSS3BucketName": {
+                        "Ref": "QSS3BucketName"
+                    },
+                    "QSS3KeyPrefix": {
+                        "Fn::Join": [
+                            "/", [{
+                                    "Ref": "QSS3KeyPrefix"
+                                },
+                                "submodules/quickstart-hashicorp-consul"
                             ]
                         ]
                     },
-		    "QSS3BucketName":
-                            {
-                                "Ref": "QSS3BucketName"
-                            },
-		    "QSS3KeyPrefix": {
-		        "Fn::Join": [
-			    "/",
-			    [
-			        { "Ref": "QSS3KeyPrefix" },
-				"submodules/quickstart-hashicorp-consul"
-			    ]
-			]
-		    },
                     "VPCCIDR": {
                         "Ref": "VPCCIDR"
                     },
@@ -484,21 +473,16 @@
                 },
                 "TemplateURL": {
                     "Fn::Join": [
-                        "/",
-                        [
-                            {
+                        "/", [{
                                 "Fn::FindInMap": [
-                                    "AWSInfoRegionMap",
-                                    {
+                                    "AWSInfoRegionMap", {
                                         "Ref": "AWS::Region"
                                     },
                                     "QuickStartS3URL"
                                 ]
-                            },
-                            {
+                            }, {
                                 "Ref": "QSS3BucketName"
-                            },
-                            {
+                            }, {
                                 "Ref": "QSS3KeyPrefix"
                             },
                             "submodules/quickstart-hashicorp-consul/templates/quickstart-hashicorp-consul.template"
@@ -560,26 +544,22 @@
                             "Outputs.PrivateSubnet3AID"
                         ]
                     },
-		    "QSS3BucketName": {
-			"Ref": "QSS3BucketName"
-		    },
+                    "QSS3BucketName": {
+                        "Ref": "QSS3BucketName"
+                    },
                     "QSS3KeyPrefix": {
                         "Ref": "QSS3KeyPrefix"
                     },
                     "QuickStartS3URL": {
                         "Fn::Join": [
-                            "/",
-                            [
-                                {
-                                    "Fn::FindInMap": [
-                                        "AWSInfoRegionMap",
-                                        {
-                                            "Ref": "AWS::Region"
-                                        },
-                                        "QuickStartS3URL"
-                                    ]
-                                }
-                            ]
+                            "/", [{
+                                "Fn::FindInMap": [
+                                    "AWSInfoRegionMap", {
+                                        "Ref": "AWS::Region"
+                                    },
+                                    "QuickStartS3URL"
+                                ]
+                            }]
                         ]
                     },
                     "VPCCIDR": {
@@ -594,21 +574,16 @@
                 },
                 "TemplateURL": {
                     "Fn::Join": [
-                        "/",
-                        [
-                            {
+                        "/", [{
                                 "Fn::FindInMap": [
-                                    "AWSInfoRegionMap",
-                                    {
+                                    "AWSInfoRegionMap", {
                                         "Ref": "AWS::Region"
                                     },
                                     "QuickStartS3URL"
                                 ]
-                            },
-                            {
+                            }, {
                                 "Ref": "QSS3BucketName"
-                            },
-                            {
+                            }, {
                                 "Ref": "QSS3KeyPrefix"
                             },
                             "templates/quickstart-hashicorp-nomad.template"
@@ -643,9 +618,7 @@
                     },
                     "QSS3KeyPrefix": {
                         "Fn::Join": [
-                            "/",
-                            [
-                                {
+                            "/", [{
                                     "Ref": "QSS3KeyPrefix"
                                 },
                                 "submodules/quickstart-linux-bastion/"
@@ -664,21 +637,16 @@
                 },
                 "TemplateURL": {
                     "Fn::Join": [
-                        "/",
-                        [
-                            {
+                        "/", [{
                                 "Fn::FindInMap": [
-                                    "AWSInfoRegionMap",
-                                    {
+                                    "AWSInfoRegionMap", {
                                         "Ref": "AWS::Region"
                                     },
                                     "QuickStartS3URL"
                                 ]
-                            },
-                            {
+                            }, {
                                 "Ref": "QSS3BucketName"
-                            },
-                            {
+                            }, {
                                 "Ref": "QSS3KeyPrefix"
                             },
                             "submodules/quickstart-linux-bastion",
@@ -694,8 +662,7 @@
                 "Parameters": {
                     "AvailabilityZones": {
                         "Fn::Join": [
-                            ",",
-                            {
+                            ",", {
                                 "Ref": "AvailabilityZones"
                             }
                         ]
@@ -729,21 +696,16 @@
                 },
                 "TemplateURL": {
                     "Fn::Join": [
-                        "/",
-                        [
-                            {
+                        "/", [{
                                 "Fn::FindInMap": [
-                                    "AWSInfoRegionMap",
-                                    {
+                                    "AWSInfoRegionMap", {
                                         "Ref": "AWS::Region"
                                     },
                                     "QuickStartS3URL"
                                 ]
-                            },
-                            {
+                            }, {
                                 "Ref": "QSS3BucketName"
-                            },
-                            {
+                            }, {
                                 "Ref": "QSS3KeyPrefix"
                             },
                             "submodules/quickstart-aws-vpc/templates/aws-vpc.template"

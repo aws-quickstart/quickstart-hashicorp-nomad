@@ -565,7 +565,7 @@
 								"  --stack ", {
 									"Ref": "AWS::StackName"
 								},
-								" --resource NomadServer ",
+								" --resource NomadServerLaunchConfig ",
 								" --region ", {
 									"Ref": "AWS::Region"
 								},
@@ -806,7 +806,7 @@
 								"  --stack ", {
 									"Ref": "AWS::StackName"
 								},
-								" --resource PrivateNomadClient ",
+								" --resource PrivateNomadClientLaunchConfig ",
 								" --region ", {
 									"Ref": "AWS::Region"
 								},

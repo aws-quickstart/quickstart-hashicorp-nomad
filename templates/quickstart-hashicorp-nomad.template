@@ -55,7 +55,7 @@
         "AWSInfoRegionMap": {
             "ap-northeast-1": {
                 "Partition": "aws",
-            "QuickStartS3URL": "https://s3.amazonaws.com"
+                "QuickStartS3URL": "https://s3.amazonaws.com"
             },
             "ap-northeast-2": {
                 "Partition": "aws",
@@ -339,21 +339,7 @@
         }
     },
     "Resources": {
-        "NomadLogGroup": {
-            "Properties": {
-                "LogGroupName": {
-                    "Fn::Join": [
-                        "-", [{
-                                "Ref": "AWS::StackName"
-                            },
-                            "Nomad-Audit-Logs"
-                        ]
-                    ]
-                },
-                "RetentionInDays": 7
-            },
-            "Type": "AWS::Logs::LogGroup"
-        },
+
         "NomadSecGroup": {
             "Properties": {
                 "GroupDescription": "Enables all access within the VPC to the Nomad clusters",

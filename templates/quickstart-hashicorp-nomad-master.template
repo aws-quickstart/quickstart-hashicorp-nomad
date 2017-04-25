@@ -117,10 +117,13 @@
                     "default": "Availability Zones"
                 },
                 "ConsulInstanceType": {
-                    "default": "Consul cluster node instance type"
+                    "default": "Consul Instance Type"
                 },
-                "ConsulNodes": {
-                    "default": "Consul nodes"
+                "ConsulServerNodes": {
+                    "default": "Consul Server Nodes"
+                },
+                "ConsulClientNodes": {
+                    "default": "Consul Client Nodes"
                 },
                 "KeyPairName": {
                     "default": "Key Name"
@@ -128,8 +131,17 @@
                 "NATInstanceType": {
                     "default": "NAT Instance Type"
                 },
+                "NomadServerNodes": {
+                    "default": "Nomad Server Nodes"
+                },
                 "NomadInstanceType": {
-                    "default": "Nomad node instance type"
+                    "default": "Nomad Instance Type"
+                },
+                "MinPrivateNomadClientNodes": {
+                    "default": "Minimum Private Nomad Client Nodes"
+                },
+                "PrivateNomadClientNodes": {
+                    "default": "Private Nomad Client Nodes"
                 },
                 "PrivateSubnet1CIDR": {
                     "default": "Private Subnet 1 CIDR"
@@ -137,10 +149,16 @@
                 "PrivateSubnet2CIDR": {
                     "default": "Private Subnet 2 CIDR"
                 },
+                "PrivateSubnet3CIDR": {
+                    "default": "Private Subnet 2 CIDR"
+                },
                 "PublicSubnet1CIDR": {
                     "default": "Public Subnet 1 CIDR"
                 },
                 "PublicSubnet2CIDR": {
+                    "default": "Public Subnet 2 CIDR"
+                },
+                "PublicSubnet3CIDR": {
                     "default": "Public Subnet 2 CIDR"
                 },
                 "QSS3BucketName": {

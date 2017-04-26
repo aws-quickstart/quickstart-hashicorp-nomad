@@ -271,7 +271,36 @@
         }
     },
     "Resources": {
-
+        "NomadServerWaitHandle": {
+            "Type": "AWS::CloudFormation::WaitConditionHandle"
+        },
+        "NomadServerWaitCondition": {
+            "Type": "AWS::CloudFormation::WaitCondition",
+            "Properties": {
+                "Handle": {
+                    "Ref": "NomadServerWaitHandle"
+                },
+                "Count": {
+                    "Ref": "NomadServerNodes"
+                },
+                "Timeout": "5000"
+            }
+        },
+        "NomadClientWaitHandle": {
+            "Type": "AWS::CloudFormation::WaitConditionHandle"
+        },
+        "NomadClientWaitCondition": {
+            "Type": "AWS::CloudFormation::WaitCondition",
+            "Properties": {
+                "Handle": {
+                    "Ref": "NomadClientWaitHandle"
+                },
+                "Count": {
+                    "Ref": "PrivateNomadClientNodes"
+                },
+                "Timeout": "5000"
+            }
+        },
         "NomadSecGroup": {
             "Properties": {
                 "GroupDescription": "Enables all access within the VPC to the Nomad clusters",
@@ -358,7 +387,9 @@
                 }
             },
             "Properties": {
-
+                "IamInstanceProfile": {
+                    "Ref": "nomadinstanceprofile"
+                },
                 "ImageId": {
                     "Fn::FindInMap": [
                         "AWSAMIRegionMap", {
@@ -454,14 +485,11 @@
                                 "chmod 755 ./${NOMAD_BOOTSTRAP_FILE} \n",
                                 "./${NOMAD_BOOTSTRAP_FILE} \n",
                                 "/usr/local/bin/cfn-signal -e $? ",
-                                "  --stack ", {
-                                    "Ref": "AWS::StackName"
+                                " -e $?",
+                                " '", {
+                                    "Ref": "NomadServerWaitHandle"
                                 },
-                                " --resource NomadServerASG ",
-                                " --region ", {
-                                    "Ref": "AWS::Region"
-                                },
-                                "\n"
+                                "'"
                             ]
                         ]
                     }
@@ -563,7 +591,9 @@
                 }
             },
             "Properties": {
-
+                "IamInstanceProfile": {
+                    "Ref": "nomadinstanceprofile"
+                },
                 "ImageId": {
                     "Fn::FindInMap": [
                         "AWSAMIRegionMap", {
@@ -670,14 +700,11 @@
                                     ]
                                 },
                                 "/usr/local/bin/cfn-signal -e $? ",
-                                "  --stack ", {
-                                    "Ref": "AWS::StackName"
+                                " -e $?",
+                                " '", {
+                                    "Ref": "NomadClientWaitHandle"
                                 },
-                                " --resource PrivateNomadClientASG ",
-                                " --region ", {
-                                    "Ref": "AWS::Region"
-                                },
-                                "\n"
+                                "'"
                             ]
                         ]
                     }

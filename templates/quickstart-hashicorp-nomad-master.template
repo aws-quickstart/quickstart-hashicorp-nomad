@@ -1,101 +1,52 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Hashicorp Consul+Nomad, License: Apache 2.0 (Please do not remove) Jan,18,2016",
-    "Mappings": {
-        "AWSInfoRegionMap": {
-            "ap-northeast-1": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "ap-northeast-2": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "ap-south-1": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "ap-southeast-1": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "ap-southeast-2": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "eu-central-1": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "eu-west-1": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "sa-east-1": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "us-east-1": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "us-east-2": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "us-gov-west-1": {
-                "Partition": "aws-us-gov",
-                "QuickStartS3URL": "https://s3-us-gov-west-1.amazonaws.com"
-            },
-            "us-west-1": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            },
-            "us-west-2": {
-                "Partition": "aws",
-                "QuickStartS3URL": "https://s3.amazonaws.com"
-            }
-        }
-    },
+    "Description": "Hashicorp Consul+Nomad, License: Apache 2.0 (Please do not remove) April,24,2016",
     "Metadata": {
         "AWS::CloudFormation::Interface": {
-            "ParameterGroups": [
-                {
-                    "Label": {
-                        "default": " VPC Network Configuration"
-                    },
-                    "Parameters": [
-                        "AvailabilityZones",
-                        "VPCCIDR",
-                        "PrivateSubnet1CIDR",
-                        "PrivateSubnet2CIDR",
-                        "PrivateSubnet3CIDR",
-                        "PublicSubnet1CIDR",
-                        "PublicSubnet2CIDR",
-                        "PublicSubnet3CIDR",
-                        "AccessCIDR",
-                        "NATInstanceType"
-                    ]
+            "ParameterGroups": [{
+                "Label": {
+                    "default": " VPC Network Configuration"
                 },
-                {
-                    "Label": {
-                        "default": "Nomad Setup"
-                    },
-                    "Parameters": [
-                        "KeyPairName",
-                        "NomadInstanceType"
-                    ]
+                "Parameters": [
+                    "AvailabilityZones",
+                    "VPCCIDR",
+                    "PrivateSubnet1CIDR",
+                    "PrivateSubnet2CIDR",
+                    "PrivateSubnet3CIDR",
+                    "PublicSubnet1CIDR",
+                    "PublicSubnet2CIDR",
+                    "PublicSubnet3CIDR",
+                    "AccessCIDR"
+                ]
+            }, {
+                "Label": {
+                    "default": "Nomad Setup"
                 },
-                {
-                    "Label": {
-                        "default": "AWS Quick Start Configuration"
-                    },
-                    "Parameters": [
-                        "QSS3BucketName",
-                        "QSS3KeyPrefix"
-                    ]
-                }
-            ],
+                "Parameters": [
+                    "KeyPairName",
+                    "NomadInstanceType",
+                    "NomadServerNodes",
+                    "PrivateNomadClientNodes",
+                    "MinPrivateNomadClientNodes"
+                ]
+            }, {
+                "Label": {
+                    "default": "Consul Setup"
+                },
+                "Parameters": [
+                    "ConsulClientNodes",
+                    "ConsulServerNodes",
+                    "ConsulInstanceType"
+                ]
+            }, {
+                "Label": {
+                    "default": "AWS Quick Start Configuration"
+                },
+                "Parameters": [
+                    "QSS3BucketName",
+                    "QSS3KeyPrefix"
+                ]
+            }],
             "ParameterLabels": {
                 "AccessCIDR": {
                     "default": "Permitted IP range"
@@ -104,19 +55,28 @@
                     "default": "Availability Zones"
                 },
                 "ConsulInstanceType": {
-                    "default": "Consul cluster node instance type"
+                    "default": "Consul Instance Type"
                 },
-                "ConsulNodes": {
-                    "default": "Consul nodes"
+                "ConsulServerNodes": {
+                    "default": "Consul Server Nodes"
+                },
+                "ConsulClientNodes": {
+                    "default": "Consul Client Nodes"
                 },
                 "KeyPairName": {
                     "default": "Key Name"
                 },
-                "NATInstanceType": {
-                    "default": "NAT Instance Type"
+                "NomadServerNodes": {
+                    "default": "Nomad Server Nodes"
                 },
                 "NomadInstanceType": {
-                    "default": "Nomad node instance type"
+                    "default": "Nomad Instance Type"
+                },
+                "MinPrivateNomadClientNodes": {
+                    "default": "Minimum Private Nomad Client Nodes"
+                },
+                "PrivateNomadClientNodes": {
+                    "default": "Private Nomad Client Nodes"
                 },
                 "PrivateSubnet1CIDR": {
                     "default": "Private Subnet 1 CIDR"
@@ -124,10 +84,16 @@
                 "PrivateSubnet2CIDR": {
                     "default": "Private Subnet 2 CIDR"
                 },
+                "PrivateSubnet3CIDR": {
+                    "default": "Private Subnet 2 CIDR"
+                },
                 "PublicSubnet1CIDR": {
                     "default": "Public Subnet 1 CIDR"
                 },
                 "PublicSubnet2CIDR": {
+                    "default": "Public Subnet 2 CIDR"
+                },
+                "PublicSubnet3CIDR": {
                     "default": "Public Subnet 2 CIDR"
                 },
                 "QSS3BucketName": {
@@ -151,11 +117,6 @@
         "AvailabilityZones": {
             "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved (3 AZs are used for this deployment)",
             "Type": "List<AWS::EC2::AvailabilityZone::Name>"
-        },
-        "BastionAMIOS": {
-          "Description": "The Linux distribution for the AMI to be used for the bastion instances. See https://github.com/aws-quickstart/quickstart-linux-bastion for available options.",
-          "Type": "String",
-          "Default": "Ubuntu-Server-16.04-LTS-HVM"
         },
         "ConsulClientNodes": {
             "Default": "3",
@@ -221,21 +182,6 @@
             "Description": "Sets the min capacity for client nodes.",
             "Type": "String"
         },
-        "NATInstanceType": {
-            "AllowedValues": [
-                "t2.nano",
-                "t2.micro",
-                "t2.small",
-                "t2.medium",
-                "t2.large",
-                "m3.medium",
-                "m3.large",
-                "m4.large"
-            ],
-            "Default": "t2.small",
-            "Description": "Amazon EC2 instance type for the NAT Instances. This is only used if the region does not support NAT gateways.",
-            "Type": "String"
-        },
         "NomadInstanceType": {
             "AllowedValues": [
                 "t2.micro",
@@ -271,8 +217,8 @@
                 "i2.4xlarge",
                 "i2.8xlarge"
             ],
-            "ConstraintDescription": "Choose an instance type. m3.medium or larger recommended.",
-            "Default": "m3.medium",
+            "ConstraintDescription": "Choose an instance type. m4.large or larger recommended.",
+            "Default": "m4.large",
             "Description": "Nomad node instance type",
             "Type": "String"
         },
@@ -348,6 +294,22 @@
             "Type": "String"
         }
     },
+    "Conditions": {
+        "GovCloudCondition": {
+            "Fn::Equals": [{
+                    "Ref": "AWS::Region"
+                },
+                "us-gov-west-1"
+            ]
+        },
+        "NestedStackCondition": {
+            "Fn::Equals": [{
+                    "Ref": "QSS3KeyPrefix"
+                },
+                "hashicorp/nomad/latest"
+            ]
+        }
+    },
     "Resources": {
         "HashiCorpConsulStack": {
             "DependsOn": "LinuxBastionHostStack",
@@ -358,8 +320,7 @@
                     },
                     "AvailabilityZones": {
                         "Fn::Join": [
-                            ",",
-                            {
+                            ",", {
                                 "Ref": "AvailabilityZones"
                             }
                         ]
@@ -437,34 +398,30 @@
                         ]
                     },
                     "QuickStartS3URL": {
-                        "Fn::Join": [
-                            "/",
-                            [
-                                {
-                                    "Fn::FindInMap": [
-                                        "AWSInfoRegionMap",
-                                        {
-                                            "Ref": "AWS::Region"
-                                        },
-                                        "QuickStartS3URL"
+                        "Fn::Sub": [
+                            "https://${S3Region}.amazonaws.com/", {
+                                "S3Region": {
+                                    "Fn::If": [
+                                        "GovCloudCondition",
+                                        "s3-us-gov-west-1",
+                                        "s3"
                                     ]
                                 }
-                            ]
+                            }
                         ]
                     },
-		    "QSS3BucketName":
-                            {
-                                "Ref": "QSS3BucketName"
-                            },
-		    "QSS3KeyPrefix": {
-		        "Fn::Join": [
-			    "/",
-			    [
-			        { "Ref": "QSS3KeyPrefix" },
-				"submodules/quickstart-hashicorp-consul"
-			    ]
-			]
-		    },
+                    "QSS3BucketName": {
+                        "Ref": "QSS3BucketName"
+                    },
+                    "QSS3KeyPrefix": {
+                        "Fn::Sub": [
+                            "${QSS3KeyPrefix}/submodules/quickstart-hashicorp-consul", {
+                                "QSS3KeyPrefix": {
+                                    "Ref": "QSS3KeyPrefix"
+                                }
+                            }
+                        ]
+                    },
                     "VPCCIDR": {
                         "Ref": "VPCCIDR"
                     },
@@ -476,28 +433,19 @@
                     }
                 },
                 "TemplateURL": {
-                    "Fn::Join": [
-                        "/",
-                        [
-                            {
-                                "Fn::FindInMap": [
-                                    "AWSInfoRegionMap",
-                                    {
-                                        "Ref": "AWS::Region"
-                                    },
-                                    "QuickStartS3URL"
+                    "Fn::Sub": [
+                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}/submodules/quickstart-hashicorp-consul/templates/quickstart-hashicorp-consul.template", {
+                            "S3Region": {
+                                "Fn::If": [
+                                    "GovCloudCondition",
+                                    "s3-us-gov-west-1",
+                                    "s3"
                                 ]
-                            },
-                            {
-                                "Ref": "QSS3BucketName"
-                            },
-                            {
-                                "Ref": "QSS3KeyPrefix"
-                            },
-                            "submodules/quickstart-hashicorp-consul/templates/quickstart-hashicorp-consul.template"
-                        ]
+                            }
+                        }
                     ]
                 }
+
             },
             "Type": "AWS::CloudFormation::Stack"
         },
@@ -553,28 +501,13 @@
                             "Outputs.PrivateSubnet3AID"
                         ]
                     },
-		    "QSS3BucketName": {
-			"Ref": "QSS3BucketName"
-		    },
+                    "QSS3BucketName": {
+                        "Ref": "QSS3BucketName"
+                    },
                     "QSS3KeyPrefix": {
                         "Ref": "QSS3KeyPrefix"
                     },
-                    "QuickStartS3URL": {
-                        "Fn::Join": [
-                            "/",
-                            [
-                                {
-                                    "Fn::FindInMap": [
-                                        "AWSInfoRegionMap",
-                                        {
-                                            "Ref": "AWS::Region"
-                                        },
-                                        "QuickStartS3URL"
-                                    ]
-                                }
-                            ]
-                        ]
-                    },
+
                     "VPCCIDR": {
                         "Ref": "VPCCIDR"
                     },
@@ -586,26 +519,16 @@
                     }
                 },
                 "TemplateURL": {
-                    "Fn::Join": [
-                        "/",
-                        [
-                            {
-                                "Fn::FindInMap": [
-                                    "AWSInfoRegionMap",
-                                    {
-                                        "Ref": "AWS::Region"
-                                    },
-                                    "QuickStartS3URL"
+                    "Fn::Sub": [
+                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}/templates/quickstart-hashicorp-nomad.template", {
+                            "S3Region": {
+                                "Fn::If": [
+                                    "GovCloudCondition",
+                                    "s3-us-gov-west-1",
+                                    "s3"
                                 ]
-                            },
-                            {
-                                "Ref": "QSS3BucketName"
-                            },
-                            {
-                                "Ref": "QSS3KeyPrefix"
-                            },
-                            "templates/quickstart-hashicorp-nomad.template"
-                        ]
+                            }
+                        }
                     ]
                 }
             },
@@ -615,9 +538,7 @@
             "DependsOn": "VPCStack",
             "Properties": {
                 "Parameters": {
-                    "BastionAMIOS": {
-                        "Ref": "BastionAMIOS"
-                    },
+                    "BastionAMIOS": "Ubuntu-Server-16.04-LTS-HVM",
                     "KeyPairName": {
                         "Ref": "KeyPairName"
                     },
@@ -637,14 +558,12 @@
                         "Ref": "QSS3BucketName"
                     },
                     "QSS3KeyPrefix": {
-                        "Fn::Join": [
-                            "/",
-                            [
-                                {
+                        "Fn::Sub": [
+                            "${QSS3KeyPrefix}/submodules/quickstart-linux-bastion/", {
+                                "QSS3KeyPrefix": {
                                     "Ref": "QSS3KeyPrefix"
-                                },
-                                "submodules/quickstart-linux-bastion/"
-                            ]
+                                }
+                            }
                         ]
                     },
                     "RemoteAccessCIDR": {
@@ -657,28 +576,18 @@
                         ]
                     }
                 },
+
                 "TemplateURL": {
-                    "Fn::Join": [
-                        "/",
-                        [
-                            {
-                                "Fn::FindInMap": [
-                                    "AWSInfoRegionMap",
-                                    {
-                                        "Ref": "AWS::Region"
-                                    },
-                                    "QuickStartS3URL"
+                    "Fn::Sub": [
+                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}/submodules/quickstart-linux-bastion/templates/linux-bastion.template", {
+                            "S3Region": {
+                                "Fn::If": [
+                                    "GovCloudCondition",
+                                    "s3-us-gov-west-1",
+                                    "s3"
                                 ]
-                            },
-                            {
-                                "Ref": "QSS3BucketName"
-                            },
-                            {
-                                "Ref": "QSS3KeyPrefix"
-                            },
-                            "submodules/quickstart-linux-bastion",
-                            "templates/linux-bastion.template"
-                        ]
+                            }
+                        }
                     ]
                 }
             },
@@ -689,8 +598,7 @@
                 "Parameters": {
                     "AvailabilityZones": {
                         "Fn::Join": [
-                            ",",
-                            {
+                            ",", {
                                 "Ref": "AvailabilityZones"
                             }
                         ]
@@ -698,9 +606,7 @@
                     "KeyPairName": {
                         "Ref": "KeyPairName"
                     },
-                    "NATInstanceType": {
-                        "Ref": "NATInstanceType"
-                    },
+                    "NATInstanceType": "t2.small",
                     "NumberOfAZs": "3",
                     "PrivateSubnet1ACIDR": {
                         "Ref": "PrivateSubnet1CIDR"
@@ -725,28 +631,19 @@
                     }
                 },
                 "TemplateURL": {
-                    "Fn::Join": [
-                        "/",
-                        [
-                            {
-                                "Fn::FindInMap": [
-                                    "AWSInfoRegionMap",
-                                    {
-                                        "Ref": "AWS::Region"
-                                    },
-                                    "QuickStartS3URL"
+                    "Fn::Sub": [
+                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}/submodules/quickstart-aws-vpc/templates/aws-vpc.template", {
+                            "S3Region": {
+                                "Fn::If": [
+                                    "GovCloudCondition",
+                                    "s3-us-gov-west-1",
+                                    "s3"
                                 ]
-                            },
-                            {
-                                "Ref": "QSS3BucketName"
-                            },
-                            {
-                                "Ref": "QSS3KeyPrefix"
-                            },
-                            "submodules/quickstart-aws-vpc/templates/aws-vpc.template"
-                        ]
+                            }
+                        }
                     ]
                 }
+
             },
             "Type": "AWS::CloudFormation::Stack"
         }

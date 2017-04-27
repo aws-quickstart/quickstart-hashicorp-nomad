@@ -8,75 +8,7 @@
         "ParameterValue": "$[alfred_genaz_3]"
     },
     {
-        "ParameterKey": "ConsulClientNodes",
-        "ParameterValue": "3"
-    },
-    {
-        "ParameterKey": "ConsulInstanceType",
-        "ParameterValue": "t2.medium"
-    },
-    {
-        "ParameterKey": "ConsulServerNodes",
-        "ParameterValue": "3"
-    },
-    {
         "ParameterKey": "KeyPairName",
         "ParameterValue": "cikey"
-    },
-    {
-        "ParameterKey": "MinPrivateNomadClientNodes",
-        "ParameterValue": "1"
-    },
-    {
-        "ParameterKey": "NATInstanceType",
-        "ParameterValue": "t2.small"
-    },
-    {
-        "ParameterKey": "NomadInstanceType",
-        "ParameterValue": "m3.medium"
-    },
-    {
-        "ParameterKey": "NomadServerNodes",
-        "ParameterValue": "3"
-    },
-    {
-        "ParameterKey": "PrivateNomadClientNodes",
-        "ParameterValue": "3"
-    },
-    {
-        "ParameterKey": "PrivateSubnet1CIDR",
-        "ParameterValue": "10.0.0.0/19"
-    },
-    {
-        "ParameterKey": "PrivateSubnet2CIDR",
-        "ParameterValue": "10.0.32.0/19"
-    },
-    {
-        "ParameterKey": "PrivateSubnet3CIDR",
-        "ParameterValue": "10.0.64.0/19"
-    },
-    {
-        "ParameterKey": "PublicSubnet1CIDR",
-        "ParameterValue": "10.0.128.0/20"
-    },
-    {
-        "ParameterKey": "PublicSubnet2CIDR",
-        "ParameterValue": "10.0.144.0/20"
-    },
-    {
-        "ParameterKey": "PublicSubnet3CIDR",
-        "ParameterValue": "10.0.160.0/20"
-    },
-    {
-        "ParameterKey": "QSS3BucketName",
-        "ParameterValue": "quickstart-reference"
-    },
-    {
-        "ParameterKey": "QSS3KeyPrefix",
-        "ParameterValue": "hashicorp/nomad/latest"
-    },
-    {
-        "ParameterKey": "VPCCIDR",
-        "ParameterValue": "10.0.0.0/16"
     }
 ]

@@ -161,7 +161,6 @@
         },
         "KeyPair": {
             "ConstraintDescription": "Must be the name of an existing EC2 KeyPair.",
-            "Default": "id_rsa_aws",
             "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
             "Type": "AWS::EC2::KeyPair::KeyName"
         },

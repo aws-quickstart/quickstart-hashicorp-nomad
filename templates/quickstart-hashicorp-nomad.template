@@ -95,14 +95,14 @@
                 "AccessCIDR": {
                     "default": "Permitted IP range"
                 },
-                "KeyPairName": {
-                    "default": "Key Name"
+                "KeyPair": {
+                    "default": "Key Pair Name"
                 },
                 "ConsulEc2RetryTagKey": {
-                    "default": "Consul Ec2Retry TagKey"
+                    "default": "Consul EC2 Retry Tag Key"
                 },
                 "ConsulEc2RetryTagValue": {
-                    "default": "Consul Ec2Retry TagValue"
+                    "default": "Consul EC2 Retry Tag Value"
                 },
                 "NomadServerNodes": {
                     "default": "Nomad Server Nodes"
@@ -116,24 +116,18 @@
                 "PrivateNomadClientNodes": {
                     "default": "Private Nomad Client Nodes"
                 },
-                "PrivateSubnet1CIDR": {
-                    "default": "Private Subnet 1 CIDR"
+                "PrivateSubnet1ID": {
+                    "default": "Private Subnet 1 ID"
                 },
-                "PrivateSubnet2CIDR": {
-                    "default": "Private Subnet 2 CIDR"
+                "PrivateSubnet2ID": {
+                    "default": "Private Subnet 2 ID"
                 },
-                "PrivateSubnet3CIDR": {
-                    "default": "Private Subnet 2 CIDR"
+                "PrivateSubnet3ID": {
+                    "default": "Private Subnet 3 ID"
                 },
-                "PublicSubnet1CIDR": {
-                    "default": "Public Subnet 1 CIDR"
-                },
-                "PublicSubnet2CIDR": {
-                    "default": "Public Subnet 2 CIDR"
-                },
-                "PublicSubnet3CIDR": {
-                    "default": "Public Subnet 2 CIDR"
-                },
+		"QuickStartS3URL": {
+		    "default": "The AWS S3 Root URL"
+		},
                 "QSS3BucketName": {
                     "default": "Quick Start S3 Bucket Name"
                 },
@@ -141,7 +135,10 @@
                     "default": "Quick Start S3 Key Prefix"
                 },
                 "VPCCIDR": {
-                    "default": "VPC CIDR"
+                    "default": "VPC CIDR block range"
+                },
+                "VPCID": {
+                    "default": "VPC ID"
                 }
             }
         }
@@ -164,13 +161,12 @@
         },
         "KeyPair": {
             "ConstraintDescription": "Must be the name of an existing EC2 KeyPair.",
-            "Default": "id_rsa_aws",
             "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
             "Type": "AWS::EC2::KeyPair::KeyName"
         },
         "MinPrivateNomadClientNodes": {
             "Default": "1",
-            "Description": "Sets the min capacity for client nodes.",
+            "Description": "Sets the minimum capacity for Nomad client nodes.",
             "Type": "String"
         },
         "NomadInstanceType": {
@@ -210,7 +206,7 @@
             ],
             "ConstraintDescription": "Choose an instance type. m4.large or larger recommended.",
             "Default": "m4.large",
-            "Description": "nomad node instance type",
+            "Description": "The Nomad node instance type",
             "Type": "String"
         },
         "NomadServerNodes": {
@@ -220,12 +216,12 @@
                 "7"
             ],
             "Default": "3",
-            "Description": "Sets DesiredCapacity and MaxSize ",
+            "Description": "Sets the desired capacity and maximum size for Nomad server node cluster. Values should be: 3, 5, or 7 ",
             "Type": "String"
         },
         "PrivateNomadClientNodes": {
             "Default": "3",
-            "Description": "Sets DesiredCapacity and MaxSize ",
+            "Description": "Sets the desired capacity and Maximum size for Nomad client node cluster ",
             "Type": "String"
         },
         "PrivateSubnet1ID": {
@@ -248,10 +244,10 @@
             "Type": "String"
         },
         "QSS3KeyPrefix": {
-            "AllowedPattern": "^[0-9a-zA-Z-]+(/[0-9a-zA-Z-]+)*$",
-            "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with forward slash (/) because they are automatically appended.",
-            "Default": "hashicorp/nomad/latest",
-            "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with forward slash (/) because they are automatically appended.",
+            "AllowedPattern": "^[0-9a-zA-Z-]+(/[0-9a-zA-Z-]+)*\/",
+            "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start with forward slash (/) because it is automatically appended.",
+            "Default": "hashicorp/nomad/latest/",
+            "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start with forward slash (/) because it is automatically appended.",
             "Type": "String"
         },
         "QuickStartS3URL": {

@@ -17,7 +17,7 @@
     },
     {
         "ParameterKey": "QSS3KeyPrefix",
-        "ParameterValue": "quickstart-hashicorp-nomad"
+        "ParameterValue": "quickstart-hashicorp-nomad/"
     },
     {
         "ParameterKey": "VPCCIDR",

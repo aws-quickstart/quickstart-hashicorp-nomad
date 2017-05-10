@@ -87,8 +87,7 @@
                 },
                 "Parameters": [
                     "QSS3BucketName",
-                    "QSS3KeyPrefix",
-                    "QuickStartS3URL"
+                    "QSS3KeyPrefix"
                 ]
             }],
             "ParameterLabels": {
@@ -248,16 +247,10 @@
             "Type": "String"
         },
         "QSS3KeyPrefix": {
-            "AllowedPattern": "^[0-9a-zA-Z-]+(/[0-9a-zA-Z-]+)*$",
-            "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with forward slash (/) because they are automatically appended.",
-            "Default": "hashicorp/nomad/latest",
-            "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with forward slash (/) because they are automatically appended.",
-            "Type": "String"
-        },
-        "QuickStartS3URL": {
-            "ConstraintDescription": "S3Url",
-            "Default": "https://s3.amazonaws.com",
-            "Description": "AWS S3 Root Url",
+            "AllowedPattern": "^[0-9a-zA-Z-/]*$",
+            "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).",
+            "Default": "hashicorp/nomad/latest/",
+            "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).",
             "Type": "String"
         },
         "VPCCIDR": {
@@ -419,18 +412,20 @@
                                 "apt-get -y update \n",
                                 "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n", {
                                     "Fn::Sub": [
-                                        "wget https://s3.amazonaws.com/${QSS3BucketName}/${QSS3KeyPrefix}/submodules/quickstart-hashicorp-consul/scripts/consul_client_bootstrap.sh\n", {
-                                            "QSS3BucketName": {
-                                                "Ref": "QSS3BucketName"
-                                            },
-                                            "QSS3KeyPrefix": {
-                                                "Ref": "QSS3KeyPrefix"
+                                        "wget https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/consul_client_bootstrap.sh", {
+                                            "QSS3Region": {
+                                                "Fn::If": [
+                                                    "GovCloudCondition",
+                                                    "s3-us-gov-west-1",
+                                                    "s3"
+                                                ]
                                             }
                                         }
                                     ]
+
                                 },
                                 "",
-                                "sleep 5 && which awscli\n",
+                                "which awscli\n",
                                 "chmod 755 ./consul_client_bootstrap.sh\n", {
                                     "Fn::Sub": [
                                         "./consul_client_bootstrap.sh --consul_tag_key ${ConsulEc2RetryTagKey} --consul_tag_value ${ConsulEc2RetryTagValue} --s3url https://s3.amazonaws.com --s3bucket ${QSS3BucketName} --s3prefix ${QSS3KeyPrefix}", {
@@ -470,16 +465,19 @@
                                 "\n",
                                 "NOMAD_BOOTSTRAP_FILE=install_server.sh\n",
                                 "NOMAD_BOOTSTRAP=", {
-                                    "Ref": "QuickStartS3URL"
+                                    "Fn::Sub": [
+                                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}", {
+                                            "S3Region": {
+                                                "Fn::If": [
+                                                    "GovCloudCondition",
+                                                    "s3-us-gov-west-1",
+                                                    "s3"
+                                                ]
+                                            }
+                                        }
+                                    ]
                                 },
-                                "/", {
-                                    "Ref": "QSS3BucketName"
-                                },
-                                "/", {
-                                    "Ref": "QSS3KeyPrefix"
-                                },
-                                "/scripts/",
-                                "${NOMAD_BOOTSTRAP_FILE}",
+                                "scripts/${NOMAD_BOOTSTRAP_FILE}",
                                 "\n",
                                 "wget ${NOMAD_BOOTSTRAP} \n",
                                 "chmod 755 ./${NOMAD_BOOTSTRAP_FILE} \n",
@@ -660,13 +658,7 @@
                                                 "Ref": "QSS3BucketName"
                                             },
                                             "QSS3KeyPrefix": {
-                                                "Fn::Join": [
-                                                    "", [{
-                                                            "Ref": "QSS3KeyPrefix"
-                                                        },
-                                                        "/submodules/quickstart-hashicorp-consul/"
-                                                    ]
-                                                ]
+                                                "Ref": "QSS3KeyPrefix"
                                             }
                                         }
                                     ]
@@ -676,16 +668,19 @@
                                 "apt-get -y install docker-ce \n",
                                 "NOMAD_BOOTSTRAP_FILE=install_client.sh\n",
                                 "NOMAD_BOOTSTRAP=", {
-                                    "Ref": "QuickStartS3URL"
+                                    "Fn::Sub": [
+                                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}", {
+                                            "S3Region": {
+                                                "Fn::If": [
+                                                    "GovCloudCondition",
+                                                    "s3-us-gov-west-1",
+                                                    "s3"
+                                                ]
+                                            }
+                                        }
+                                    ]
                                 },
-                                "/", {
-                                    "Ref": "QSS3BucketName"
-                                },
-                                "/", {
-                                    "Ref": "QSS3KeyPrefix"
-                                },
-                                "/scripts/",
-                                "${NOMAD_BOOTSTRAP_FILE}",
+                                "scripts/${NOMAD_BOOTSTRAP_FILE}",
                                 "\n",
                                 "wget ${NOMAD_BOOTSTRAP} \n",
                                 "chmod 755 ./${NOMAD_BOOTSTRAP_FILE} \n",

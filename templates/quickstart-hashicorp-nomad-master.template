@@ -281,10 +281,10 @@
             "Type": "String"
         },
         "QSS3KeyPrefix": {
-            "AllowedPattern": "^[0-9a-zA-Z-]+(/[0-9a-zA-Z-]+)*$",
-            "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with forward slash (/) because they are automatically appended.",
-            "Default": "hashicorp/nomad/latest",
-            "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with forward slash (/) because they are automatically appended.",
+            "AllowedPattern": "^[0-9a-zA-Z-/]*$",
+            "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).",
+            "Default": "hashicorp/nomad/latest/",
+            "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).",
             "Type": "String"
         },
         "VPCCIDR": {
@@ -300,13 +300,6 @@
                     "Ref": "AWS::Region"
                 },
                 "us-gov-west-1"
-            ]
-        },
-        "NestedStackCondition": {
-            "Fn::Equals": [{
-                    "Ref": "QSS3KeyPrefix"
-                },
-                "hashicorp/nomad/latest"
             ]
         }
     },
@@ -397,31 +390,6 @@
                             "Outputs.PublicSubnet3ID"
                         ]
                     },
-                    "QuickStartS3URL": {
-                        "Fn::Sub": [
-                            "https://${S3Region}.amazonaws.com/", {
-                                "S3Region": {
-                                    "Fn::If": [
-                                        "GovCloudCondition",
-                                        "s3-us-gov-west-1",
-                                        "s3"
-                                    ]
-                                }
-                            }
-                        ]
-                    },
-                    "QSS3BucketName": {
-                        "Ref": "QSS3BucketName"
-                    },
-                    "QSS3KeyPrefix": {
-                        "Fn::Sub": [
-                            "${QSS3KeyPrefix}/submodules/quickstart-hashicorp-consul", {
-                                "QSS3KeyPrefix": {
-                                    "Ref": "QSS3KeyPrefix"
-                                }
-                            }
-                        ]
-                    },
                     "VPCCIDR": {
                         "Ref": "VPCCIDR"
                     },
@@ -430,12 +398,22 @@
                             "VPCStack",
                             "Outputs.VPCID"
                         ]
+                    },
+                    "QSS3KeyPrefix": {
+                        "Fn::Sub": [
+                            "${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul", {
+                                "QSS3KeyPrefix": {
+                                    "Ref": "QSS3KeyPrefix"
+                                }
+                            }
+                        ]
                     }
                 },
                 "TemplateURL": {
                     "Fn::Sub": [
-                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}/submodules/quickstart-hashicorp-consul/templates/quickstart-hashicorp-consul.template", {
-                            "S3Region": {
+                        "https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}",
+                            "submodules/quickstart-hashicorp-consul/templates/quickstart-hashicorp-consul.template", {
+                            "QSS3Region": {
                                 "Fn::If": [
                                     "GovCloudCondition",
                                     "s3-us-gov-west-1",
@@ -507,7 +485,6 @@
                     "QSS3KeyPrefix": {
                         "Ref": "QSS3KeyPrefix"
                     },
-
                     "VPCCIDR": {
                         "Ref": "VPCCIDR"
                     },
@@ -520,8 +497,9 @@
                 },
                 "TemplateURL": {
                     "Fn::Sub": [
-                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}/templates/quickstart-hashicorp-nomad.template", {
-                            "S3Region": {
+                        "https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}",
+                        "submodules/templates/quickstart-hashicorp-nomad.template", {
+                            "QSS3Region": {
                                 "Fn::If": [
                                     "GovCloudCondition",
                                     "s3-us-gov-west-1",
@@ -530,7 +508,7 @@
                             }
                         }
                     ]
-                }
+                },
             },
             "Type": "AWS::CloudFormation::Stack"
         },
@@ -559,7 +537,7 @@
                     },
                     "QSS3KeyPrefix": {
                         "Fn::Sub": [
-                            "${QSS3KeyPrefix}/submodules/quickstart-linux-bastion/", {
+                            "${QSS3KeyPrefix}submodules/quickstart-linux-bastion/", {
                                 "QSS3KeyPrefix": {
                                     "Ref": "QSS3KeyPrefix"
                                 }
@@ -579,7 +557,8 @@
 
                 "TemplateURL": {
                     "Fn::Sub": [
-                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}/submodules/quickstart-linux-bastion/templates/linux-bastion.template", {
+                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}",
+                        "submodules/quickstart-linux-bastion/templates/linux-bastion.template", {
                             "S3Region": {
                                 "Fn::If": [
                                     "GovCloudCondition",
@@ -606,7 +585,6 @@
                     "KeyPairName": {
                         "Ref": "KeyPairName"
                     },
-                    "NATInstanceType": "t2.small",
                     "NumberOfAZs": "3",
                     "PrivateSubnet1ACIDR": {
                         "Ref": "PrivateSubnet1CIDR"
@@ -632,8 +610,9 @@
                 },
                 "TemplateURL": {
                     "Fn::Sub": [
-                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}/submodules/quickstart-aws-vpc/templates/aws-vpc.template", {
-                            "S3Region": {
+                        "https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}",
+                        "submodules/quickstart-aws-vpc/templates/aws-vpc.template", {
+                            "QSS3Region": {
                                 "Fn::If": [
                                     "GovCloudCondition",
                                     "s3-us-gov-west-1",

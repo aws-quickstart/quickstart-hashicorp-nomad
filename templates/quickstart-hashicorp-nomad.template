@@ -418,7 +418,7 @@
                                 "apt-get -y update \n",
                                 "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n", {
                                     "Fn::Sub": [
-                                        "wget https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/consul_client_bootstrap.sh\n", {
+                                        "wget https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul/scripts/consul_client_bootstrap.sh\n", {
                                             "QSS3BucketName": {
                                                 "Ref": "QSS3BucketName"
                                             },
@@ -439,7 +439,7 @@
                                 "which awscli\n",
                                 "chmod 755 ./consul_client_bootstrap.sh\n", {
                                     "Fn::Sub": [
-                                        "./consul_client_bootstrap.sh --consul_tag_key ${ConsulEc2RetryTagKey} --consul_tag_value ${ConsulEc2RetryTagValue} --s3bucket ${QSS3BucketName} --s3prefix ${QSS3KeyPrefix}", {
+                                        "./consul_client_bootstrap.sh --consul_tag_key ${ConsulEc2RetryTagKey} --consul_tag_value ${ConsulEc2RetryTagValue} --s3bucket ${QSS3BucketName} --s3prefix ${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul", {
                                             "ConsulEc2RetryTagKey": {
                                                 "Ref": "ConsulEc2RetryTagKey"
                                             },
@@ -637,7 +637,7 @@
                                 "# /usr/bin/pip install awscli\n",
                                 "which awscli\n", {
                                     "Fn::Sub": [
-                                        "wget https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/consul_client_bootstrap.sh\n", {
+                                        "wget https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul/scripts/consul_client_bootstrap.sh\n", {
                                             "QSS3BucketName": {
                                                 "Ref": "QSS3BucketName"
                                             },
@@ -657,7 +657,7 @@
                                 "",
                                 "chmod 755 ./consul_client_bootstrap.sh\n", {
                                     "Fn::Sub": [
-                                        "./consul_client_bootstrap.sh --consul_tag_key ${ConsulEc2RetryTagKey} --consul_tag_value ${ConsulEc2RetryTagValue} --s3bucket ${QSS3BucketName} --s3prefix ${QSS3KeyPrefix}", {
+                                        "./consul_client_bootstrap.sh --consul_tag_key ${ConsulEc2RetryTagKey} --consul_tag_value ${ConsulEc2RetryTagValue} --s3bucket ${QSS3BucketName} --s3prefix ${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul", {
                                             "ConsulEc2RetryTagKey": {
                                                 "Ref": "ConsulEc2RetryTagKey"
                                             },

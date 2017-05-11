@@ -371,9 +371,7 @@
                         "commands": {
                             "01_chmod_and_chown_nomad": {
                                 "command": "chmod 0755 /usr/local/bin/nomad && chown root:root /usr/local/bin/nomad"
-                            }
-                        },
-                        "commands": {
+                            },
                             "02_install_awscli": {
                                 "command": "pip install awscli"
                             }
@@ -420,8 +418,14 @@
                                 "apt-get -y update \n",
                                 "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n", {
                                     "Fn::Sub": [
-                                        "wget https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/consul_client_bootstrap.sh", {
-                                            "QSS3Region": {
+                                        "wget https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/consul_client_bootstrap.sh\n", {
+                                            "QSS3BucketName": {
+                                                "Ref": "QSS3BucketName"
+                                            },
+                                            "QSS3KeyPrefix": {
+                                                "Fn::Sub": "${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul/"
+                                            },
+                                            "S3Region": {
                                                 "Fn::If": [
                                                     "GovCloudCondition",
                                                     "s3-us-gov-west-1",
@@ -430,9 +434,6 @@
                                             }
                                         }
                                     ]
-
-
-
                                 },
                                 "",
                                 "which awscli\n",
@@ -559,9 +560,8 @@
                         "commands": {
                             "01_chmod_and_chown_nomad": {
                                 "command": "chmod 0755 /usr/local/bin/nomad && chown root:root /usr/local/bin/nomad"
-                            }
-                        },
-                        "commands": {
+                            },
+
                             "02_install_awscli": {
                                 "command": "pip install awscli"
                             }

@@ -93,14 +93,14 @@
                 "AccessCIDR": {
                     "default": "Permitted IP range"
                 },
-                "KeyPairName": {
+                "id_rsa_awsKeyPairName": {
                     "default": "Key Name"
                 },
                 "ConsulEc2RetryTagKey": {
-                    "default": "Consul Ec2Retry TagKey"
+                    "default": "Consul Ec2 Retry Tag Key"
                 },
                 "ConsulEc2RetryTagValue": {
-                    "default": "Consul Ec2Retry TagValue"
+                    "default": "Consul Ec2 Retry Tag Value"
                 },
                 "NomadServerNodes": {
                     "default": "Nomad Server Nodes"
@@ -132,11 +132,23 @@
                 "PublicSubnet3CIDR": {
                     "default": "Public Subnet 2 CIDR"
                 },
+                "PrivateSubnet1ID": {
+                    "default": "Private Subnet ID 1"
+                },
+                "PrivateSubnet2ID": {
+                    "default": "Private Subnet ID 2"
+                },
+                "PrivateSubnet2ID": {
+                    "default": "Private Subnet ID 3"
+                },
                 "QSS3BucketName": {
                     "default": "Quick Start S3 Bucket Name"
                 },
                 "QSS3KeyPrefix": {
                     "default": "Quick Start S3 Key Prefix"
+                },
+                "KeyPairName": {
+                    "default": "Key Name"
                 },
                 "VPCCIDR": {
                     "default": "VPC CIDR"
@@ -171,7 +183,6 @@
         },
         "KeyPair": {
             "ConstraintDescription": "Must be the name of an existing EC2 KeyPair.",
-            "Default": "id_rsa_aws",
             "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
             "Type": "AWS::EC2::KeyPair::KeyName"
         },
@@ -264,6 +275,7 @@
         "VPCCIDR": {
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
             "Description": "CIDR Block for the VPC",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
             "Type": "String"
         },
         "VPCID": {

@@ -392,6 +392,9 @@
                             "Outputs.VPCID"
                         ]
                     },
+                    "QSS3BucketName": {
+                        "Ref": "QSS3BucketName"
+                    },
                     "QSS3KeyPrefix": {
                         "Fn::Sub": [
                             "${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul", {

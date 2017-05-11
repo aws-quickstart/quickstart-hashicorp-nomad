@@ -54,7 +54,6 @@
                     "default": " VPC Network Configuration"
                 },
                 "Parameters": [
-                    "AvailabilityZones",
                     "PrivateSubnet1ID",
                     "PrivateSubnet2ID",
                     "PrivateSubnet3ID",
@@ -143,6 +142,15 @@
                     "default": "VPC CIDR"
                 }
             }
+        }
+    },
+    "Conditions": {
+        "GovCloudCondition": {
+            "Fn::Equals": [{
+                    "Ref": "AWS::Region"
+                },
+                "us-gov-west-1"
+            ]
         }
     },
     "Parameters": {
@@ -428,26 +436,7 @@
                                 "which awscli\n",
                                 "chmod 755 ./consul_client_bootstrap.sh\n", {
                                     "Fn::Sub": [
-                                        "./consul_client_bootstrap.sh --consul_tag_key ${ConsulEc2RetryTagKey} --consul_tag_value ${ConsulEc2RetryTagValue} --s3url https://s3.amazonaws.com --s3bucket ${QSS3BucketName} --s3prefix ${QSS3KeyPrefix}", {
-                                            "ConsulEc2RetryTagKey": {
-                                                "Ref": "ConsulEc2RetryTagKey"
-                                            },
-                                            "ConsulEc2RetryTagValue": {
-                                                "Ref": "ConsulEc2RetryTagValue"
-                                            },
-                                            "QSS3BucketName": {
-                                                "Ref": "QSS3BucketName"
-                                            },
-                                            "QSS3KeyPrefix": {
-                                                "Fn::Join": [
-                                                    "", [{
-                                                            "Ref": "QSS3KeyPrefix"
-                                                        },
-                                                        "/submodules/quickstart-hashicorp-consul/"
-                                                    ]
-                                                ]
-                                            }
-                                        }
+                                        "./consul_client_bootstrap.sh --consul_tag_key ${ConsulEc2RetryTagKey} --consul_tag_value ${ConsulEc2RetryTagValue} --s3bucket ${QSS3BucketName} --s3prefix ${QSS3KeyPrefix}", {}
                                     ]
                                 },
                                 "\n",
@@ -483,7 +472,6 @@
                                 "chmod 755 ./${NOMAD_BOOTSTRAP_FILE} \n",
                                 "./${NOMAD_BOOTSTRAP_FILE} \n",
                                 "/usr/local/bin/cfn-signal -e $? ",
-                                " -e $?",
                                 " '", {
                                     "Ref": "NomadServerWaitHandle"
                                 },
@@ -634,7 +622,7 @@
                                 "# /usr/bin/pip install awscli\n",
                                 "sleep 5 && which awscli\n", {
                                     "Fn::Sub": [
-                                        "wget https://s3.amazonaws.com/${QSS3BucketName}/${QSS3KeyPrefix}/submodules/quickstart-hashicorp-consul/scripts/consul_client_bootstrap.sh\n", {
+                                        "wget https://s3.amazonaws.com/${QSS3BucketName}/${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul/scripts/consul_client_bootstrap.sh\n", {
                                             "QSS3BucketName": {
                                                 "Ref": "QSS3BucketName"
                                             },
@@ -647,7 +635,7 @@
                                 "",
                                 "chmod 755 ./consul_client_bootstrap.sh\n", {
                                     "Fn::Sub": [
-                                        "./consul_client_bootstrap.sh --consul_tag_key ${ConsulEc2RetryTagKey} --consul_tag_value ${ConsulEc2RetryTagValue} --s3url https://s3.amazonaws.com --s3bucket ${QSS3BucketName} --s3prefix ${QSS3KeyPrefix}", {
+                                        "./consul_client_bootstrap.sh --consul_tag_key ${ConsulEc2RetryTagKey} --consul_tag_value ${ConsulEc2RetryTagValue} --s3bucket ${QSS3BucketName} --s3prefix ${QSS3KeyPrefix}", {
                                             "ConsulEc2RetryTagKey": {
                                                 "Ref": "ConsulEc2RetryTagKey"
                                             },

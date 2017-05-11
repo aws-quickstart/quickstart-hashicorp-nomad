@@ -397,7 +397,7 @@
                     },
                     "QSS3KeyPrefix": {
                         "Fn::Sub": [
-                            "${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul", {
+                            "${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul/", {
                                 "QSS3KeyPrefix": {
                                     "Ref": "QSS3KeyPrefix"
                                 }

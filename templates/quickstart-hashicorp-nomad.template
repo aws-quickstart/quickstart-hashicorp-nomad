@@ -423,7 +423,7 @@
                                                 "Ref": "QSS3BucketName"
                                             },
                                             "QSS3KeyPrefix": {
-                                                "Fn::Sub": "${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul/"
+                                                "Ref": "QSS3KeyPrefix"
                                             },
                                             "S3Region": {
                                                 "Fn::If": [
@@ -450,7 +450,7 @@
                                                 "Ref": "QSS3BucketName"
                                             },
                                             "QSS3KeyPrefix": {
-                                                "Fn::Sub": "${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul/"
+                                                "Ref": "QSS3KeyPrefix"
                                             }
                                         }
                                     ]
@@ -642,7 +642,7 @@
                                                 "Ref": "QSS3BucketName"
                                             },
                                             "QSS3KeyPrefix": {
-                                                "Fn::Sub": "${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul/"
+                                                "Ref": "QSS3KeyPrefix"
                                             },
                                             "S3Region": {
                                                 "Fn::If": [
@@ -668,7 +668,7 @@
                                                 "Ref": "QSS3BucketName"
                                             },
                                             "QSS3KeyPrefix": {
-                                                "Fn::Sub": "${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul/"
+                                                "Ref": "QSS3KeyPrefix"
                                             }
                                         }
                                     ]

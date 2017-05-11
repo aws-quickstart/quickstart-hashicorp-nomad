@@ -478,13 +478,7 @@
                         "Ref": "QSS3BucketName"
                     },
                     "QSS3KeyPrefix": {
-                        "Fn::Sub": [
-                            "${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul/", {
-                                "QSS3KeyPrefix": {
-                                    "Ref": "QSS3KeyPrefix"
-                                }
-                            }
-                        ]
+                        "Ref": "QSS3KeyPrefix"
                     },
                     "VPCCIDR": {
                         "Ref": "VPCCIDR"
@@ -508,7 +502,7 @@
                             }
                         }
                     ]
-                },
+                }
             },
             "Type": "AWS::CloudFormation::Stack"
         },

@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "(qs-1nae6brn7) Hashicorp Consul+Nomad+VPC, License: Apache 2.0 (Please do not remove) May,16,2017",
+    "Description": "(qs-1nae6brn2) Hashicorp Consul+Nomad+VPC, License: Apache 2.0 (Please do not remove) May,16,2017",
     "Metadata": {
         "AWS::CloudFormation::Interface": {
             "ParameterGroups": [{

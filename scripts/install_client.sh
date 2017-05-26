@@ -16,8 +16,8 @@ then
   exit 1
 fi
 unzip -d /tmp /tmp/nomad.zip
-chmod 755 /tmp/nomad
 mv /tmp/nomad /usr/local/bin/
+chmod 0755 /usr/local/bin/nomad && chown root:root /usr/local/bin/nomad
 if [ ! -d /opt/nomad ]
 then
   mkdir -p /opt/nomad/config && mkdir /opt/nomad/data

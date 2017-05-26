@@ -3,46 +3,51 @@
     "Description": "(qs-1nae6brn7) Hashicorp Consul+Nomad, License: Apache 2.0 (Please do not remove) May,16,2017",
     "Metadata": {
         "AWS::CloudFormation::Interface": {
-            "ParameterGroups": [{
-                "Label": {
-                    "default": " VPC Network Configuration"
+            "ParameterGroups": [
+                {
+                    "Label": {
+                        "default": " VPC Network Configuration"
+                    },
+                    "Parameters": [
+                        "PrivateSubnet1ID",
+                        "PrivateSubnet2ID",
+                        "PrivateSubnet3ID",
+                        "AccessCIDR",
+                        "VPCCIDR",
+                        "VPCID"
+                    ]
                 },
-                "Parameters": [
-                    "PrivateSubnet1ID",
-                    "PrivateSubnet2ID",
-                    "PrivateSubnet3ID",
-                    "AccessCIDR",
-                    "VPCCIDR",
-                    "VPCID"
-                ]
-            }, {
-                "Label": {
-                    "default": "Consul Client"
+                {
+                    "Label": {
+                        "default": "Consul Client"
+                    },
+                    "Parameters": [
+                        "ConsulEc2RetryTagKey",
+                        "ConsulEc2RetryTagValue"
+                    ]
                 },
-                "Parameters": [
-                    "ConsulEc2RetryTagKey",
-                    "ConsulEc2RetryTagValue"
-                ]
-            }, {
-                "Label": {
-                    "default": "Nomad Setup"
+                {
+                    "Label": {
+                        "default": "Nomad Setup"
+                    },
+                    "Parameters": [
+                        "KeyPair",
+                        "NomadInstanceType",
+                        "NomadServerNodes",
+                        "PrivateNomadClientNodes",
+                        "MinPrivateNomadClientNodes"
+                    ]
                 },
-                "Parameters": [
-                    "KeyPair",
-                    "NomadInstanceType",
-                    "NomadServerNodes",
-                    "PrivateNomadClientNodes",
-                    "MinPrivateNomadClientNodes"
-                ]
-            }, {
-                "Label": {
-                    "default": "AWS Quick Start Configuration"
-                },
-                "Parameters": [
-                    "QSS3BucketName",
-                    "QSS3KeyPrefix"
-                ]
-            }],
+                {
+                    "Label": {
+                        "default": "AWS Quick Start Configuration"
+                    },
+                    "Parameters": [
+                        "QSS3BucketName",
+                        "QSS3KeyPrefix"
+                    ]
+                }
+            ],
             "ParameterLabels": {
                 "AccessCIDR": {
                     "default": "Permitted IP range"
@@ -112,7 +117,8 @@
     },
     "Conditions": {
         "GovCloudCondition": {
-            "Fn::Equals": [{
+            "Fn::Equals": [
+                {
                     "Ref": "AWS::Region"
                 },
                 "us-gov-west-1"
@@ -122,46 +128,46 @@
     "Mappings": {
         "AWSAMIRegionMap": {
             "AMI": {
-                "US1604HVM": "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20170414"
+                "US1604HVM": "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20170516"
             },
             "ap-northeast-1": {
-                "US1604HVM": "ami-afb09dc8"
+                "US1604HVM": "ami-1de1df7a"
             },
             "ap-northeast-2": {
-                "US1604HVM": "ami-66e33108"
+                "US1604HVM": "ami-6722ff09"
             },
             "ap-south-1": {
-                "US1604HVM": "ami-c2ee9dad"
+                "US1604HVM": "ami-4fa4d920"
             },
             "ap-southeast-1": {
-                "US1604HVM": "ami-8fcc75ec"
+                "US1604HVM": "ami-93ef68f0"
             },
             "ap-southeast-2": {
-                "US1604HVM": "ami-96666ff5"
+                "US1604HVM": "ami-1e01147d"
             },
             "eu-central-1": {
-                "US1604HVM": "ami-060cde69"
+                "US1604HVM": "ami-a74c95c8"
             },
             "eu-west-1": {
-                "US1604HVM": "ami-a8d2d7ce"
+                "US1604HVM": "ami-6c101b0a"
             },
             "eu-west-2": {
-                "US1604HVM": "ami-f1d7c395"
+                "US1604HVM": "ami-056d7a61"
             },
             "sa-east-1": {
-                "US1604HVM": "ami-4090f22c"
+                "US1604HVM": "ami-4bd8b727"
             },
             "us-east-1": {
-                "US1604HVM": "ami-80861296"
+                "US1604HVM": "ami-20631a36"
             },
             "us-east-2": {
-                "US1604HVM": "ami-618fab04"
+                "US1604HVM": "ami-a5b196c0"
             },
             "us-west-1": {
-                "US1604HVM": "ami-2afbde4a"
+                "US1604HVM": "ami-9fe6c7ff"
             },
             "us-west-2": {
-                "US1604HVM": "ami-efd0428f"
+                "US1604HVM": "ami-45224425"
             }
         }
     },
@@ -302,18 +308,22 @@
         "NomadSecGroup": {
             "Properties": {
                 "GroupDescription": "Enables all access within the VPC to the Nomad clusters",
-                "SecurityGroupIngress": [{
-                    "CidrIp": {
-                        "Ref": "VPCCIDR"
-                    },
-                    "FromPort": "0",
-                    "IpProtocol": "tcp",
-                    "ToPort": "65535"
-                }],
-                "Tags": [{
-                    "Key": "Name",
-                    "Value": "NomadSecGroup"
-                }],
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": {
+                            "Ref": "VPCCIDR"
+                        },
+                        "FromPort": "0",
+                        "IpProtocol": "tcp",
+                        "ToPort": "65535"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "NomadSecGroup"
+                    }
+                ],
                 "VpcId": {
                     "Ref": "VPCID"
                 }
@@ -332,26 +342,34 @@
                     "Ref": "NomadServerNodes"
                 },
                 "MinSize": "3",
-                "Tags": [{
-                    "Key": "Name",
-                    "PropagateAtLaunch": "true",
-                    "Value": {
-                        "Fn::Join": [
-                            "-", [{
-                                    "Ref": "AWS::StackName"
-                                },
-                                "NomadServer"
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "PropagateAtLaunch": "true",
+                        "Value": {
+                            "Fn::Join": [
+                                "-",
+                                [
+                                    {
+                                        "Ref": "AWS::StackName"
+                                    },
+                                    "NomadServer"
+                                ]
                             ]
-                        ]
+                        }
                     }
-                }],
-                "VPCZoneIdentifier": [{
-                    "Ref": "PrivateSubnet1ID"
-                }, {
-                    "Ref": "PrivateSubnet2ID"
-                }, {
-                    "Ref": "PrivateSubnet3ID"
-                }]
+                ],
+                "VPCZoneIdentifier": [
+                    {
+                        "Ref": "PrivateSubnet1ID"
+                    },
+                    {
+                        "Ref": "PrivateSubnet2ID"
+                    },
+                    {
+                        "Ref": "PrivateSubnet3ID"
+                    }
+                ]
             },
             "Type": "AWS::AutoScaling::AutoScalingGroup"
         },
@@ -384,7 +402,8 @@
                 },
                 "ImageId": {
                     "Fn::FindInMap": [
-                        "AWSAMIRegionMap", {
+                        "AWSAMIRegionMap",
+                        {
                             "Ref": "AWS::Region"
                         },
                         "US1604HVM"
@@ -396,22 +415,27 @@
                 "KeyName": {
                     "Ref": "KeyPair"
                 },
-                "SecurityGroups": [{
-                    "Ref": "NomadSecGroup"
-                }],
+                "SecurityGroups": [
+                    {
+                        "Ref": "NomadSecGroup"
+                    }
+                ],
                 "UserData": {
                     "Fn::Base64": {
                         "Fn::Join": [
-                            "", [
+                            "",
+                            [
                                 "#!/bin/bash -x\n",
                                 "apt-get -y update\n",
                                 "apt-get -y install  python-setuptools python-pip\n",
                                 "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - \n",
                                 "add-apt-repository \"deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" \n",
                                 "apt-get -y update \n",
-                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n", {
+                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
+                                {
                                     "Fn::Sub": [
-                                        "wget https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul/scripts/consul_client_bootstrap.sh\n", {
+                                        "wget https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul/scripts/consul_client_bootstrap.sh\n",
+                                        {
                                             "QSS3BucketName": {
                                                 "Ref": "QSS3BucketName"
                                             },
@@ -430,9 +454,11 @@
                                 },
                                 "",
                                 "which awscli\n",
-                                "chmod 755 ./consul_client_bootstrap.sh\n", {
+                                "chmod 755 ./consul_client_bootstrap.sh\n",
+                                {
                                     "Fn::Sub": [
-                                        "./consul_client_bootstrap.sh --consul_tag_key ${ConsulEc2RetryTagKey} --consul_tag_value ${ConsulEc2RetryTagValue} --s3bucket ${QSS3BucketName} --s3prefix ${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul", {
+                                        "./consul_client_bootstrap.sh --consul_tag_key ${ConsulEc2RetryTagKey} --consul_tag_value ${ConsulEc2RetryTagValue} --s3bucket ${QSS3BucketName} --s3prefix ${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul",
+                                        {
                                             "ConsulEc2RetryTagKey": {
                                                 "Ref": "ConsulEc2RetryTagKey"
                                             },
@@ -452,19 +478,23 @@
                                 "apt-get -y install docker-ce \n",
                                 "/usr/local/bin/cfn-init",
                                 " --verbose ",
-                                " --stack ", {
+                                " --stack ",
+                                {
                                     "Ref": "AWS::StackName"
                                 },
                                 " --resource NomadServerLaunchConfig",
                                 " --configsets nomad_install",
-                                " --region ", {
+                                " --region ",
+                                {
                                     "Ref": "AWS::Region"
                                 },
                                 "\n",
                                 "NOMAD_BOOTSTRAP_FILE=install_server.sh\n",
-                                "NOMAD_BOOTSTRAP=", {
+                                "NOMAD_BOOTSTRAP=",
+                                {
                                     "Fn::Sub": [
-                                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}", {
+                                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}",
+                                        {
                                             "S3Region": {
                                                 "Fn::If": [
                                                     "GovCloudCondition",
@@ -481,7 +511,8 @@
                                 "chmod 755 ./${NOMAD_BOOTSTRAP_FILE} \n",
                                 "./${NOMAD_BOOTSTRAP_FILE} \n",
                                 "/usr/local/bin/cfn-signal -e $? ",
-                                " '", {
+                                " '",
+                                {
                                     "Ref": "NomadServerWaitHandle"
                                 },
                                 "'"
@@ -521,38 +552,49 @@
                 "MinSize": {
                     "Ref": "MinPrivateNomadClientNodes"
                 },
-                "Tags": [{
-                    "Key": "Name",
-                    "PropagateAtLaunch": "true",
-                    "Value": {
-                        "Fn::Join": [
-                            "-", [{
-                                    "Ref": "AWS::StackName"
-                                },
-                                "PrivateNomadClient"
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "PropagateAtLaunch": "true",
+                        "Value": {
+                            "Fn::Join": [
+                                "-",
+                                [
+                                    {
+                                        "Ref": "AWS::StackName"
+                                    },
+                                    "PrivateNomadClient"
+                                ]
                             ]
-                        ]
-                    }
-                }, {
-                    "Key": "Datacenter",
-                    "PropagateAtLaunch": "true",
-                    "Value": {
-                        "Fn::Join": [
-                            "-", [{
-                                    "Ref": "AWS::Region"
-                                },
-                                "private"
+                        }
+                    },
+                    {
+                        "Key": "Datacenter",
+                        "PropagateAtLaunch": "true",
+                        "Value": {
+                            "Fn::Join": [
+                                "-",
+                                [
+                                    {
+                                        "Ref": "AWS::Region"
+                                    },
+                                    "private"
+                                ]
                             ]
-                        ]
+                        }
                     }
-                }],
-                "VPCZoneIdentifier": [{
-                    "Ref": "PrivateSubnet1ID"
-                }, {
-                    "Ref": "PrivateSubnet2ID"
-                }, {
-                    "Ref": "PrivateSubnet3ID"
-                }]
+                ],
+                "VPCZoneIdentifier": [
+                    {
+                        "Ref": "PrivateSubnet1ID"
+                    },
+                    {
+                        "Ref": "PrivateSubnet2ID"
+                    },
+                    {
+                        "Ref": "PrivateSubnet3ID"
+                    }
+                ]
             },
             "Type": "AWS::AutoScaling::AutoScalingGroup"
         },
@@ -574,7 +616,8 @@
                             "/etc/cron.hourly/ecr-cred-refresh": {
                                 "content": {
                                     "Fn::Sub": [
-                                        "#!/bin/bash\naws ecr get-login --region=${Region} |  bash", {
+                                        "#!/bin/bash\naws ecr get-login --region=${Region} |  bash",
+                                        {
                                             "Region": {
                                                 "Ref": "AWS::Region"
                                             }
@@ -601,7 +644,8 @@
                 },
                 "ImageId": {
                     "Fn::FindInMap": [
-                        "AWSAMIRegionMap", {
+                        "AWSAMIRegionMap",
+                        {
                             "Ref": "AWS::Region"
                         },
                         "US1604HVM"
@@ -613,13 +657,16 @@
                 "KeyName": {
                     "Ref": "KeyPair"
                 },
-                "SecurityGroups": [{
-                    "Ref": "NomadSecGroup"
-                }],
+                "SecurityGroups": [
+                    {
+                        "Ref": "NomadSecGroup"
+                    }
+                ],
                 "UserData": {
                     "Fn::Base64": {
                         "Fn::Join": [
-                            "", [
+                            "",
+                            [
                                 "#!/bin/bash -x\n",
                                 "apt-get -y update\n",
                                 "apt-get -y install  python-setuptools python-pip\n",
@@ -629,19 +676,23 @@
                                 "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
                                 "/usr/local/bin/cfn-init",
                                 " --verbose ",
-                                " --stack ", {
+                                " --stack ",
+                                {
                                     "Ref": "AWS::StackName"
                                 },
                                 " --resource PrivateNomadClientLaunchConfig",
                                 " --configsets nomad_install",
-                                " --region ", {
+                                " --region ",
+                                {
                                     "Ref": "AWS::Region"
                                 },
                                 "\n",
                                 "# /usr/bin/pip install awscli\n",
-                                "which awscli\n", {
+                                "which awscli\n",
+                                {
                                     "Fn::Sub": [
-                                        "wget https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul/scripts/consul_client_bootstrap.sh\n", {
+                                        "wget https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul/scripts/consul_client_bootstrap.sh\n",
+                                        {
                                             "QSS3BucketName": {
                                                 "Ref": "QSS3BucketName"
                                             },
@@ -659,9 +710,11 @@
                                     ]
                                 },
                                 "",
-                                "chmod 755 ./consul_client_bootstrap.sh\n", {
+                                "chmod 755 ./consul_client_bootstrap.sh\n",
+                                {
                                     "Fn::Sub": [
-                                        "./consul_client_bootstrap.sh --consul_tag_key ${ConsulEc2RetryTagKey} --consul_tag_value ${ConsulEc2RetryTagValue} --s3bucket ${QSS3BucketName} --s3prefix ${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul", {
+                                        "./consul_client_bootstrap.sh --consul_tag_key ${ConsulEc2RetryTagKey} --consul_tag_value ${ConsulEc2RetryTagValue} --s3bucket ${QSS3BucketName} --s3prefix ${QSS3KeyPrefix}submodules/quickstart-hashicorp-consul",
+                                        {
                                             "ConsulEc2RetryTagKey": {
                                                 "Ref": "ConsulEc2RetryTagKey"
                                             },
@@ -681,9 +734,11 @@
                                 "echo 'This is the home directory' $HOME \n",
                                 "apt-get -y install docker-ce \n",
                                 "NOMAD_BOOTSTRAP_FILE=install_client.sh\n",
-                                "NOMAD_BOOTSTRAP=", {
+                                "NOMAD_BOOTSTRAP=",
+                                {
                                     "Fn::Sub": [
-                                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}", {
+                                        "https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}",
+                                        {
                                             "S3Region": {
                                                 "Fn::If": [
                                                     "GovCloudCondition",
@@ -699,9 +754,11 @@
                                 "wget ${NOMAD_BOOTSTRAP} \n",
                                 "chmod 755 ./${NOMAD_BOOTSTRAP_FILE} \n",
                                 "./${NOMAD_BOOTSTRAP_FILE} private\n",
-                                "apt-get -y install docker-ce \n", {
+                                "apt-get -y install docker-ce \n",
+                                {
                                     "Fn::Sub": [
-                                        "aws ecr get-login --region=${Region} |  bash\n", {
+                                        "aws ecr get-login --region=${Region} |  bash\n",
+                                        {
                                             "Region": {
                                                 "Ref": "AWS::Region"
                                             }
@@ -710,7 +767,8 @@
                                 },
                                 "/usr/local/bin/cfn-signal -e $? ",
                                 " -e $?",
-                                " '", {
+                                " '",
+                                {
                                     "Ref": "NomadClientWaitHandle"
                                 },
                                 "'"
@@ -724,75 +782,89 @@
         "nomadinstanceprofile": {
             "Properties": {
                 "Path": "/",
-                "Roles": [{
-                    "Ref": "nomadinstancerole"
-                }]
+                "Roles": [
+                    {
+                        "Ref": "nomadinstancerole"
+                    }
+                ]
             },
             "Type": "AWS::IAM::InstanceProfile"
         },
         "nomadinstancerole": {
             "Properties": {
                 "AssumeRolePolicyDocument": {
-                    "Statement": [{
-                        "Action": [
-                            "sts:AssumeRole"
-                        ],
-                        "Effect": "Allow",
-                        "Principal": {
-                            "Service": [
-                                "ec2.amazonaws.com"
-                            ]
+                    "Statement": [
+                        {
+                            "Action": [
+                                "sts:AssumeRole"
+                            ],
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com"
+                                ]
+                            }
                         }
-                    }],
+                    ],
                     "Version": "2012-10-17"
                 },
                 "Path": "/",
-                "Policies": [{
-                    "PolicyDocument": {
-                        "Statement": [{
-                            "Action": "ec2:Describe*",
-                            "Effect": "Allow",
-                            "Resource": "*"
-                        }, {
-                            "Action": "elasticloadbalancing:Describe*",
-                            "Effect": "Allow",
-                            "Resource": "*"
-                        }, {
-                            "Action": [
-                                "cloudwatch:ListMetrics",
-                                "cloudwatch:GetMetricStatistics",
-                                "cloudwatch:Describe*"
+                "Policies": [
+                    {
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Action": "ec2:Describe*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Action": "elasticloadbalancing:Describe*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Action": [
+                                        "cloudwatch:ListMetrics",
+                                        "cloudwatch:GetMetricStatistics",
+                                        "cloudwatch:Describe*"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Action": "autoscaling:Describe*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                }
                             ],
-                            "Effect": "Allow",
-                            "Resource": "*"
-                        }, {
-                            "Action": "autoscaling:Describe*",
-                            "Effect": "Allow",
-                            "Resource": "*"
-                        }],
-                        "Version": "2012-10-17"
+                            "Version": "2012-10-17"
+                        },
+                        "PolicyName": "EC2ReadOnly"
                     },
-                    "PolicyName": "EC2ReadOnly"
-                }, {
-                    "PolicyDocument": {
-                        "Statement": [{
-                            "Action": [
-                                "ecr:GetAuthorizationToken",
-                                "ecr:BatchCheckLayerAvailability",
-                                "ecr:GetDownloadUrlForLayer",
-                                "ecr:GetRepositoryPolicy",
-                                "ecr:DescribeRepositories",
-                                "ecr:ListImages",
-                                "ecr:DescribeImages",
-                                "ecr:BatchGetImage"
+                    {
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Action": [
+                                        "ecr:GetAuthorizationToken",
+                                        "ecr:BatchCheckLayerAvailability",
+                                        "ecr:GetDownloadUrlForLayer",
+                                        "ecr:GetRepositoryPolicy",
+                                        "ecr:DescribeRepositories",
+                                        "ecr:ListImages",
+                                        "ecr:DescribeImages",
+                                        "ecr:BatchGetImage"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                }
                             ],
-                            "Effect": "Allow",
-                            "Resource": "*"
-                        }],
-                        "Version": "2012-10-17"
-                    },
-                    "PolicyName": "ECR_readonly"
-                }]
+                            "Version": "2012-10-17"
+                        },
+                        "PolicyName": "ECR_readonly"
+                    }
+                ]
             },
             "Type": "AWS::IAM::Role"
         }

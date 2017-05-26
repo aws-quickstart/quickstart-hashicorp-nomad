@@ -365,10 +365,7 @@
                     },
                     "install_awscli": {
                         "commands": {
-                            "01_chmod_and_chown_nomad": {
-                                "command": "chmod 0755 /usr/local/bin/nomad && chown root:root /usr/local/bin/nomad"
-                            },
-                            "02_install_awscli": {
+                            "01_install_awscli": {
                                 "command": "pip install awscli"
                             }
                         },
@@ -569,10 +566,7 @@
                     },
                     "install_awscli": {
                         "commands": {
-                            "01_chmod_and_chown_nomad": {
-                                "command": "chmod 0755 /usr/local/bin/nomad && chown root:root /usr/local/bin/nomad"
-                            },
-                            "02_install_awscli": {
+                            "01_install_awscli": {
                                 "command": "pip install awscli"
                             }
                         },

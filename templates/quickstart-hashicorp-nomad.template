@@ -616,7 +616,7 @@
                             "/etc/cron.hourly/ecr-cred-refresh": {
                                 "content": {
                                     "Fn::Sub": [
-                                        "#!/bin/bash\naws ecr get-login --region=${Region} |  bash",
+                                        "#!/bin/bash\naws ecr get-login --no-include-email --region=${Region} |  bash",
                                         {
                                             "Region": {
                                                 "Ref": "AWS::Region"
@@ -757,7 +757,7 @@
                                 "apt-get -y install docker-ce \n",
                                 {
                                     "Fn::Sub": [
-                                        "aws ecr get-login --region=${Region} |  bash\n",
+                                        "aws ecr get-login --no-include-email --region=${Region} |  bash\n",
                                         {
                                             "Region": {
                                                 "Ref": "AWS::Region"

@@ -128,46 +128,46 @@
     "Mappings": {
         "AWSAMIRegionMap": {
             "AMI": {
-                "US1604HVM": "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20170811"
+                "US1604HVM": "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20180306"
             },
             "ap-northeast-1": {
-                "US1604HVM": "ami-0417e362"
+                "US1604HVM": "ami-0d74386b"
             },
             "ap-northeast-2": {
-                "US1604HVM": "ami-536ab33d"
+                "US1604HVM": "ami-a414b9ca"
             },
             "ap-south-1": {
-                "US1604HVM": "ami-df413bb0"
+                "US1604HVM": "ami-0189d76e"
             },
             "ap-southeast-1": {
-                "US1604HVM": "ami-9f28b3fc"
+                "US1604HVM": "ami-52d4802e"
             },
             "ap-southeast-2": {
-                "US1604HVM": "ami-bb1901d8"
+                "US1604HVM": "ami-d38a4ab1"
             },
             "eu-central-1": {
-                "US1604HVM": "ami-958128fa"
+                "US1604HVM": "ami-7c412f13"
             },
             "eu-west-1": {
-                "US1604HVM": "ami-674cbc1e"
+                "US1604HVM": "ami-f90a4880"
             },
             "eu-west-2": {
-                "US1604HVM": "ami-03998867"
+                "US1604HVM": "ami-f4f21593"
             },
             "sa-east-1": {
-                "US1604HVM": "ami-a41869c8"
+                "US1604HVM": "ami-423d772e"
             },
             "us-east-1": {
-                "US1604HVM": "ami-1d4e7a66"
+                "US1604HVM": "ami-43a15f3e"
             },
             "us-east-2": {
-                "US1604HVM": "ami-dbbd9dbe"
+                "US1604HVM": "ami-916f59f4"
             },
             "us-west-1": {
-                "US1604HVM": "ami-969ab1f6"
+                "US1604HVM": "ami-925144f2"
             },
             "us-west-2": {
-                "US1604HVM": "ami-8803e0f0"
+                "US1604HVM": "ami-4e79ed36"
             }
         }
     },
@@ -616,7 +616,7 @@
                             "/etc/cron.hourly/ecr-cred-refresh": {
                                 "content": {
                                     "Fn::Sub": [
-                                        "#!/bin/bash\naws ecr get-login --region=${Region} |  bash",
+                                        "#!/bin/bash\naws ecr get-login --no-include-email --region=${Region} |  bash",
                                         {
                                             "Region": {
                                                 "Ref": "AWS::Region"
@@ -757,7 +757,7 @@
                                 "apt-get -y install docker-ce \n",
                                 {
                                     "Fn::Sub": [
-                                        "aws ecr get-login --region=${Region} |  bash\n",
+                                        "aws ecr get-login --no-include-email --region=${Region} |  bash\n",
                                         {
                                             "Region": {
                                                 "Ref": "AWS::Region"

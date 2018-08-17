@@ -345,9 +345,6 @@
                             "Outputs.PrivateSubnet3AID"
                         ]
                     },
-                    "PublicSubnet3CIDR": {
-                        "Ref": "PublicSubnet3CIDR"
-                    },
                     "VPCCIDR": {
                         "Ref": "VPCCIDR"
                     },

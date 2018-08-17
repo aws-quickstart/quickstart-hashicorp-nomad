@@ -2,7 +2,7 @@
 set -ex
 
 # This script will automatically install nomad, put it in /usr/local/bin, and create /etc/nomad.d directory
-NOMAD_VER=0.5.5
+NOMAD_VER=0.8.4
 HOSTNAME=`hostname`
 LOCAL_IP=`curl http://169.254.169.254/latest/meta-data/local-ipv4`
 DATACENTER=`curl http://169.254.169.254/latest/dynamic/instance-identity/document | grep region | awk -F'"' '{print $4}'`

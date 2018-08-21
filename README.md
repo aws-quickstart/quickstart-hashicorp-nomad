@@ -1,7 +1,9 @@
-# quickstart-hashicorp-nomad
 ## HashiCorp Nomad on the AWS Cloud
-> Nomad version 0.5.5
-> Consul version 0.8.0
+### Versions:
+* `NOMAD VERSION`='0.8.4'
+* `CONSUL CLIENT VERSION`='1.2.2'
+* `CONSUL SERVER VERSION`='1.2.2'
+* `CONSUL_TEMPLATE_VERSION`='0.19.5'
 
 This Quick Start deploys HashiCorp Nomad automatically into a flexible, scalable, configurable environment in your AWS account in about 35 minutes.
 
@@ -16,14 +18,14 @@ You can also use the AWS CloudFormation templates as a starting point for your o
 
 ![Quick Start architecture for HashiCorp Nomad on AWS](https://d1.awsstatic.com/partner-network/QuickStart/datasheets/hashicorp-nomad-on-aws-architecture.png)
 
-For architectural details, best practices, step-by-step instructions, and customization options, see the 
+For architectural details, best practices, step-by-step instructions, and customization options, see the
 [deployment guide](https://fwd.aws/JPD5g).
 
-### Submodules:
+### Submodules (updated):
 * Linux Bastion https://github.com/aws-quickstart/quickstart-linux-bastion
 * HashiCorp Consul https://github.com/aws-quickstart/quickstart-hashicorp-consul
 * Quick Start VPC https://github.com/aws-quickstart/quickstart-aws-vpc
 
 To post feedback, submit feature ideas, or report bugs, use the **Issues** section of this GitHub repo.
-If you'd like to submit code for this Quick Start, please review the [AWS Quick Start Contributor's Kit](https://aws-quickstart.github.io/). 
+If you'd like to submit code for this Quick Start, please review the [AWS Quick Start Contributor's Kit](https://aws-quickstart.github.io/).
 

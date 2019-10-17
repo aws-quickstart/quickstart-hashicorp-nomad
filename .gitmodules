@@ -4,8 +4,8 @@
 	branch = master
 [submodule "submodules/quickstart-hashicorp-consul"]
 	path = submodules/quickstart-hashicorp-consul
-	url = ../../aws-quickstart/quickstart-hashicorp-consul.git
-	branch = submodule-freeze
+	url = https://github.com/aws-quickstart/quickstart-hashicorp-consul.git
+	branch = freeze-updates
 [submodule "submodules/quickstart-aws-vpc"]
 	path = submodules/quickstart-aws-vpc
 	url = ../../aws-quickstart/quickstart-aws-vpc.git

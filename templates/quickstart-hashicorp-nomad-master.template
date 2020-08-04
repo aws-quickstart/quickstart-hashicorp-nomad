@@ -472,7 +472,6 @@
             "DependsOn": "VPCStack",
             "Properties": {
                 "Parameters": {
-                    "BastionAMIOS": "Ubuntu-Server-16.04-LTS-HVM",
                     "KeyPairName": {
                         "Ref": "KeyPairName"
                     },

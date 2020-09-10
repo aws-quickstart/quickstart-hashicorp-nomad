@@ -1,7 +1,7 @@
 [submodule "submodules/quickstart-linux-bastion"]
 	path = submodules/quickstart-linux-bastion
 	url = ../../aws-quickstart/quickstart-linux-bastion.git
-	branch = master
+	branch = main
 [submodule "submodules/quickstart-hashicorp-consul"]
 	path = submodules/quickstart-hashicorp-consul
 	url = https://github.com/aws-quickstart/quickstart-hashicorp-consul.git
@@ -9,4 +9,4 @@
 [submodule "submodules/quickstart-aws-vpc"]
 	path = submodules/quickstart-aws-vpc
 	url = ../../aws-quickstart/quickstart-aws-vpc.git
-	branch = master
+	branch = main

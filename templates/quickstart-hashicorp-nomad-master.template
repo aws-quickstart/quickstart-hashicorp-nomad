@@ -535,9 +535,6 @@
                             }
                         ]
                     },
-                    "KeyPairName": {
-                        "Ref": "KeyPairName"
-                    },
                     "NumberOfAZs": "3",
                     "PrivateSubnet1ACIDR": {
                         "Ref": "PrivateSubnet1CIDR"
@@ -563,7 +560,7 @@
                 },
                 "TemplateURL": {
                     "Fn::Sub": [
-                        "https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template", {
+                        "https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template.yaml", {
                             "QSS3Region": {
                                 "Fn::If": [
                                     "GovCloudCondition",

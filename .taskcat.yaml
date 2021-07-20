@@ -1,0 +1,38 @@
+project:
+  name: quickstart-hashicorp-nomad
+  owner: quickstart-eng@amazon.com
+  package_lambda: false
+  s3_regional_buckets: false
+  regions:
+  - ap-northeast-1
+  - ap-northeast-2
+  - ap-south-1
+  - ap-southeast-1
+  - ap-southeast-2
+  - ca-central-1
+  - eu-central-1
+  - eu-west-1
+  - sa-east-1
+  - us-east-1
+  - us-east-2
+  - us-west-1
+  - us-west-2
+  s3_bucket: ''
+tests:
+  nomad:
+    parameters:
+      EnvironmentName: 'quickstart-hashicorp-nomad'
+      AccessCIDR: 0.0.0.0/0
+      AvailabilityZones: $[taskcat_genaz_3]
+      KeyPairName: override_me
+      NomadServerNodes: '3'
+      NomadInstanceType: 't2.micro'
+      QSS3BucketName: $[taskcat_autobucket]
+      QSS3KeyPrefix: quickstart-hashicorp-nomad/
+      VPCCIDR: 10.0.0.0/16
+      SSLCertificateArn: ''
+    regions:
+    - us-east-1
+    template: templates/new-quickstart-hashicorp-nomad-master.template.yaml
+    #template: templates/quickstart-hashicorp-nomad-master.template.yaml
+

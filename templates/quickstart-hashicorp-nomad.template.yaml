@@ -31,7 +31,7 @@ Metadata:
           - NomadEc2RetryTagKey
           - NomadEc2RetryTagValue
           - KeyPair
-          - EnablegRPC
+          # - EnablegRPC
       - Label:
           default: "DNS and SSL configuration"
         Parameters:
@@ -72,8 +72,8 @@ Metadata:
         default: Route 53 hosted zone ID
       LoadBalancerFQDN:
         default: Load Balancer FQDN
-      EnablegRPC:
-        default: Enable gRPC on Nomad
+      # EnablegRPC:
+      #   default: Enable gRPC on Nomad
       NomadServerInstanceType:
         default: Nomad server node instance type
       NomadServerNodes:
@@ -261,13 +261,13 @@ Parameters:
     Description: The fully qualified domain name for the nomad load balancer. Use with 'HostedZoneID' if you are not using SSL.
     Type: String
     Default: ''
-  EnablegRPC:
-    Description: Enable gRPC on the Nomad server cluster.
-    Type: String
-    Default: "false"
-    AllowedValues:
-      - "true"
-      - "false"
+  # EnablegRPC:
+  #   Description: Enable gRPC on the Nomad server cluster.
+  #   Type: String
+  #   Default: "false"
+  #   AllowedValues:
+  #     - "true"
+  #     - "false"
 
 Mappings:
   RegionELBAccountId:
@@ -348,8 +348,8 @@ Mappings:
       US1604HVM: ami-0a4df59262c92cf19
 
 Conditions:
-  gRPCCondition: !Equals [!Ref EnablegRPC, "true"]
-  # GovCloudCondition: !Equals [!Ref AWS::Region, "us-gov-west-1"]
+  # gRPCCondition: !Equals [!Ref EnablegRPC, "true"]
+  GovCloudCondition: !Equals [!Ref AWS::Region, "us-gov-west-1"]
   GenerateSSL: !And
     - !Equals [!Ref SSLCertificateArn, '']
     - !Not [!Equals [!Ref LoadBalancerFQDN, '']]
@@ -543,65 +543,48 @@ Resources:
             - install_and_enable_cfn_hup
             - create_nomad_group_user_dir
             - install_nomad
-            - install_nomad_template
+            - install_consul
+            - install_vault
+            - install_consul_template
             - nomad_bootstrap
             - setup_dnsmasq
         install_and_enable_cfn_hup:
           files:
             /etc/cfn/cfn-hup.conf:
-              content: !Join
-                - ""
-                - - |
-                    [main]
-                  - stack=
-                  - !Ref "AWS::StackId"
-                  - |+
-
-                  - region=
-                  - !Ref "AWS::Region"
-                  - |+
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
               mode: "000400"
               owner: root
               group: root
             /etc/cfn/hooks.d/cfn-auto-reloader.conf:
-              content: !Join
-                - ""
-                - - |
-                    [cfn-auto-reloader-hook]
-                  - |
-                    triggers=post.update
-                  - >
-                    path=Resources.NomadClientLC.Metadata.AWS::CloudFormation::Init
-                  - "action=/usr/local/bin/cfn-init -v "
-                  - "         --stack "
-                  - !Ref "AWS::StackName"
-                  - "         --resource NomadClientLC "
-                  - "         --configsets cs_install "
-                  - "         --region "
-                  - !Ref "AWS::Region"
-                  - |+
+              content: !Sub 
+                "[cfn-auto-reloader-hook]
 
-                  - |
-                    runas=root
+                triggers=post.update
+
+                path=Resources.NomadClientLC.Metadata.AWS::CloudFormation::Init
+
+                action=/usr/local/bin/cfn-init -v
+                          --stack ${AWS::StackName}
+                          --resource NomadClientLC
+                          --configsets cs_install
+                          --region ${AWS::Region}
+
+                runas=root"
             /lib/systemd/system/cfn-hup.service:
-              content: !Join
-                - ""
-                - - |
-                    [Unit]
-                  - |+
-                    Description=cfn-hup daemon
+              content: |
+                [Unit]
+                Description=cfn-hup daemon
+ 
+                [Service]
+                Type=simple
+                ExecStart=/usr/local/bin/cfn-hup
+                Restart=always
 
-                  - |
-                    [Service]
-                  - |
-                    Type=simple
-                  - |
-                    ExecStart=/usr/local/bin/cfn-hup
-                  - |+
-                    Restart=always
-                  - |
-                    [Install]
-                  - WantedBy=multi-user.target
+                [Install]
+                WantedBy=multi-user.target
           commands:
             01enable_cfn_hup:
               command: systemctl enable cfn-hup.service
@@ -616,110 +599,112 @@ Resources:
               command: mkdir -p /opt/nomad/data
         install_nomad:
           sources:
-            /usr/bin/: https://releases.hashicorp.com/nomad/1.7.0/nomad_1.7.0_linux_amd64.zip
-        install_nomad_template:
+            /usr/bin/: https://releases.hashicorp.com/nomad/1.1.2/nomad_1.1.2_linux_amd64.zip
+        install_consul:
           sources:
-            /usr/bin/: https://releases.hashicorp.com/nomad-template/0.24.0/nomad-template_0.24.0_linux_amd64.zip
+            /usr/bin/: https://releases.hashicorp.com/consul/1.10.1/consul_1.10.1_linux_amd64.zip
+        install_vault:
+          sources:
+            /usr/bin/: https://releases.hashicorp.com/vault/1.7.3/vault_1.7.3_linux_amd64.zip
+        install_consul_template:
+          sources:
+            /usr/bin/: https://releases.hashicorp.com/consul-template/0.26.0/consul-template_0.26.0_linux_amd64.zip
         nomad_bootstrap:
           files:
-            /opt/nomad/config/server.json:
+            /opt/nomad/config/nomad.hcl:
+              content: |
+                bind_addr  = "0.0.0.0"
+                datacenter = "{{Region}}"
+                log_level  = "WARN"
+                advertise {
+                  http     = "{{{InterfaceTemplate}}}"
+                  rpc      = "{{{InterfaceTemplate}}}"
+                  serf     = "{{{InterfaceTemplate}}}"
+                }
+              context:
+                Region: !Ref "AWS::Region"
+                InterfaceTemplate: '{{ GetDefaultInterfaces | include \"type\" \"ipv4\" | attr \"address\" }}'
+              mode: 000644
+            /opt/nomad/config/server.hcl:
               content: !Sub |
-                {
-                  "advertise_addr": "PrivateIpAddress",
-                  "bind_addr": "PrivateIpAddress",
-                  "node_name": "InstanceId",
-                  "datacenter": "${AWS::Region}",
-                  "server": true,
-                  "ui": true,
-                  "leave_on_terminate" : true,
-                  "skip_leave_on_interrupt" : true,
-                  "disable_update_check": true,
-                  "log_level": "warn",
-                  "data_dir": "/opt/nomad/data",
-                  "client_addr": "0.0.0.0",
-                  "bootstrap_expect": ${NomadServerNodes},
-                  "retry_join": ["provider=aws region=${AWS::Region} tag_key=${NomadEc2RetryTagKey} tag_value=${NomadEc2RetryTagValue}"],
-                  "addresses": {
-                    "http": "0.0.0.0"
-                  },
-                  "connect": {
-                    "enabled": true
-                  },
-                  "autopilot": {
-                    "cleanup_dead_servers": true,
-                    "last_contact_threshold": "200ms",
-                    "max_trailing_logs": 250,
-                    "server_stabilization_time": "10s",
-                    "redundancy_zone_tag": "az",
-                    "disable_upgrade_migration": false,
-                    "upgrade_version_tag": ""
+                server {
+                  enabled          = true
+                  bootstrap_expect = ${NomadServerNodes}
+                  raft_protocol    = 3
+                  server_join {
+                    retry_join = ["provider=aws region=${AWS::Region} tag_key=${NomadEc2RetryTagKey} tag_value=${NomadEc2RetryTagValue}"]
                   }
                 }
-              
               mode: 000644
             /etc/systemd/system/nomad.service:
-              content: !Join
-                - ""
-                - - |
-                    [Unit]
-                  - |
-                    Description="HashiCorp Nomad - A service mesh solution"
-                  - |
-                    Documentation=https://www.nomad.io/
-                  - |
-                    Requires=network-online.target
-                  - |
-                    After=network-online.target
-                  - |
-                    ConditionFileNotEmpty=/opt/nomad/config/server.json
-                  - |+
-                    [Service]
-                  - |
-                    Type=notify
-                  - |
-                    User=nomad
-                  - |
-                    Group=nomad
-                  - |
-                    ExecStart=/usr/bin/nomad agent -config-dir /opt/nomad/config -data-dir /opt/nomad/data
-                  - |
-                    ExecReload=/usr/bin/nomad reload
-                  - |
-                    KillMode=process
-                  - |
-                    Restart=on-failure
-                  - |
-                    TimeoutSec=300s
-                  - |
-                    LimitNOFILE=65536
-                  - |+
-                    [Install]
-                  - WantedBy=multi-user.target
+             content: |
+                [Unit]
+                Description=Hashicorp Nomad
+                Documentation=https://nomadproject.io/docs/
+                Wants=network-online.target
+                After=network-online.target
+                ConditionFileNotEmpty=/opt/nomad/config/nomad.hcl
+                ConditionFileNotEmpty=/opt/nomad/config/server.hcl
+
+                # When using Nomad with Consul it is not necessary to start Consul first. These
+                # lines start Consul before Nomad as an optimization to avoid Nomad logging
+                # that Consul is unavailable at startup.
+                #Wants=consul.service
+                #After=consul.service
+
+                [Service]
+                Type=simple
+                User=nomad
+                Group=nomad
+                EnvironmentFile=-/opt/nomad/config/nomad.env
+                ExecReload=/bin/kill -HUP $MAINPID
+                ExecStart=/usr/bin/nomad agent -config /opt/nomad/config -data-dir /opt/nomad/data
+
+                KillMode=process
+                KillSignal=SIGINT
+                LimitNOFILE=65536
+                LimitNPROC=infinity
+                Restart=on-failure
+                TimeoutSec=300s
+                RestartSec=2
+
+                ## Configure unit start rate limiting. Units which are started more than
+                ## *burst* times within an *interval* time span are not permitted to start any
+                ## more. Use `StartLimitIntervalSec` or `StartLimitInterval` (depending on
+                ## systemd version) to configure the checking interval and `StartLimitBurst`
+                ## to configure how many starts per interval are allowed. The values in the
+                ## commented lines are defaults.
+                # StartLimitBurst = 5
+
+                ## StartLimitIntervalSec is used for systemd versions >= 230
+                # StartLimitIntervalSec = 10s
+
+                ## StartLimitInterval is used for systemd versions < 230
+                # StartLimitInterval = 10s
+
+                TasksMax=infinity
+                OOMScoreAdjust=-1000
+
+                [Install]
+                WantedBy=multi-user.target
           commands:
-            00_fill_nomad_config_ip:
-              command: myip=`echo $(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)` && sed -i "s/PrivateIpAddress/${myip}/g" /opt/nomad/config/server.json
-            01_fill_nomad_config_instance_id:
-              command: myid=`echo $(curl -s http://169.254.169.254/latest/meta-data/instance-id)` && sed -i "s/InstanceId/${myid}/g" /opt/nomad/config/server.json
-            02_change_ownership:
+            00_fill_nomad_config_nodename:
+              command: echo "name=\"$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\"" >> /opt/nomad/config/nodename.hcl
+            01_change_ownership:
               command: chown -R nomad:nomad /opt/nomad
-            03_reload_systemd:
+            02_reload_systemd:
               command: systemctl daemon-reload
-            04_start_nomad:
+            03_start_nomad:
               command: systemctl enable nomad
-            05_start_nomad:
+            04_start_nomad:
               command: systemctl start nomad
         setup_dnsmasq:
           files:
             /etc/dnsmasq.d/nomad:
-              content: !Join
-                - ""
-                - - |
-                    server=/nomad/127.0.0.1#8600
-                  - |
-                    listen-address=127.0.0.1
-                  - |
-                    bind-interfaces
-                  - |
+              content: |
+                server=/consul/127.0.0.1#8600
+                listen-address=127.0.0.1
+                bind-interfaces
           packages:
             apt:
               dnsmasq-base: []
@@ -780,65 +765,48 @@ Resources:
             - install_and_enable_cfn_hup
             - create_nomad_group_user_dir
             - install_nomad
-            - install_nomad_template
+            - install_consul
+            - install_vault
+            - install_consul_template
             - nomad_bootstrap
             - setup_dnsmasq
         install_and_enable_cfn_hup:
           files:
             /etc/cfn/cfn-hup.conf:
-              content: !Join
-                - ""
-                - - |
-                    [main]
-                  - stack=
-                  - !Ref "AWS::StackId"
-                  - |+
-
-                  - region=
-                  - !Ref "AWS::Region"
-                  - |+
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
               mode: "000400"
               owner: root
               group: root
             /etc/cfn/hooks.d/cfn-auto-reloader.conf:
-              content: !Join
-                - ""
-                - - |
-                    [cfn-auto-reloader-hook]
-                  - |
-                    triggers=post.update
-                  - >
-                    path=Resources.NomadClientLC.Metadata.AWS::CloudFormation::Init
-                  - "action=/usr/local/bin/cfn-init -v "
-                  - "         --stack "
-                  - !Ref "AWS::StackName"
-                  - "         --resource NomadClientLC "
-                  - "         --configsets cs_install "
-                  - "         --region "
-                  - !Ref "AWS::Region"
-                  - |+
+              content: !Sub
+                "[cfn-auto-reloader-hook]
 
-                  - |
-                    runas=root
+                triggers=post.update
+
+                path=Resources.NomadClientLC.Metadata.AWS::CloudFormation::Init
+
+                action=/usr/local/bin/cfn-init -v
+                          --stack ${AWS::StackName}
+                          --resource NomadClientLC
+                          --configsets cs_install
+                          --region ${AWS::Region}
+
+                runas=root"
             /lib/systemd/system/cfn-hup.service:
-              content: !Join
-                - ""
-                - - |
-                    [Unit]
-                  - |+
-                    Description=cfn-hup daemon
+              content: |
+                [Unit]
+                Description=cfn-hup daemon
+ 
+                [Service]
+                Type=simple
+                ExecStart=/usr/local/bin/cfn-hup
+                Restart=always
 
-                  - |
-                    [Service]
-                  - |
-                    Type=simple
-                  - |
-                    ExecStart=/usr/local/bin/cfn-hup
-                  - |+
-                    Restart=always
-                  - |
-                    [Install]
-                  - WantedBy=multi-user.target
+                [Install]
+                WantedBy=multi-user.target
           commands:
             01enable_cfn_hup:
               command: systemctl enable cfn-hup.service
@@ -853,99 +821,114 @@ Resources:
               command: mkdir -p /opt/nomad/data
         install_nomad:
           sources:
-            /usr/bin/: https://releases.hashicorp.com/nomad/1.7.0/nomad_1.7.0_linux_amd64.zip
-        install_nomad_template:
+            /usr/bin/: https://releases.hashicorp.com/nomad/1.1.2/nomad_1.1.2_linux_amd64.zip
+        install_consul:
           sources:
-            /usr/bin/: https://releases.hashicorp.com/nomad-template/0.24.0/nomad-template_0.24.0_linux_amd64.zip
+            /usr/bin/: https://releases.hashicorp.com/consul/1.10.1/consul_1.10.1_linux_amd64.zip
+        install_vault:
+          sources:
+            /usr/bin/: https://releases.hashicorp.com/vault/1.7.3/vault_1.7.3_linux_amd64.zip
+        install_consul_template:
+          sources:
+            /usr/bin/: https://releases.hashicorp.com/consul-template/0.26.0/consul-template_0.26.0_linux_amd64.zip
+
         nomad_bootstrap:
           files:
-            /opt/nomad/config/client.json:
-              content: !Sub
-              - |
-                {
-                  "advertise_addr": "PrivateIpAddress",
-                  "bind_addr": "PrivateIpAddress",
-                  "node_name": "InstanceId",
-                  "datacenter": "${AWS::Region}",
-                  "server": false,
-                  "ui" : false,
-                  "leave_on_terminate" : true,
-                  "skip_leave_on_interrupt" : false,
-                  "disable_update_check": true,
-                  "log_level": "warn",
-                  "enable_local_script_checks": true,
-                  "data_dir": "/opt/nomad/data",
-                  "client_addr": "0.0.0.0",
-                  "retry_join": ["provider=aws region=${AWS::Region} tag_key=${NomadEc2RetryTagKey} tag_value=${NomadEc2RetryTagValue}"],
-                  "addresses": {
-                    "http": "0.0.0.0"
-                  }${gRPC}
+            /opt/nomad/config/nomad.hcl:
+              content: |
+                bind_addr  = "0.0.0.0"
+                datacenter = "{{Region}}"
+                log_level  = "WARN"
+
+                advertise {
+                  http = "{{{InterfaceTemplate}}}"
+                  rpc  = "{{{InterfaceTemplate}}}"
+                  serf = "{{{InterfaceTemplate}}}"
                 }
-              - gRPC: !If [ gRPCCondition, "\"ports\": ,{ \"grpc\": 8502 },", "" ]   
+              context:
+                Region: !Ref "AWS::Region"
+                InterfaceTemplate: '{{ GetDefaultInterfaces | include \"type\" \"ipv4\" | attr \"address\" }}'
+              mode: 000644
+            /opt/nomad/config/client.hcl:
+              content: !Sub |
+                client {
+                  enabled = true
+
+                  server_join {
+                    retry_join = ["provider=aws region=${AWS::Region} tag_key=${NomadEc2RetryTagKey} tag_value=${NomadEc2RetryTagValue}"]
+                  }
+                }
               mode: 000644
             /etc/systemd/system/nomad.service:
-              content: !Join
-                - ""
-                - - |
-                    [Unit]
-                  - |
-                    Description="HashiCorp Nomad - A service mesh solution"
-                  - |
-                    Documentation=https://www.nomad.io/
-                  - |
-                    Requires=network-online.target
-                  - |
-                    After=network-online.target
-                  - |
-                    ConditionFileNotEmpty=/opt/nomad/config/client.json
-                  - |+
-                    [Service]
-                  - |
-                    Type=notify
-                  - |
-                    User=nomad
-                  - |
-                    Group=nomad
-                  - |
-                    ExecStart=/usr/bin/nomad agent -config-dir /opt/nomad/config -data-dir /opt/nomad/data
-                  - |
-                    ExecReload=/usr/bin/nomad reload
-                  - |
-                    KillMode=process
-                  - |
-                    Restart=on-failure
-                  - |
-                    TimeoutSec=300s
-                  - |
-                    LimitNOFILE=65536
-                  - |+
-                    [Install]
-                  - WantedBy=multi-user.target
+             content: |
+                [Unit]
+                Description=HashiCorp Nomad
+                Documentation=https://nomadproject.io/docs/
+                Wants=network-online.target
+                After=network-online.target
+                ConditionFileNotEmpty=/opt/nomad/config/nomad.hcl
+                ConditionFileNotEmpty=/opt/nomad/config/client.hcl
+
+                # When using Nomad with Consul it is not necessary to start Consul first. These
+                # lines start Consul before Nomad as an optimization to avoid Nomad logging
+                # that Consul is unavailable at startup.
+                #Wants=consul.service
+                #After=consul.service
+
+                [Service]
+                Type=simple
+                User=root
+                Group=root
+                EnvironmentFile=-/opt/nomad/config/nomad.env
+                ExecReload=/bin/kill -HUP $MAINPID
+                ExecStart=/usr/bin/nomad agent -config /opt/nomad/config -data-dir /opt/nomad/data
+
+                KillMode=process
+                KillSignal=SIGINT
+                LimitNOFILE=65536
+                LimitNPROC=infinity
+                Restart=on-failure
+                TimeoutSec=300s
+                RestartSec=2
+
+                ## Configure unit start rate limiting. Units which are started more than
+                ## *burst* times within an *interval* time span are not permitted to start any
+                ## more. Use `StartLimitIntervalSec` or `StartLimitInterval` (depending on
+                ## systemd version) to configure the checking interval and `StartLimitBurst`
+                ## to configure how many starts per interval are allowed. The values in the
+                ## commented lines are defaults.
+                # StartLimitBurst = 5
+
+                ## StartLimitIntervalSec is used for systemd versions >= 230
+                # StartLimitIntervalSec = 10s
+
+                ## StartLimitInterval is used for systemd versions < 230
+                # StartLimitInterval = 10s
+
+                TasksMax=infinity
+                OOMScoreAdjust=-1000
+
+                [Install]
+                WantedBy=multi-user.target
           commands:
-            00_fill_nomad_config_ip:
-              command: myip=`echo $(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)` && sed -i "s/PrivateIpAddress/${myip}/g" /opt/nomad/config/client.json
-            01_fill_nomad_config_instance_id:
-              command: myid=`echo $(curl -s http://169.254.169.254/latest/meta-data/instance-id)` && sed -i "s/InstanceId/${myid}/g" /opt/nomad/config/client.json
-            02_change_ownership:
+            00_fill_nomad_config_nodename:
+              command: echo "name=\"$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\"" >> /opt/nomad/config/nodename.hcl
+            01_change_ownership:
               command: chown -R nomad:nomad /opt/nomad
-            03_reload_systemd:
+            02_reload_systemd:
               command: systemctl daemon-reload
-            04_enable_nomad:
-              command: systemctl enable nomad 
-            05_start_nomad:
+            03_start_nomad:
+              command: systemctl enable nomad
+            04_start_nomad:
               command: systemctl start nomad
+
         setup_dnsmasq:
           files:
             /etc/dnsmasq.d/nomad:
-              content: !Join
-                - ""
-                - - |
-                    server=/nomad/127.0.0.1#8600
-                  - |
-                    listen-address=127.0.0.1
-                  - |
-                    bind-interfaces
-                  - |
+              content: |
+                server=/consul/127.0.0.1#8600
+                listen-address=127.0.0.1
+                bind-interfaces
           packages:
             apt:
               dnsmasq-base: []
@@ -1088,7 +1071,7 @@ Resources:
     Condition: GenerateSSL
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/copy-lambdas.template"
+      TemplateURL: !Sub "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/copy-lambdas.template.yaml"
       Parameters:
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
@@ -1106,17 +1089,21 @@ Resources:
 Outputs:
   NomadEc2RetryTagKey:
     Value: !Ref NomadEc2RetryTagKey
-    Description: The EC2 instance tag key to filter on when joining to other Nomad nodes.
+    Description:
+      The EC2 instance tag key to filter on when joining to other Nomad nodes.
 
   NomadEc2RetryTagValue:
     Value: !Ref NomadEc2RetryTagValue
-    Description: The EC2 instance tag value to filter on when joining to other Nomad nodes.
+    Description:
+      The EC2 instance tag value to filter on when joining to other Nomad nodes.
 
   NomadServerELB:
-    Description: The public URL of your Nomad Load Balancer. Create a CNAME record pointing at this Load Balancer.
-    Value: !Join ["", ["https://", !GetAtt NomadServerELB.DNSName]]
+    Description:
+      The public URL of your Nomad Load Balancer. Create a CNAME record pointing
+      at this Load Balancer.
+    Value: !Sub "https://${NomadServerELB.DNSName}"
 
   NomadServerFQDN:
     Condition: SetupRoute53
     Description: The public CNAME pointing to your Nomad Load Balancer.
-    Value: !Join ["", ["https://", !Ref LoadBalancerFQDN]]
+    Value: !Sub "https://${LoadBalancerFQDN}"

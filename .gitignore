@@ -1,3 +1,5 @@
 .DS_Store
-.taskcat_overrides.yaml
+.taskcat_overrides.yml
 taskcat_outputs
+templates/reference
+

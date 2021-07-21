@@ -26,7 +26,7 @@ Metadata:
           - NomadClientInstanceType
           - NomadClientNodes
           - KeyPairName
-          - EnablegRPC
+          # - EnablegRPC
       - Label:
           default: "DNS and SSL configuration"
         Parameters:
@@ -77,8 +77,8 @@ Metadata:
         default: Nomad client node instance type
       NomadClientNodes:
         default: Number of Nomad client nodes
-      EnablegRPC:
-        default: Enable gRPC
+      # EnablegRPC:
+      #   default: Enable gRPC
 
 Parameters:
   AvailabilityZones:
@@ -265,13 +265,13 @@ Parameters:
     Description: The fully qualified domain name for the load balancer. Use with 'HostedZoneID' if you are NOT using SSL.
     Type: String
     Default: ''
-  EnablegRPC:
-    Description: Enable gRPC on the Nomad server cluster.
-    Type: String
-    Default: "false"
-    AllowedValues:
-      - "true"
-      - "false"
+  # EnablegRPC:
+  #   Description: Enable gRPC on the Nomad server cluster.
+  #   Type: String
+  #   Default: "false"
+  #   AllowedValues:
+  #     - "true"
+  #     - "false"
 
 Conditions:
   # GovCloudCondition: !Equals [!Ref AWS::Region, "us-gov-west-1" ]
@@ -314,7 +314,7 @@ Resources:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
       TemplateURL: !Sub >-
-        https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/quickstart-hashicorp-nomad.template
+        https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/quickstart-hashicorp-nomad.template.yaml
       Parameters:
         BastionSecurityGroupID: !GetAtt BastionStack.Outputs.BastionSecurityGroupID
         PrivateSubnet1ID: !GetAtt VPCStack.Outputs.PrivateSubnet1AID
@@ -329,7 +329,7 @@ Resources:
         NomadServerNodes: !Ref NomadServerNodes
         NomadClientInstanceType: !Ref NomadClientInstanceType
         NomadClientNodes: !Ref NomadClientNodes
-        EnablegRPC: !Ref EnablegRPC
+        # EnablegRPC: !Ref EnablegRPC
         KeyPair: !Ref KeyPairName
         NomadEc2RetryTagKey: "quickstart-nomad-cluster"
         NomadEc2RetryTagValue: "nomad-member-node"

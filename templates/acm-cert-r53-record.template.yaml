@@ -137,7 +137,7 @@ Resources:
     Properties:
       DomainName:
         Ref: DomainName
-      SubjectAlternativeNames: 
+      SubjectAlternativeNames:
         - !Sub "*.${DomainName}"
       DomainValidationOptions:
         - DomainName: !Ref DomainName

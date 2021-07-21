@@ -168,6 +168,10 @@ Parameters:
       - t2.small
       - t2.medium
       - t2.large
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
       - m5.large
       - m5.xlarge
       - m5.2xlarge
@@ -202,6 +206,7 @@ Parameters:
     Type: String
     Description: The number of Nomad server nodes that will be created. You can choose 3, 5, or 7 nodes.
     AllowedValues:
+      - "1"
       - "3"
       - "5"
       - "7"
@@ -214,6 +219,10 @@ Parameters:
       - t2.small
       - t2.medium
       - t2.large
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
       - m5.large
       - m5.xlarge
       - m5.2xlarge

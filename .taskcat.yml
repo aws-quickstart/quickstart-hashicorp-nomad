@@ -23,8 +23,8 @@ tests:
     parameters:
       AccessCIDR: 0.0.0.0/0
       AvailabilityZones: $[taskcat_genaz_3]
-      NomadClientNodes: '3'
-      NomadServerNodes: '3'
+      NomadClientNodeCount: '3'
+      NomadServerNodeCount: '3'
       HostedZoneID: overrides
       KeyPairName: tonynv
       LoadBalancerFQDN: dummy.dns.name.com

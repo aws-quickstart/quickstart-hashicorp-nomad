@@ -25,9 +25,9 @@ Metadata:
           default: Nomad Setup
         Parameters:
           - NomadServerInstanceType
-          - NomadServerNodes
+          - NomadServerNodeCount
           - NomadClientInstanceType
-          - NomadClientNodes
+          - NomadClientNodeCount
           - NomadEc2RetryTagKey
           - NomadEc2RetryTagValue
           - KeyPair
@@ -76,11 +76,11 @@ Metadata:
       #   default: Enable gRPC on Nomad
       NomadServerInstanceType:
         default: Nomad server node instance type
-      NomadServerNodes:
+      NomadServerNodeCount:
         default: Number of Nomad server nodes
       NomadClientInstanceType:
         default: Nomad client node instance type
-      NomadClientNodes:
+      NomadClientNodeCount:
         default: Number of Nomad client nodes
       NomadEc2RetryTagKey: 
         default: Tag key for Nomad cluster nodes
@@ -202,7 +202,7 @@ Parameters:
       - i2.8xlarge
     ConstraintDescription: Choose an instance type.
     Default: m5.large
-  NomadServerNodes:
+  NomadServerNodeCount:
     Type: String
     Description: The number of Nomad server nodes that will be created. You can choose 3, 5, or 7 nodes.
     AllowedValues:
@@ -253,7 +253,7 @@ Parameters:
       - i2.8xlarge
     ConstraintDescription: Choose an instance type.
     Default: m5.large
-  NomadClientNodes:
+  NomadClientNodeCount:
     Type: String
     Description: The number of Nomad client nodes that will be created.
     Default: "0"
@@ -393,9 +393,9 @@ Resources:
     Type: "AWS::AutoScaling::AutoScalingGroup"
     Properties:
       LaunchConfigurationName: !Ref NomadServerLC
-      MinSize: !Ref NomadServerNodes
-      MaxSize: !Ref NomadServerNodes
-      DesiredCapacity: !Ref NomadServerNodes
+      MinSize: !Ref NomadServerNodeCount
+      MaxSize: !Ref NomadServerNodeCount
+      DesiredCapacity: !Ref NomadServerNodeCount
       LoadBalancerNames: [!Ref NomadServerELB]
       VPCZoneIdentifier:
         - !Ref PrivateSubnet1ID
@@ -413,15 +413,15 @@ Resources:
           PropagateAtLaunch: true
     CreationPolicy:
       ResourceSignal:
-        Count: !Ref NomadServerNodes
+        Count: !Ref NomadServerNodeCount
         Timeout: PT20M
   NomadClientASG:
     Type: "AWS::AutoScaling::AutoScalingGroup"
     Properties:
       LaunchConfigurationName: !Ref NomadClientLC
-      MinSize: !Ref NomadClientNodes
-      MaxSize: !Ref NomadClientNodes
-      DesiredCapacity: !Ref NomadClientNodes
+      MinSize: !Ref NomadClientNodeCount
+      MaxSize: !Ref NomadClientNodeCount
+      DesiredCapacity: !Ref NomadClientNodeCount
       VPCZoneIdentifier:
         - !Ref PrivateSubnet1ID
         - !Ref PrivateSubnet2ID
@@ -435,7 +435,7 @@ Resources:
           PropagateAtLaunch: true
     CreationPolicy:
       ResourceSignal:
-        Count: !Ref NomadClientNodes
+        Count: !Ref NomadClientNodeCount
         Timeout: PT20M
   NomadServerELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
@@ -638,7 +638,7 @@ Resources:
               content: !Sub |
                 server {
                   enabled          = true
-                  bootstrap_expect = ${NomadServerNodes}
+                  bootstrap_expect = ${NomadServerNodeCount}
                   raft_protocol    = 3
                   server_join {
                     retry_join = ["provider=aws region=${AWS::Region} tag_key=${NomadEc2RetryTagKey} tag_value=${NomadEc2RetryTagValue}"]

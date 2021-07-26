@@ -22,9 +22,9 @@ Metadata:
           default: Nomad setup
         Parameters:
           - NomadServerInstanceType
-          - NomadServerNodes
+          - NomadServerNodeCount
           - NomadClientInstanceType
-          - NomadClientNodes
+          - NomadClientNodeCount
           - KeyPairName
           # - EnablegRPC
       - Label:
@@ -71,11 +71,11 @@ Metadata:
         default: Load Balancer FQDN
       NomadServerInstanceType:
         default: Nomad server node instance type
-      NomadServerNodes:
+      NomadServerNodeCount:
         default: Number of Nomad server nodes
       NomadClientInstanceType:
         default: Nomad client node instance type
-      NomadClientNodes:
+      NomadClientNodeCount:
         default: Number of Nomad client nodes
       # EnablegRPC:
       #   default: Enable gRPC
@@ -136,7 +136,7 @@ Parameters:
       - i2.4xlarge
       - i2.8xlarge
     ConstraintDescription: Choose an instance type. m3.medium or larger recommended.
-  NomadServerNodes:
+  NomadServerNodeCount:
     Type: String
     Description: The number of Nomad server nodes that will be created. You can choose 3, 5, or 7 nodes.
     AllowedValues:
@@ -187,7 +187,7 @@ Parameters:
       - i2.4xlarge
       - i2.8xlarge
     ConstraintDescription: Choose an instance type. m3.medium or larger recommended.
-  NomadClientNodes:
+  NomadClientNodeCount:
     Type: String
     Description: The number of Nomad client nodes that will be created.
     Default: '3'
@@ -335,9 +335,9 @@ Resources:
         VPCID: !GetAtt VPCStack.Outputs.VPCID
         VPCCIDR: !Ref VPCCIDR
         NomadServerInstanceType: !Ref NomadServerInstanceType
-        NomadServerNodes: !Ref NomadServerNodes
+        NomadServerNodeCount: !Ref NomadServerNodeCount
         NomadClientInstanceType: !Ref NomadClientInstanceType
-        NomadClientNodes: !Ref NomadClientNodes
+        NomadClientNodeCount: !Ref NomadClientNodeCount
         # EnablegRPC: !Ref EnablegRPC
         KeyPair: !Ref KeyPairName
         NomadEc2RetryTagKey: "quickstart-nomad-cluster"

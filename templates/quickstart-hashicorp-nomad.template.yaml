@@ -7,7 +7,7 @@ Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
       - Label:
-          default: 'VPC network configuration'
+          default: "VPC network configuration"
         Parameters:
           - VPCID
           - VPCCIDR
@@ -18,20 +18,25 @@ Metadata:
           - PublicSubnet2ID
           - PublicSubnet3ID
       - Label:
+          default: "SSH Access"
+        Parameters:
+          - KeyPairName
+      - Label:
           default: "Bastion host configuration"
         Parameters:
           - BastionSecurityGroupID
       - Label:
-          default: Nomad Setup
+          default: "Nomad cluster setup"
         Parameters:
           - NomadServerInstanceType
           - NomadServerNodeCount
+          - NomadServerAMIOS
           - NomadClientInstanceType
           - NomadClientNodeCount
+          - NomadClientAMIOS
           - NomadEc2RetryTagKey
           - NomadEc2RetryTagValue
-          - KeyPair
-          # - EnablegRPC
+          # - EnableConsulServiceMesh
       - Label:
           default: "DNS and SSL configuration"
         Parameters:
@@ -39,12 +44,12 @@ Metadata:
           - HostedZoneID
           - SSLCertificateArn
       - Label:
-          default: AWS Quick Start configuration
+          default: "AWS Quick Start configuration"
         Parameters:
           - QSS3BucketName
           - QSS3KeyPrefix
     ParameterLabels:
-      KeyPair:
+      KeyPairName:
         default: Key name
       PrivateSubnet1ID:
         default: Private Subnet 1 ID
@@ -72,19 +77,23 @@ Metadata:
         default: Route 53 hosted zone ID
       LoadBalancerFQDN:
         default: Load Balancer FQDN
-      # EnablegRPC:
-      #   default: Enable gRPC on Nomad
+      # EnableConsulServiceMesh:
+      #   default: Enable Consul service mesh for Nomad cluster
       NomadServerInstanceType:
         default: Nomad server node instance type
       NomadServerNodeCount:
         default: Number of Nomad server nodes
+      NomadServerAMIOS:
+        default: Operating system for Nomad server nodes
       NomadClientInstanceType:
         default: Nomad client node instance type
       NomadClientNodeCount:
         default: Number of Nomad client nodes
-      NomadEc2RetryTagKey: 
+      NomadClientAMIOS:
+        default: Operating system for Nomad client nodes
+      NomadEc2RetryTagKey:
         default: Tag key for Nomad cluster nodes
-      NomadEc2RetryTagValue: 
+      NomadEc2RetryTagValue:
         default: Tag value for Nomad cluster nodes
       BastionSecurityGroupID:
         default: Bastion host security group ID
@@ -107,7 +116,7 @@ Parameters:
     Type: String
     Default: "nomad-member-node"
     ConstraintDescription: Must match EC2 Tag Name requirements.
-  KeyPair:
+  KeyPairName:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
     Type: "AWS::EC2::KeyPair::KeyName"
     # MinLength: 1
@@ -211,6 +220,16 @@ Parameters:
       - "5"
       - "7"
     Default: "3"
+  NomadServerAMIOS:
+    AllowedValues:
+      - Amazon-Linux2-HVM
+      - Amazon-Linux2-HVM-ARM
+      - CentOS-7-HVM
+      - Ubuntu-Server-20.04-LTS-HVM
+      - SUSE-SLES-15-HVM
+    Default: Ubuntu-Server-20.04-LTS-HVM
+    Description: The Linux distribution for the AMI to be used for the Nomad server instances.
+    Type: String
   NomadClientInstanceType:
     Type: String
     Description: The EC2 instance type for the Nomad instances.
@@ -256,7 +275,17 @@ Parameters:
   NomadClientNodeCount:
     Type: String
     Description: The number of Nomad client nodes that will be created.
-    Default: "0"
+    Default: "1"
+  NomadClientAMIOS:
+    AllowedValues:
+      - Amazon-Linux2-HVM
+      - Amazon-Linux2-HVM-ARM
+      - CentOS-7-HVM
+      - Ubuntu-Server-20.04-LTS-HVM
+      - SUSE-SLES-15-HVM
+    Default: Ubuntu-Server-20.04-LTS-HVM
+    Description: The Linux distribution for the AMI to be used for the Nomad client instances.
+    Type: String
   SSLCertificateArn:
     Description: The Amazon Resource Name (ARN) of the SSL certificate to use for the load balancer. Use 'SSLCertificateArn' if you are not using 'LoadBalancerFQDN' and 'HostedZoneID'.
     Type: String
@@ -270,13 +299,51 @@ Parameters:
     Description: The fully qualified domain name for the nomad load balancer. Use with 'HostedZoneID' if you are not using SSL.
     Type: String
     Default: ''
-  # EnablegRPC:
-  #   Description: Enable gRPC on the Nomad server cluster.
+  # EnableConsulServiceMesh:
+  #   Description: Enable Consul service mesh on the Nomad server cluster.
   #   Type: String
   #   Default: "false"
   #   AllowedValues:
   #     - "true"
   #     - "false"
+
+Rules:
+  ## This rule is broken for some reason?
+  # SubnetsInVPC:
+  #   Assertions:
+  #     - Assert:
+  #         'Fn::EachMemberIn':
+  #           - 'Fn::ValueOfAll':
+  #               - 'AWS::EC2::Subnet::Id'
+  #               - VpcId
+  #           - 'Fn::RefAll': 'AWS::EC2::VPC::Id'
+  #       AssertDescription: All subnets must exist in the VPC.
+  ArmInstanceServer:
+    RuleCondition: !Equals ["Amazon-Linux2-HVM-ARM", !Ref NomadServerAMIOS]
+    Assertions:
+      - Assert: !Contains
+          - - t4g.nano
+            - t4g.medium
+            - t4g.large
+            - t4g.micro
+            - t4g.small
+            - t4g.2xlarge
+            - t4g.xlarge
+          - !Ref 'NomadServerInstanceType'
+        AssertDescription: This instance type must use NomadServerInstanceType type of Amazon-Linux2-HVM-ARM.
+  ArmInstanceClient:
+    RuleCondition: !Equals ["Amazon-Linux2-HVM-ARM", !Ref NomadClientAMIOS]
+    Assertions:
+      - Assert: !Contains
+          - - t4g.nano
+            - t4g.medium
+            - t4g.large
+            - t4g.micro
+            - t4g.small
+            - t4g.2xlarge
+            - t4g.xlarge
+          - !Ref 'NomadClientInstanceType'
+        AssertDescription: This instance type must use NomadClientInstanceType type of Amazon-Linux2-HVM-ARM.
 
 Mappings:
   RegionELBAccountId:
@@ -318,43 +385,172 @@ Mappings:
       AccountId: "027434742980"
     us-west-2:
       AccountId: "797873946194"
+
   AWSAMIRegionMap:
-    ap-east-1:
-      US1604HVM: ami-e5256594
+    af-south-1:
+      AMZNLINUX2: ami-0936d2754993c364e
+      AMZNLINUX2ARM: ami-01d326fa7db123542
+      US2004HVM: ami-022666956ad401a16
+      CENTOS7HVM: ami-0a2be7731769e6cc1
+      # SLES15HVM: ami-EXAMPLE
     ap-northeast-1:
-      US1604HVM: ami-078648cce0d33c256
+      AMZNLINUX2: ami-0b276ad63ba2d6009
+      AMZNLINUX2ARM: ami-012d44a21cdc6962e
+      US2004HVM: ami-0b0ccc06abc611fa0
+      CENTOS7HVM: ami-06a46da680048c8ae
+      SLES15HVM: ami-056ac8ad44e6a7e1f
     ap-northeast-2:
-      US1604HVM: ami-0539a1389fedcbdc8
-    ap-southeast-1:
-      US1604HVM: ami-05f112c29645f0812
-    ap-southeast-2:
-      US1604HVM: ami-0e4bc04bd401729d6
-    me-south-1:
-      US1604HVM: ami-0054116010789ce83
+      AMZNLINUX2: ami-0b827f3319f7447c6
+      AMZNLINUX2ARM: ami-065bbf792e2f70fd9
+      US2004HVM: ami-0f49ee52a88cc2435
+      CENTOS7HVM: ami-06e83aceba2cb0907
+      SLES15HVM: ami-0f81fff879bafe6b8
+    ap-northeast-3:
+      AMZNLINUX2: ami-07420201371095f81
+      AMZNLINUX2ARM: ami-01a34fdc39c8106e0
+      US2004HVM: ami-01ae085ceefba2dbf
+      CENTOS7HVM: ami-02d6b455335e3af14
+      SLES15HVM: ami-0d8518dd12d11dfc2
     ap-south-1:
-      US1604HVM: ami-03b8a287edc0c1253
+      AMZNLINUX2: ami-00bf4ae5a7909786c
+      AMZNLINUX2ARM: ami-059d1007dcf297b22
+      US2004HVM: ami-0443fb07ed652c341
+      CENTOS7HVM: ami-026f33d38b6410e30
+      SLES15HVM: ami-01be89269d32f2a16
+    ap-southeast-1:
+      AMZNLINUX2: ami-0e5182fad1edfaa68
+      AMZNLINUX2ARM: ami-0390917f7df0de28c
+      US2004HVM: ami-0f0b17182b1d50c14
+      CENTOS7HVM: ami-07f65177cb990d65b
+      SLES15HVM: ami-070356c21596ddc67
+    ap-southeast-2:
+      AMZNLINUX2: ami-0c9fe0dec6325a30c
+      AMZNLINUX2ARM: ami-03b50165937737652
+      US2004HVM: ami-04b1878ebf78f7370
+      CENTOS7HVM: ami-0b2045146eb00b617
+      SLES15HVM: ami-0c4245381c67efb39
     ca-central-1:
-      US1604HVM: ami-0e2df0719252d4491
+      AMZNLINUX2: ami-0db72f413fc1ddb2a
+      AMZNLINUX2ARM: ami-0858cdfa55eb68636
+      US2004HVM: ami-04673916e7c7aa985
+      CENTOS7HVM: ami-04a25c39dc7a8aebb
+      SLES15HVM: ami-0c97d9b588207dad6
     eu-central-1:
-      US1604HVM: ami-05ed2c1359acd8af6
+      AMZNLINUX2: ami-00f22f6155d6d92c5
+      AMZNLINUX2ARM: ami-0d1745d072234b13f
+      US2004HVM: ami-05e1e66d082e56118
+      CENTOS7HVM: ami-0e8286b71b81c3cc1
+      SLES15HVM: ami-05dfd265ea534a3e9
+    me-south-1:
+      AMZNLINUX2: ami-0880769bc15eeec4f
+      AMZNLINUX2ARM: ami-001dc219c441b922d
+      US2004HVM: ami-03cc0b5db8321f2e5
+      CENTOS7HVM: ami-011c71a894b10f35b
+      SLES15HVM: ami-0252c6d3a59c7473b
+    ap-east-1:
+      AMZNLINUX2: ami-0aca22cb23f122f27
+      AMZNLINUX2ARM: ami-01f5cec80321bd86e
+      US2004HVM: ami-0c7e5903bee96ef81
+      CENTOS7HVM: ami-0e5c29e6c87a9644f
+      SLES15HVM: ami-0ad6e15bcbb2dbe38
     eu-north-1:
-      US1604HVM: ami-094ac8f5eb69dd943
+      AMZNLINUX2: ami-00517306b63c4628c
+      AMZNLINUX2ARM: ami-00ac6cda13789bb30
+      US2004HVM: ami-00888f2a5f9be4390
+      CENTOS7HVM: ami-05788af9005ef9a93
+      SLES15HVM: ami-0741fa1a008af40ad
+    eu-south-1:
+      AMZNLINUX2: ami-0f447354763f0eaac
+      AMZNLINUX2ARM: ami-011d4067dedd119f5
+      US2004HVM: ami-035e213233577516f
+      CENTOS7HVM: ami-03014b98e9665115a
+      SLES15HVM: ami-051cbea0e7660063d
     eu-west-1:
-      US1604HVM: ami-008320af74136c628
+      AMZNLINUX2: ami-058b1b7fe545997ae
+      AMZNLINUX2ARM: ami-0f7de803d86d96283
+      US2004HVM: ami-0298c9e0d2c86b0ed
+      CENTOS7HVM: ami-0b850cf02cc00fdc8
+      SLES15HVM: ami-0a58a1b152ba55f1d
     eu-west-2:
-      US1604HVM: ami-004c1e61ae5d76090
+      AMZNLINUX2: ami-03ac5a9b225e99b02
+      AMZNLINUX2ARM: ami-0c11e20ede9c2bac5
+      US2004HVM: ami-0230a6736b38ae83e
+      CENTOS7HVM: ami-09e5afc68eed60ef4
+      SLES15HVM: ami-01497522185aaa4ee
     eu-west-3:
-      US1604HVM: ami-08eebff62e61110b7
+      AMZNLINUX2: ami-062fdd189639d3e93
+      AMZNLINUX2ARM: ami-0e95ca4242883dbf3
+      US2004HVM: ami-06d3fffafe8d48b35
+      CENTOS7HVM: ami-0cb72d2e599cffbf9
+      SLES15HVM: ami-0f238bd4c6fdbefb0
     sa-east-1:
-      US1604HVM: ami-0ddec8b41a3411374
+      AMZNLINUX2: ami-05e809fbeee38dd5e
+      AMZNLINUX2ARM: ami-06302d3edd8e2b804
+      US2004HVM: ami-04e56ee48b28650b3
+      CENTOS7HVM: ami-0b30f38d939dd4b54
+      SLES15HVM: ami-0772af912976aa692
     us-east-1:
-      US1604HVM: ami-0a0ddd875a1ea2c7f
+      AMZNLINUX2: ami-0dc2d3e4c0f9ebd18
+      AMZNLINUX2ARM: ami-008a8487adc2b32ec
+      US2004HVM: ami-019212a8baeffb0fa
+      CENTOS7HVM: ami-0affd4508a5d2481b
+      SLES15HVM: ami-0b1764f3d7d2e2316
+    us-gov-west-1:
+      AMZNLINUX2: ami-0bbf3595bb2fb39ec
+      AMZNLINUX2ARM: ami-6bd0e80a
+      SLES15HVM: ami-57c0ba36
+    us-gov-east-1:
+      AMZNLINUX2: ami-0cc17d57bec8c6017
+      AMZNLINUX2ARM: ami-4a31d93b
+      SLES15HVM: ami-05e4bedfad53425e9
     us-east-2:
-      US1604HVM: ami-04781752c9b20ea41
+      AMZNLINUX2: ami-0233c2d874b811deb
+      AMZNLINUX2ARM: ami-02de934ca4f3289e0
+      US2004HVM: ami-0117d177e96a8481c
+      CENTOS7HVM: ami-01e36b7901e884a10
+      SLES15HVM: ami-05ea824317ffc0c20
     us-west-1:
-      US1604HVM: ami-0c1e832407373333f
+      AMZNLINUX2: ami-0ed05376b59b90e46
+      AMZNLINUX2ARM: ami-09027338004f91eb5
+      US2004HVM: ami-0b08e71a81ba4200f
+      CENTOS7HVM: ami-098f55b4287a885ba
+      SLES15HVM: ami-00e34a7624e5a7107
     us-west-2:
-      US1604HVM: ami-0a4df59262c92cf19
+      AMZNLINUX2: ami-0dc8f589abe99f538
+      AMZNLINUX2ARM: ami-01ee617c4327490d3
+      US2004HVM: ami-02868af3c3df4b3aa
+      CENTOS7HVM: ami-0bc06212a56393ee1
+      SLES15HVM: ami-0f1e3b3fb0fec0361
+    cn-north-1:
+      AMZNLINUX2: ami-0c52e2685c7218558
+      AMZNLINUX2ARM: ami-088cc0c104292da9c
+      CENTOS7HVM: ami-08c16f7e830c0e393
+      SLES15HVM: ami-021392849b6221a81
+    cn-northwest-1:
+      AMZNLINUX2: ami-05b9b6d6acf8ae9b6
+      AMZNLINUX2ARM: ami-0b5c6ceb80eb57861
+      CENTOS7HVM: ami-0f21aa96a61df8c44
+      SLES15HVM: ami-00e1de3ee6d0d28ea
+
+  LinuxAMINameMap:
+    Amazon-Linux2-HVM:
+      Code: AMZNLINUX2
+      OS: Amazon
+    Amazon-Linux2-HVM-ARM:
+      Code: AMZNLINUX2ARM
+      OS: Amazon
+    CentOS-7-HVM:
+      Code: CENTOS7HVM
+      OS: CentOS
+    Ubuntu-Server-18.04-LTS-HVM:
+      Code: US1804HVM
+      OS: Ubuntu
+    Ubuntu-Server-20.04-LTS-HVM:
+      Code: US2004HVM
+      OS: Ubuntu
+    SUSE-SLES-15-HVM:
+      Code: SLES15HVM
+      OS: SLES
 
 Conditions:
   # gRPCCondition: !Equals [!Ref EnablegRPC, "true"]
@@ -385,10 +581,8 @@ Resources:
           CidrIp: !Ref VPCCIDR
       Tags:
         - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref "AWS::StackName"
-              - NomadSecGroup
+          Value: !Sub "${AWS::StackName}-NomadSecGroup"
+
   NomadServerASG:
     Type: "AWS::AutoScaling::AutoScalingGroup"
     Properties:
@@ -403,10 +597,7 @@ Resources:
         - !Ref PrivateSubnet3ID
       Tags:
         - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref "AWS::StackName"
-              - Nomad-Server
+          Value: !Sub "${AWS::StackName}-Nomad-Server"
           PropagateAtLaunch: true
         - Key: !Ref NomadEc2RetryTagKey
           Value: !Ref NomadEc2RetryTagValue
@@ -415,6 +606,7 @@ Resources:
       ResourceSignal:
         Count: !Ref NomadServerNodeCount
         Timeout: PT20M
+
   NomadClientASG:
     Type: "AWS::AutoScaling::AutoScalingGroup"
     Properties:
@@ -428,15 +620,13 @@ Resources:
         - !Ref PrivateSubnet3ID
       Tags:
         - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref "AWS::StackName"
-              - Nomad-Client
+          Value: !Sub "${AWS::StackName}-Nomad-Client"
           PropagateAtLaunch: true
     CreationPolicy:
       ResourceSignal:
         Count: !Ref NomadClientNodeCount
         Timeout: PT20M
+
   NomadServerELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
@@ -449,11 +639,8 @@ Resources:
         - !Ref NomadServerELBSecGroup
       CrossZone: true
       Listeners:
-        - LoadBalancerPort: "80"
-          InstancePort: "8500"
-          Protocol: HTTP
-        - LoadBalancerPort: "443"
-          InstancePort: "8500"
+        - LoadBalancerPort: "4646"
+          InstancePort: "4646"
           Protocol: HTTPS
           SSLCertificateId:
             !If
@@ -461,7 +648,7 @@ Resources:
               - !GetAtt ConfigureSSLStack.Outputs.ACMCertificate
               - !Ref SSLCertificateArn
       HealthCheck:
-        Target: HTTP:8500/v1/status/leader
+        Target: HTTP:4646/v1/status/leader
         HealthyThreshold: "3"
         UnhealthyThreshold: "2"
         Interval: "30"
@@ -476,15 +663,14 @@ Resources:
         EmitInterval: 60
       Tags:
         - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref "AWS::StackName"
-              - NomadServerELB
+          Value: !Sub "${AWS::StackName}-NomadServerELB"
     DependsOn: NomadServerLogsBucketPolicy
+
   NomadServerLogsBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
+
   NomadServerLogsBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -520,6 +706,7 @@ Resources:
                     ":root",
                   ],
                 ]
+
   NomadServerELBSecGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -539,10 +726,8 @@ Resources:
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref "AWS::StackName"
-              - NomadServerELBSecGroup
+          Value: !Sub "${AWS::StackName}-NomadServerELBSecGroup"
+
   NomadServerLC:
     Type: AWS::AutoScaling::LaunchConfiguration
     Metadata:
@@ -568,7 +753,7 @@ Resources:
               owner: root
               group: root
             /etc/cfn/hooks.d/cfn-auto-reloader.conf:
-              content: !Sub 
+              content: !Sub
                 "[cfn-auto-reloader-hook]
 
                 triggers=post.update
@@ -586,7 +771,7 @@ Resources:
               content: |
                 [Unit]
                 Description=cfn-hup daemon
- 
+
                 [Service]
                 Type=simple
                 ExecStart=/usr/local/bin/cfn-hup
@@ -727,11 +912,11 @@ Resources:
       AssociatePublicIpAddress: false
       SecurityGroups:
         - !Ref NomadSecGroup
-      KeyName: !Ref KeyPair
+      KeyName: !Ref KeyPairName
       ImageId: !FindInMap
         - AWSAMIRegionMap
-        - !Ref "AWS::Region"
-        - US1604HVM
+        - !Ref 'AWS::Region'
+        - !FindInMap [LinuxAMINameMap, !Ref NomadServerAMIOS, Code]
       IamInstanceProfile: !Ref NomadServerProfile
       UserData:
         Fn::Base64: !Sub
@@ -765,6 +950,7 @@ Resources:
             # Signal cfn-init (final check)
             [ $(qs_status) == 0 ] && cfn_success || cfn_fail
           - S3Region: !If [GovCloudCondition, s3-us-gov-west-1, s3]
+
   NomadClientLC:
     Type: AWS::AutoScaling::LaunchConfiguration
     Metadata:
@@ -808,7 +994,7 @@ Resources:
               content: |
                 [Unit]
                 Description=cfn-hup daemon
- 
+
                 [Service]
                 Type=simple
                 ExecStart=/usr/local/bin/cfn-hup
@@ -950,11 +1136,11 @@ Resources:
       AssociatePublicIpAddress: false
       SecurityGroups:
         - !Ref NomadSecGroup
-      KeyName: !Ref KeyPair
+      KeyName: !Ref KeyPairName
       ImageId: !FindInMap
         - AWSAMIRegionMap
-        - !Ref "AWS::Region"
-        - US1604HVM
+        - !Ref 'AWS::Region'
+        - !FindInMap [LinuxAMINameMap, !Ref NomadClientAMIOS, Code]
       IamInstanceProfile: !Ref NomadClientProfile
       UserData:
         Fn::Base64: !Sub
@@ -989,10 +1175,11 @@ Resources:
             [ $STATUS == 0 ] || cfn_fail
             echo log info on failure
             [ $STATUS == 0 ] || (journalctl -b --no-pager -u nomad && cat /opt/nomad/config/client.json && systemctl status nomad.service)
-            
+
             # Signal cfn-init (final check)
             [ $(qs_status) == 0 ] && cfn_success || cfn_fail
           - S3Region: !If [GovCloudCondition, s3-us-gov-west-1, s3]
+
   NomadClientRole:
     Type: AWS::IAM::Role
     Properties:
@@ -1012,6 +1199,7 @@ Resources:
                 Resource: !Sub "arn:aws:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*"
                 Effect: Allow
           PolicyName: AuthenticatedS3GetObjects
+
   NomadClientPolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -1023,12 +1211,14 @@ Resources:
             Resource: "*"
       Roles:
         - !Ref NomadClientRole
+
   NomadClientProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
         - !Ref NomadClientRole
+
   NomadServerRole:
     Type: AWS::IAM::Role
     Properties:
@@ -1048,6 +1238,7 @@ Resources:
                 Resource: !Sub "arn:aws:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*"
                 Effect: Allow
           PolicyName: AuthenticatedS3GetObjects
+
   NomadServerPolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -1060,12 +1251,14 @@ Resources:
             Resource: "*"
       Roles:
         - !Ref NomadServerRole
+
   NomadServerProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
         - !Ref NomadServerRole
+
   LoadBalancerFQDNRecord:
     Condition: SetupRoute53
     Type: AWS::Route53::RecordSet
@@ -1076,6 +1269,7 @@ Resources:
         HostedZoneId: !GetAtt 'NomadServerELB.CanonicalHostedZoneNameID'
         DNSName: !GetAtt 'NomadServerELB.DNSName'
       HostedZoneId: !Ref 'HostedZoneID'
+
   CopyLambdaStack:
     Condition: GenerateSSL
     Type: AWS::CloudFormation::Stack
@@ -1084,6 +1278,7 @@ Resources:
       Parameters:
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
+
   ConfigureSSLStack:
     Condition: GenerateSSL
     Type: AWS::CloudFormation::Stack

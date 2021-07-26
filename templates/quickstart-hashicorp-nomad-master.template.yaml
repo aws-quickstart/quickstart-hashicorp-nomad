@@ -3,11 +3,11 @@ Description: 'HashiCorp Nomad + VPC  Aug,28,2019 QS(0036)'
 Metadata:
   QuickStartDocumentation:
     EntrypointName: "Launch into a new VPC"
-  LICENSE: 'Apache License, Version 2.0' 
+  LICENSE: 'Apache License, Version 2.0'
   'AWS::CloudFormation::Interface':
     ParameterGroups:
       - Label:
-          default: 'VPC network configuration'
+          default: "VPC network configuration"
         Parameters:
           - AvailabilityZones
           - VPCCIDR
@@ -17,16 +17,19 @@ Metadata:
           - PublicSubnet1CIDR
           - PublicSubnet2CIDR
           - PublicSubnet3CIDR
-          - AccessCIDR
       - Label:
-          default: Nomad setup
+          default: "Access configuration"
+        Parameters:
+          - AccessCIDR
+          - KeyPairName
+      - Label:
+          default: "Nomad cluster setup"
         Parameters:
           - NomadServerInstanceType
           - NomadServerNodeCount
           - NomadClientInstanceType
           - NomadClientNodeCount
-          - KeyPairName
-          # - EnablegRPC
+          # - EnablegConsulServiceMesh
       - Label:
           default: "DNS and SSL configuration"
         Parameters:
@@ -34,7 +37,7 @@ Metadata:
           - HostedZoneID
           - SSLCertificateArn
       - Label:
-          default: AWS Quick Start configuration
+          default: "AWS Quick Start configuration"
         Parameters:
           - QSS3BucketName
           - QSS3KeyPrefix
@@ -77,14 +80,14 @@ Metadata:
         default: Nomad client node instance type
       NomadClientNodeCount:
         default: Number of Nomad client nodes
-      # EnablegRPC:
-      #   default: Enable gRPC
+      # EnableConsulServiceMesh:
+      #   default: Enable Consul service mesh
 
 Parameters:
   AvailabilityZones:
     Description: >-
-      List of Availability Zones to use for the subnets in the VPC. 
-      Note: The logical order is preserved. (3 Three Availability 
+      List of Availability Zones to use for the subnets in the VPC.
+      Note: The logical order is preserved. (3 Three Availability
       ZonesAZs are used for this deployment.)
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
   AccessCIDR:
@@ -274,8 +277,8 @@ Parameters:
     Description: The fully qualified domain name for the load balancer. Use with 'HostedZoneID' if you are NOT using SSL.
     Type: String
     Default: ''
-  # EnablegRPC:
-  #   Description: Enable gRPC on the Nomad server cluster.
+  # EnablegConsulServiceMesh:
+  #   Description: Enable ConsulServiceMesh for the Nomad cluster.
   #   Type: String
   #   Default: "false"
   #   AllowedValues:
@@ -304,6 +307,7 @@ Resources:
         PublicSubnet2CIDR: !Ref PublicSubnet2CIDR
         PublicSubnet3CIDR: !Ref PublicSubnet3CIDR
         VPCCIDR: !Ref VPCCIDR
+
   BastionStack:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
@@ -319,6 +323,7 @@ Resources:
         QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}submodules/quickstart-linux-bastion/'
         RemoteAccessCIDR: !Ref AccessCIDR
         VPCID: !GetAtt VPCStack.Outputs.VPCID
+
   HashiCorpNomadStack:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
@@ -338,30 +343,33 @@ Resources:
         NomadServerNodeCount: !Ref NomadServerNodeCount
         NomadClientInstanceType: !Ref NomadClientInstanceType
         NomadClientNodeCount: !Ref NomadClientNodeCount
-        # EnablegRPC: !Ref EnablegRPC
-        KeyPair: !Ref KeyPairName
+        # EnableConsulServiceMesh: !Ref EnableConsulServiceMesh
+        KeyPairName: !Ref KeyPairName
         NomadEc2RetryTagKey: "quickstart-nomad-cluster"
         NomadEc2RetryTagValue: "nomad-member-node"
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         SSLCertificateArn: !Ref SSLCertificateArn
         HostedZoneID: !Ref HostedZoneID
-        LoadBalancerFQDN: !Ref LoadBalancerFQDN 
+        LoadBalancerFQDN: !Ref LoadBalancerFQDN
 
 Outputs:
   NomadEc2RetryTagKey:
     Value: !GetAtt HashiCorpNomadStack.Outputs.NomadEc2RetryTagKey
-    Description: 
+    Description:
       The EC2 instance tag key to filter on when joining to other Nomad nodes.
+
   NomadEc2RetryTagValue:
     Value: !GetAtt HashiCorpNomadStack.Outputs.NomadEc2RetryTagValue
-    Description: 
+    Description:
       The EC2 instance tag value to filter on when joining to other Nomad nodes.
+
   NomadServerELB:
-    Description: 
+    Description:
       The public URL of your Nomad Load Balancer. Create a CNAME record pointing
       at this Load Balancer.
     Value: !GetAtt HashiCorpNomadStack.Outputs.NomadServerELB
+
   NomadServerFQDN:
     Condition: SetupRoute53
     Description: The public CNAME pointing to your Nomad Load Balancer.

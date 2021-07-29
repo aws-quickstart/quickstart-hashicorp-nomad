@@ -46,4 +46,6 @@ tests:
     - ap-southeast-2
     - ap-northeast-2
     - sa-east-1
-    template: templates/quickstart-hashicorp-nomad-master.template.yaml
+    template: templates/quickstart-hashicorp-nomad-cluster.template.yaml
+
+

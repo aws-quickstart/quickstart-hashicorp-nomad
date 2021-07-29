@@ -9,48 +9,38 @@ Metadata:
       - Label:
           default: "VPC network configuration"
         Parameters:
-          - VPCID
-          - VPCCIDR
           - PrivateSubnet1ID
           - PrivateSubnet2ID
           - PrivateSubnet3ID
           - PublicSubnet1ID
           - PublicSubnet2ID
           - PublicSubnet3ID
-      - Label:
-          default: "SSH Access"
-        Parameters:
-          - KeyPairName
-      - Label:
-          default: "Bastion host configuration"
-        Parameters:
-          - BastionSecurityGroupID
+          - VPCID
       - Label:
           default: "Nomad cluster setup"
         Parameters:
           - NomadServerInstanceType
           - NomadServerNodeCount
           - NomadServerAMIOS
-          - NomadClientInstanceType
-          - NomadClientNodeCount
-          - NomadClientAMIOS
+          - KeyPairName
           - NomadEc2RetryTagKey
           - NomadEc2RetryTagValue
+          - NomadServerSecurityGroup
+          - SSLCertificateId
           # - EnableConsulServiceMesh
       - Label:
-          default: "DNS and SSL configuration"
+          default: "Consul agent configuration"
         Parameters:
-          - LoadBalancerFQDN
-          - HostedZoneID
-          - SSLCertificateArn
+          - ConsulEc2RetryTagKey
+          - ConsulEc2RetryTagValue
+          - EnableConsulServiceMesh
       - Label:
           default: "AWS Quick Start configuration"
         Parameters:
           - QSS3BucketName
           - QSS3KeyPrefix
     ParameterLabels:
-      KeyPairName:
-        default: Key name
+
       PrivateSubnet1ID:
         default: Private Subnet 1 ID
       PrivateSubnet2ID:
@@ -63,20 +53,14 @@ Metadata:
         default: Public Subnet 2 ID
       PublicSubnet3ID:
         default: Public Subnet 3 ID
+      VPCID:
+        default: VPC ID
+
       QSS3BucketName:
         default: Quick Start S3 bucket name
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
-      VPCID:
-        default: VPC ID
-      VPCCIDR:
-        default: VPC CIDR block
-      SSLCertificateArn:
-        default: SSL certificate ARN
-      HostedZoneID:
-        default: Route 53 hosted zone ID
-      LoadBalancerFQDN:
-        default: Load Balancer FQDN
+
       # EnableConsulServiceMesh:
       #   default: Enable Consul service mesh for Nomad cluster
       NomadServerInstanceType:
@@ -85,23 +69,44 @@ Metadata:
         default: Number of Nomad server nodes
       NomadServerAMIOS:
         default: Operating system for Nomad server nodes
-      NomadClientInstanceType:
-        default: Nomad client node instance type
-      NomadClientNodeCount:
-        default: Number of Nomad client nodes
-      NomadClientAMIOS:
-        default: Operating system for Nomad client nodes
+      KeyPairName:
+        default: Key name
       NomadEc2RetryTagKey:
         default: Tag key for Nomad cluster nodes
       NomadEc2RetryTagValue:
         default: Tag value for Nomad cluster nodes
-      BastionSecurityGroupID:
-        default: Bastion host security group ID
+      ConsulEc2RetryTagKey:
+        default: Tag key for Consul server nodes
+      ConsulEc2RetryTagValue:
+        default: Tag value for Consul server nodes
+      EnableConsulServiceMesh:
+        default: Enable Consul service mesh for Nomad cluster
+      NomadServerSecurityGroup:
+        default: Nomad Server security group ID
+      SSLCertificateId:
+        default: SSL certificate ID
 
 Parameters:
-  BastionSecurityGroupID:
-    Description: ID of the bastion host security group to enable SSH connections (e.g., sg-7f16e910)
-    Type: "AWS::EC2::SecurityGroup::Id"
+  ConsulEc2RetryTagKey:
+    Description:
+      The EC2 instance tag key to filter on when joining a Consul cluster.
+    Type: String
+    Default: ""
+    ConstraintDescription: Must match EC2 Tag Name requirements.
+  ConsulEc2RetryTagValue:
+    Description:
+      The EC2 instance tag key to filter on when joining a Consul cluster.
+    Type: String
+    Default: ""
+    ConstraintDescription: Must match EC2 Tag Name requirements.
+  EnableConsulServiceMesh:
+    Description: Enable Consul service mesh on the Nomad clients.
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+
   NomadEc2RetryTagKey:
     Description:
       The EC2 instance tag key to filter on when joining to other Nomad
@@ -121,6 +126,7 @@ Parameters:
     Type: "AWS::EC2::KeyPair::KeyName"
     # MinLength: 1
     ConstraintDescription: Must be the name of an existing EC2 KeyPair.
+
   PrivateSubnet1ID:
     Description: "ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-xxxxxxxx)"
     Type: "AWS::EC2::Subnet::Id"
@@ -139,6 +145,10 @@ Parameters:
   PublicSubnet3ID:
     Description: "ID of the public subnet 3 in Availability Zone 3 (e.g., subnet-xxxxxxxx)"
     Type: "AWS::EC2::Subnet::Id"
+  VPCID:
+    Description: VPC ID
+    Type: "AWS::EC2::VPC::Id"
+
   QSS3BucketName:
     AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
     ConstraintDescription: >-
@@ -160,14 +170,6 @@ Parameters:
       S3 key prefix for the Quick Start assets. Quick Start key prefix can
       include numbers, lowercase letters, uppercase letters, hyphens (-), and
       forward slash (/).
-    Type: String
-  VPCID:
-    Description: VPC ID
-    Type: "AWS::EC2::VPC::Id"
-  VPCCIDR:
-    AllowedPattern: >-
-      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    Description: CIDR block for the VPC
     Type: String
   NomadServerInstanceType:
     Type: String
@@ -230,94 +232,13 @@ Parameters:
     Default: Ubuntu-Server-20.04-LTS-HVM
     Description: The Linux distribution for the AMI to be used for the Nomad server instances.
     Type: String
-  NomadClientInstanceType:
-    Type: String
-    Description: The EC2 instance type for the Nomad instances.
-    AllowedValues:
-      - t2.micro
-      - t2.small
-      - t2.medium
-      - t2.large
-      - t3.micro
-      - t3.small
-      - t3.medium
-      - t3.large
-      - m5.large
-      - m5.xlarge
-      - m5.2xlarge
-      - m4.large
-      - m4.xlarge
-      - m3.medium
-      - m3.large
-      - m3.xlarge
-      - m3.2xlarge
-      - c4.large
-      - c4.xlarge
-      - c4.2xlarge
-      - c4.4xlarge
-      - c4.8xlarge
-      - c3.large
-      - c3.xlarge
-      - c3.2xlarge
-      - c3.4xlarge
-      - c3.8xlarge
-      - r3.large
-      - r3.xlarge
-      - r3.2xlarge
-      - r3.4xlarge
-      - r3.8xlarge
-      - i2.xlarge
-      - i2.2xlarge
-      - i2.4xlarge
-      - i2.8xlarge
-    ConstraintDescription: Choose an instance type.
-    Default: m5.large
-  NomadClientNodeCount:
-    Type: String
-    Description: The number of Nomad client nodes that will be created.
-    Default: "1"
-  NomadClientAMIOS:
-    AllowedValues:
-      - Amazon-Linux2-HVM
-      - Amazon-Linux2-HVM-ARM
-      - CentOS-7-HVM
-      - Ubuntu-Server-20.04-LTS-HVM
-      - SUSE-SLES-15-HVM
-    Default: Ubuntu-Server-20.04-LTS-HVM
-    Description: The Linux distribution for the AMI to be used for the Nomad client instances.
-    Type: String
-  SSLCertificateArn:
-    Description: The Amazon Resource Name (ARN) of the SSL certificate to use for the load balancer. Use 'SSLCertificateArn' if you are not using 'LoadBalancerFQDN' and 'HostedZoneID'.
-    Type: String
-    Default: ''
-  HostedZoneID:
-    Description: Route 53 Hosted Zone ID of the domain name. Used in conjunction with 'LoadBalancerFQDN'.
-    Type: String
-    MaxLength: 32
-    Default: ''
-  LoadBalancerFQDN:
-    Description: The fully qualified domain name for the nomad load balancer. Use with 'HostedZoneID' if you are not using SSL.
-    Type: String
-    Default: ''
-  # EnableConsulServiceMesh:
-  #   Description: Enable Consul service mesh on the Nomad server cluster.
-  #   Type: String
-  #   Default: "false"
-  #   AllowedValues:
-  #     - "true"
-  #     - "false"
-
+  NomadServerSecurityGroup:
+    Description: 'The security group to apply to client nodes at startup (e.g., sg-7f16e910)'
+    Type: 'AWS::EC2::SecurityGroup::Id'
+  SSLCertificateId:
+    Description: 'The SSL certificate to use for the Nomad server instances.'
+    Type: 'String'
 Rules:
-  ## This rule is broken for some reason?
-  # SubnetsInVPC:
-  #   Assertions:
-  #     - Assert:
-  #         'Fn::EachMemberIn':
-  #           - 'Fn::ValueOfAll':
-  #               - 'AWS::EC2::Subnet::Id'
-  #               - VpcId
-  #           - 'Fn::RefAll': 'AWS::EC2::VPC::Id'
-  #       AssertDescription: All subnets must exist in the VPC.
   ArmInstanceServer:
     RuleCondition: !Equals ["Amazon-Linux2-HVM-ARM", !Ref NomadServerAMIOS]
     Assertions:
@@ -331,19 +252,6 @@ Rules:
             - t4g.xlarge
           - !Ref 'NomadServerInstanceType'
         AssertDescription: This instance type must use NomadServerInstanceType type of Amazon-Linux2-HVM-ARM.
-  ArmInstanceClient:
-    RuleCondition: !Equals ["Amazon-Linux2-HVM-ARM", !Ref NomadClientAMIOS]
-    Assertions:
-      - Assert: !Contains
-          - - t4g.nano
-            - t4g.medium
-            - t4g.large
-            - t4g.micro
-            - t4g.small
-            - t4g.2xlarge
-            - t4g.xlarge
-          - !Ref 'NomadClientInstanceType'
-        AssertDescription: This instance type must use NomadClientInstanceType type of Amazon-Linux2-HVM-ARM.
 
 Mappings:
   RegionELBAccountId:
@@ -555,33 +463,69 @@ Mappings:
 Conditions:
   # gRPCCondition: !Equals [!Ref EnablegRPC, "true"]
   GovCloudCondition: !Equals [!Ref AWS::Region, "us-gov-west-1"]
-  GenerateSSL: !And
-    - !Equals [!Ref SSLCertificateArn, '']
-    - !Not [!Equals [!Ref LoadBalancerFQDN, '']]
-  SetupRoute53: !And
-    - !Not
-      - !Equals [!Ref HostedZoneID, '']
-    - !Not
-      - !Equals [!Ref LoadBalancerFQDN, '']
+  ConfigureConsul: !And
+    - !Not [!Equals [!Ref ConsulEc2RetryTagKey, ""]] 
+    - !Not [!Equals [!Ref ConsulEc2RetryTagValue, ""]]
+  ConfigureConsulServiceMesh: !And
+    - !Not [!Equals [!Ref ConsulEc2RetryTagKey, ""]] 
+    - !Not [!Equals [!Ref ConsulEc2RetryTagValue, ""]]
+    - !Equals [!Ref EnableConsulServiceMesh, "true"]
 
 Resources:
-  NomadSecGroup:
-    Type: "AWS::EC2::SecurityGroup"
+  NomadServerELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
-      GroupDescription: Enables SSH access.
-      VpcId: !Ref VPCID
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          SourceSecurityGroupId: !Ref BastionSecurityGroupID
-        - IpProtocol: tcp
-          FromPort: 0
-          ToPort: 65535
-          CidrIp: !Ref VPCCIDR
+      Scheme: "internet-facing"
+      Subnets:
+        - !Ref PublicSubnet1ID
+        - !Ref PublicSubnet2ID
+        - !Ref PublicSubnet3ID
+      SecurityGroups:
+        - !Ref NomadServerELBSecGroup
+      CrossZone: true
+      Listeners:
+        - LoadBalancerPort: "4646"
+          InstancePort: "4646"
+          Protocol: HTTPS
+          SSLCertificateId: !Ref SSLCertificateId
+      HealthCheck:
+        Target: HTTP:4646/v1/status/leader
+        HealthyThreshold: "3"
+        UnhealthyThreshold: "2"
+        Interval: "30"
+        Timeout: "5"
+      ConnectionDrainingPolicy:
+        Enabled: true
+        Timeout: 300
+      AccessLoggingPolicy:
+        S3BucketName: !Ref NomadServerLogsBucket
+        S3BucketPrefix: NomadELBLogs
+        Enabled: true
+        EmitInterval: 60
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-NomadSecGroup"
+          Value: !Sub "${AWS::StackName}-NomadServerELB"
+
+  NomadServerELBSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enables ELB Access to cluster instances.
+      VpcId: !Ref VPCID
+      SecurityGroupIngress:
+        # - IpProtocol: tcp
+        #   FromPort: 80
+        #   ToPort: 80
+        #   CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: "-1"
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-NomadServerELBSecGroup"
 
   NomadServerASG:
     Type: "AWS::AutoScaling::AutoScalingGroup"
@@ -612,35 +556,32 @@ Resources:
     Metadata:
       AWS::CloudFormation::Init:
         configSets:
-          cs-base:
+          cs-nomad:
+            - ConfigSet: _base
+            - ConfigSet: _nomad
+          cs-nomad-consul:
+            - ConfigSet: _base
+            - create_consul_group_user_dir
+            - ConfigSet: _consul
+            - ConfigSet: _nomad
+          cs-nomad-consul-service-mesh:
+            - ConfigSet: _base
+            - create_consul_group_user_dir
+            - enable_consul_service_mesh
+            - ConfigSet: _consul
+            - ConfigSet: _nomad
+          _base:
             - install_and_enable_cfn_hup
-            - create_nomad_group_user_dir
             - fetch_nomad
             - fetch_consul
             - fetch_vault
             - fetch_consul_template
-
-          cs-nomad-consul:
-            - ConfigSet: cs-base
-            - create_consul_group_user_dir
-            - ConfigSet: _consul
-            - nomad_install
-
-          cs-nomad:
-            - ConfigSet: cs-base
-            - nomad_install
-
-          cs-nomad-consul-service-mesh:
-            - ConfigSet: cs-base
-            - create_consul_group_user_dir
-            - enable_consul_service_mesh
-            - ConfigSet: _consul
-            - nomad_install
-            - setup_dnsmasq
-
           _consul:
             - consul_install
             - setup_dnsmasq
+          _nomad:
+            - create_nomad_group_user_dir
+            - nomad_install
 
         install_and_enable_cfn_hup:
           files:
@@ -684,6 +625,7 @@ Resources:
               command: systemctl enable cfn-hup.service
             02start_cfn_hup:
               command: systemctl start cfn-hup.service
+
         create_nomad_group_user_dir:
           users:
             nomad:
@@ -691,19 +633,126 @@ Resources:
           commands:
             01_create_data_dir:
               command: mkdir -p /opt/nomad/data
-        install_nomad:
+            02_set_data_dir_permissions:
+              command: chown -R nomad:nomad /opt/nomad/data
+            03_create_config_dir:
+              command: mkdir -p /opt/nomad/config
+            04_set_config_dir_permissions:
+              command: chown -R root:nomad /opt/nomad/config
+
+        create_consul_group_user_dir:
+          users:
+            consul:
+              homeDir: /srv/consul
+          commands:
+            01_create_data_dir:
+              command: mkdir -p /opt/consul/data
+            02_set_data_dir_permissions:
+              command: chown -R consul:consul /opt/consul/data
+            03_create_config_dir:
+              command: mkdir -p /opt/consul/config
+            04_set_config_dir_permissions:
+              command: chown -R root:consul /opt/consul/config
+
+        fetch_nomad:
           sources:
             /usr/bin/: https://releases.hashicorp.com/nomad/1.1.2/nomad_1.1.2_linux_amd64.zip
-        install_consul:
+ 
+        fetch_consul:
           sources:
             /usr/bin/: https://releases.hashicorp.com/consul/1.10.1/consul_1.10.1_linux_amd64.zip
-        install_vault:
+
+        fetch_vault:
           sources:
             /usr/bin/: https://releases.hashicorp.com/vault/1.7.3/vault_1.7.3_linux_amd64.zip
-        install_consul_template:
+
+        fetch_consul_template:
           sources:
             /usr/bin/: https://releases.hashicorp.com/consul-template/0.26.0/consul-template_0.26.0_linux_amd64.zip
-        nomad_bootstrap:
+
+        enable_consul_service_mesh:
+          files:
+            /opt/consul/config/connect.hcl:
+              content: |
+                ports {
+                  grpc = 8502
+                }
+                connect {
+                  enabled = true
+                }   
+              owner: root
+              group: consul
+              mode: 000644
+
+        consul_install:
+          files:
+            /opt/consul/config/consul.hcl:
+              content: |
+                data_dir    = "/opt/consul/data"
+                client_addr = "0.0.0.0"
+                bind_addr   = "{{{InterfaceTemplate}}}"
+                datacenter  = "{{Region}}"
+                log_level   = "WARN"
+                ui          = true
+                watches     = []
+              context:
+                Region: !Ref "AWS::Region"
+                InterfaceTemplate: '{{ GetDefaultInterfaces | include \"type\" \"ipv4\" | attr \"address\" }}'
+              owner: root
+              group: consul
+              mode: "000644"
+            /opt/consul/config/client.hcl:
+              content: !Sub |
+                retry_join = ["provider=aws region=${AWS::Region} tag_key=${ConsulEc2RetryTagKey} tag_value=${ConsulEc2RetryTagValue}"]
+              owner: root
+              group: consul
+              mode: "000644"
+            /etc/systemd/system/consul.service:
+              content: |
+                [Unit]
+                Description="HashiCorp Consul - A service mesh solution"
+                Documentation=https://www.consul.io/
+                Requires=network-online.target
+                After=network-online.target
+                ConditionFileNotEmpty=/opt/consul/config/consul.hcl
+                ConditionFileNotEmpty=/opt/consul/config/client.hcl
+
+                [Service]
+                Type=notify
+                EnvironmentFile=~/opt/consul/config/consul.env
+                User=consul
+                Group=consul
+                ExecStart=/usr/bin/consul agent -config-dir=/opt/consul/config
+                ExecReload=/bin/kill --signal HUP $MAINPID
+                KillMode=process
+                KillSignal=SIGTERM
+                Restart=on-failure
+                LimitNOFILE=65536
+
+                [Install]
+                WantedBy=multi-user.target
+              owner: root
+              group: root
+              mode: "000644"
+          commands:
+            00_fill_consul_config_nodename:
+              command: echo "node_name = \"$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\"" > /opt/consul/config/nodename.hcl
+            01_change_data_dir_owner:
+              command: chown -R consul:consul /opt/consul/data
+            02_change_config_dir_owner:
+              command: chown -R root:consul /opt/consul/config
+            03_chmod_config_dir:
+              command: chmod 755 /opt/consul/config
+            04_chmod_config_files:
+              command: chmod 644 /opt/consul/config/*.hcl
+            05_reload_systemd:
+              command: systemctl daemon-reload
+            06_enable_consul:
+              command: systemctl enable consul
+            07_start_consul:
+              command: systemctl start consul  
+
+        nomad_install:
           files:
             /opt/nomad/config/nomad.hcl:
               content: |
@@ -718,7 +767,7 @@ Resources:
               context:
                 Region: !Ref "AWS::Region"
                 InterfaceTemplate: '{{ GetDefaultInterfaces | include \"type\" \"ipv4\" | attr \"address\" }}'
-              mode: 000644
+              mode: "000644"
             /opt/nomad/config/server.hcl:
               content: !Sub |
                 server {
@@ -729,9 +778,9 @@ Resources:
                     retry_join = ["provider=aws region=${AWS::Region} tag_key=${NomadEc2RetryTagKey} tag_value=${NomadEc2RetryTagValue}"]
                   }
                 }
-              mode: 000644
+              mode: "000644"
             /etc/systemd/system/nomad.service:
-             content: |
+              content: |
                 [Unit]
                 Description=Hashicorp Nomad
                 Documentation=https://nomadproject.io/docs/
@@ -743,8 +792,8 @@ Resources:
                 # When using Nomad with Consul it is not necessary to start Consul first. These
                 # lines start Consul before Nomad as an optimization to avoid Nomad logging
                 # that Consul is unavailable at startup.
-                #Wants=consul.service
-                #After=consul.service
+                {{maybe_comment_consul}}Wants=consul.service
+                {{maybe_comment_consul}}After=consul.service
 
                 [Service]
                 Type=simple
@@ -781,24 +830,39 @@ Resources:
 
                 [Install]
                 WantedBy=multi-user.target
+              context:
+                maybe_comment_consul: !If [ConfigureConsul, "", "#"]
+              mode: "000644"
           commands:
             00_fill_nomad_config_nodename:
-              command: echo "name=\"$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\"" >> /opt/nomad/config/nodename.hcl
-            01_change_ownership:
-              command: chown -R nomad:nomad /opt/nomad
-            02_reload_systemd:
+              command: echo "name = \"$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\"" > /opt/nomad/config/nodename.hcl
+            01_change_data_dir_owner:
+              command: chown -R nomad:nomad /opt/nomad/data
+            02_change_config_dir_owner:
+              command: chown -R root:nomad /opt/nomad/config
+            03_chmod_config_dir:
+              command: chmod 755 /opt/nomad/config
+            04_chmod_config_files:
+              command: chmod 644 /opt/nomad/config/*.hcl
+            05_reload_systemd:
               command: systemctl daemon-reload
-            03_start_nomad:
+            06_enable_consul:
               command: systemctl enable nomad
-            04_start_nomad:
-              command: systemctl start nomad
+            07_start_consul:
+              command: systemctl start nomad  
+
         setup_dnsmasq:
           files:
-            /etc/dnsmasq.d/nomad:
+            /etc/dnsmasq.d/consul:
               content: |
                 server=/consul/127.0.0.1#8600
                 listen-address=127.0.0.1
                 bind-interfaces
+            /etc/resolv.conf.new:
+              content: |
+                nameserver 127.0.0.1
+                options edns0 trust-ad
+                search ec2.internal
           packages:
             apt:
               dnsmasq-base: []
@@ -807,11 +871,16 @@ Resources:
           commands:
             01_start_dnsmasq:
               command: service dnsmasq restart
+            02_rm_resolv_conf:
+              command: rm /etc/resolv.conf
+            03_cp_resolv_conf:
+              command: mv /etc/resolv.conf.new /etc/resolv.conf
+
     Properties:
       InstanceType: !Ref NomadServerInstanceType
       AssociatePublicIpAddress: false
       SecurityGroups:
-        - !Ref NomadSecGroup
+        - !Ref NomadServerSecurityGroup
       KeyName: !Ref KeyPairName
       ImageId: !FindInMap
         - AWSAMIRegionMap
@@ -826,12 +895,23 @@ Resources:
             function cfn_fail
             {
               cfn-signal -e 1 --stack ${AWS::StackName} --region ${AWS::Region} --resource NomadServerASG
-              exit 1
             }
             function cfn_success
             {
               cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region} --resource NomadServerASG
               exit 0
+            }
+            function cfn_fail_log
+            {
+              journalctl -b --no-pager -u nomad 
+              for I in /opt/nomad/config/*.hcl
+              do 
+                echo "## $I"
+                echo ""; echo '```'
+                cat $I
+                echo ""; echo '```'; echo ""
+              done
+              systemctl status nomad.service
             }
             S3URI=https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}
             apt-get -y update
@@ -846,52 +926,23 @@ Resources:
             qs_aws-cfn-bootstrap || qs_err
             #cfn-init
             echo "Executing config-sets"
-            cfn-init -v --stack ${AWS::StackName} --resource NomadServerLC --configsets cs_install --region ${AWS::Region} || (cfn_fail || (journalctl -b --no-pager -u nomad && cat /opt/nomad/config/server.json))
+            cfn-init -v --stack ${AWS::StackName} --resource NomadServerLC --configsets ${ConfigSet} --region ${AWS::Region}
+            STATUS=$?
+            echo signal cfn success/failure
+            [ $STATUS == 0 ] || cfn_fail
+            echo log info on failure
+            [ $STATUS == 0 ] || cfn_fail_log
+
             # Signal cfn-init (final check)
             [ $(qs_status) == 0 ] && cfn_success || cfn_fail
-          - S3Region: !If [GovCloudCondition, s3-us-gov-west-1, s3]
-
-  NomadServerLogsBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-
-  NomadServerLogsBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref NomadServerLogsBucket
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Sid: NomadQSGELBAccessLogs
-            Action:
-              - "s3:PutObject"
-            Effect: Allow
-            Resource:
-              !Join [
-                "",
-                [
-                  "arn:aws:s3:::",
-                  !Ref "NomadServerLogsBucket",
-                  "/NomadELBLogs",
-                  "/*",
-                ],
-              ]
-            Principal:
-              AWS:
-                !Join [
-                  "",
-                  [
-                    "arn:aws:iam::",
-                    !FindInMap [
-                      RegionELBAccountId,
-                      !Ref "AWS::Region",
-                      AccountId,
-                    ],
-                    ":root",
-                  ],
-                ]
-
+          - ConfigSet: !If 
+              - ConfigureConsulServiceMesh
+              - cs-nomad-consul-service-mesh
+              - !If
+                - ConfigureConsul
+                - cs-nomad-consul
+                - cs-nomad
+            S3Region: !If [GovCloudCondition, s3-us-gov-west-1, s3]
 
   NomadServerRole:
     Type: AWS::IAM::Role
@@ -933,384 +984,37 @@ Resources:
       Roles:
         - !Ref NomadServerRole
 
-  NomadClientASG:
-    Type: "AWS::AutoScaling::AutoScalingGroup"
+  NomadServerLogsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+
+  NomadServerLogsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
     Properties:
-      LaunchConfigurationName: !Ref NomadClientLC
-      MinSize: !Ref NomadClientNodeCount
-      MaxSize: !Ref NomadClientNodeCount
-      DesiredCapacity: !Ref NomadClientNodeCount
-      VPCZoneIdentifier:
-        - !Ref PrivateSubnet1ID
-        - !Ref PrivateSubnet2ID
-        - !Ref PrivateSubnet3ID
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-Nomad-Client"
-          PropagateAtLaunch: true
-    CreationPolicy:
-      ResourceSignal:
-        Count: !Ref NomadClientNodeCount
-        Timeout: PT20M
-
-  NomadClientLC:
-    Type: AWS::AutoScaling::LaunchConfiguration
-    Metadata:
-      AWS::CloudFormation::Init:
-        configSets:
-          cs_install:
-            - install_and_enable_cfn_hup
-            - create_nomad_group_user_dir
-            - install_nomad
-            - install_consul
-            - install_vault
-            - install_consul_template
-            - nomad_bootstrap
-            - setup_dnsmasq
-        install_and_enable_cfn_hup:
-          files:
-            /etc/cfn/cfn-hup.conf:
-              content: !Sub |
-                [main]
-                stack=${AWS::StackId}
-                region=${AWS::Region}
-              mode: "000400"
-              owner: root
-              group: root
-            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
-              content: !Sub
-                "[cfn-auto-reloader-hook]
-
-                triggers=post.update
-
-                path=Resources.NomadClientLC.Metadata.AWS::CloudFormation::Init
-
-                action=/usr/local/bin/cfn-init -v
-                          --stack ${AWS::StackName}
-                          --resource NomadClientLC
-                          --configsets cs_install
-                          --region ${AWS::Region}
-
-                runas=root"
-            /lib/systemd/system/cfn-hup.service:
-              content: |
-                [Unit]
-                Description=cfn-hup daemon
-
-                [Service]
-                Type=simple
-                ExecStart=/usr/local/bin/cfn-hup
-                Restart=always
-
-                [Install]
-                WantedBy=multi-user.target
-          commands:
-            01enable_cfn_hup:
-              command: systemctl enable cfn-hup.service
-            02start_cfn_hup:
-              command: systemctl start cfn-hup.service
-        create_nomad_group_user_dir:
-          users:
-            nomad:
-              homeDir: /srv/nomad
-          commands:
-            01_create_data_dir:
-              command: mkdir -p /opt/nomad/data
-        install_nomad:
-          sources:
-            /usr/bin/: https://releases.hashicorp.com/nomad/1.1.2/nomad_1.1.2_linux_amd64.zip
-        install_consul:
-          sources:
-            /usr/bin/: https://releases.hashicorp.com/consul/1.10.1/consul_1.10.1_linux_amd64.zip
-        install_vault:
-          sources:
-            /usr/bin/: https://releases.hashicorp.com/vault/1.7.3/vault_1.7.3_linux_amd64.zip
-        install_consul_template:
-          sources:
-            /usr/bin/: https://releases.hashicorp.com/consul-template/0.26.0/consul-template_0.26.0_linux_amd64.zip
-
-        nomad_bootstrap:
-          files:
-            /opt/nomad/config/nomad.hcl:
-              content: |
-                bind_addr  = "0.0.0.0"
-                datacenter = "{{Region}}"
-                log_level  = "WARN"
-
-                advertise {
-                  http = "{{{InterfaceTemplate}}}"
-                  rpc  = "{{{InterfaceTemplate}}}"
-                  serf = "{{{InterfaceTemplate}}}"
-                }
-              context:
-                Region: !Ref "AWS::Region"
-                InterfaceTemplate: '{{ GetDefaultInterfaces | include \"type\" \"ipv4\" | attr \"address\" }}'
-              mode: 000644
-            /opt/nomad/config/client.hcl:
-              content: !Sub |
-                client {
-                  enabled = true
-
-                  server_join {
-                    retry_join = ["provider=aws region=${AWS::Region} tag_key=${NomadEc2RetryTagKey} tag_value=${NomadEc2RetryTagValue}"]
-                  }
-                }
-              mode: 000644
-            /etc/systemd/system/nomad.service:
-             content: |
-                [Unit]
-                Description=HashiCorp Nomad
-                Documentation=https://nomadproject.io/docs/
-                Wants=network-online.target
-                After=network-online.target
-                ConditionFileNotEmpty=/opt/nomad/config/nomad.hcl
-                ConditionFileNotEmpty=/opt/nomad/config/client.hcl
-
-                # When using Nomad with Consul it is not necessary to start Consul first. These
-                # lines start Consul before Nomad as an optimization to avoid Nomad logging
-                # that Consul is unavailable at startup.
-                #Wants=consul.service
-                #After=consul.service
-
-                [Service]
-                Type=simple
-                User=root
-                Group=root
-                EnvironmentFile=-/opt/nomad/config/nomad.env
-                ExecReload=/bin/kill -HUP $MAINPID
-                ExecStart=/usr/bin/nomad agent -config /opt/nomad/config -data-dir /opt/nomad/data
-
-                KillMode=process
-                KillSignal=SIGINT
-                LimitNOFILE=65536
-                LimitNPROC=infinity
-                Restart=on-failure
-                TimeoutSec=300s
-                RestartSec=2
-
-                ## Configure unit start rate limiting. Units which are started more than
-                ## *burst* times within an *interval* time span are not permitted to start any
-                ## more. Use `StartLimitIntervalSec` or `StartLimitInterval` (depending on
-                ## systemd version) to configure the checking interval and `StartLimitBurst`
-                ## to configure how many starts per interval are allowed. The values in the
-                ## commented lines are defaults.
-                # StartLimitBurst = 5
-
-                ## StartLimitIntervalSec is used for systemd versions >= 230
-                # StartLimitIntervalSec = 10s
-
-                ## StartLimitInterval is used for systemd versions < 230
-                # StartLimitInterval = 10s
-
-                TasksMax=infinity
-                OOMScoreAdjust=-1000
-
-                [Install]
-                WantedBy=multi-user.target
-          commands:
-            00_fill_nomad_config_nodename:
-              command: echo "name=\"$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\"" >> /opt/nomad/config/nodename.hcl
-            01_change_ownership:
-              command: chown -R nomad:nomad /opt/nomad
-            02_reload_systemd:
-              command: systemctl daemon-reload
-            03_start_nomad:
-              command: systemctl enable nomad
-            04_start_nomad:
-              command: systemctl start nomad
-
-        setup_dnsmasq:
-          files:
-            /etc/dnsmasq.d/nomad:
-              content: |
-                server=/consul/127.0.0.1#8600
-                listen-address=127.0.0.1
-                bind-interfaces
-          packages:
-            apt:
-              dnsmasq-base: []
-              dnsmasq: []
-          commands:
-            01_start_dnsmasq:
-              command: service dnsmasq restart
-    Properties:
-      InstanceType: !Ref NomadClientInstanceType
-      AssociatePublicIpAddress: false
-      SecurityGroups:
-        - !Ref NomadSecGroup
-      KeyName: !Ref KeyPairName
-      ImageId: !FindInMap
-        - AWSAMIRegionMap
-        - !Ref 'AWS::Region'
-        - !FindInMap [LinuxAMINameMap, !Ref NomadClientAMIOS, Code]
-      IamInstanceProfile: !Ref NomadClientProfile
-      UserData:
-        Fn::Base64: !Sub
-          - |
-            #!/bin/bash -x
-            #CFN Functions
-            function cfn_fail
-            {
-              cfn-signal -e 1 --stack ${AWS::StackName} --region ${AWS::Region} --resource NomadClientASG
-            }
-            function cfn_success
-            {
-              cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region} --resource NomadClientASG
-              exit 0
-            }
-            S3URI=https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}
-            apt-get -y update
-            # Install git
-            apt-get install -y git jq
-            #Load Linux utils
-            until git clone https://github.com/aws-quickstart/quickstart-linux-utilities.git ; do echo "Retrying"; done
-            cd /quickstart-linux-utilities && source quickstart-cfn-tools.source
-            # Prep operating systems
-            qs_update-os || qs_err
-            qs_bootstrap_pip || qs_err
-            qs_aws-cfn-bootstrap || qs_err
-            #cfn-init
-            echo "Executing config-sets"
-            cfn-init -v --stack ${AWS::StackName} --resource NomadClientLC --configsets cs_install --region ${AWS::Region}
-            STATUS=$?
-            echo signal cfn success/failure
-            [ $STATUS == 0 ] || cfn_fail
-            echo log info on failure
-            [ $STATUS == 0 ] || (journalctl -b --no-pager -u nomad && cat /opt/nomad/config/client.json && systemctl status nomad.service)
-
-            # Signal cfn-init (final check)
-            [ $(qs_status) == 0 ] && cfn_success || cfn_fail
-          - S3Region: !If [GovCloudCondition, s3-us-gov-west-1, s3]
-
-  NomadClientRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action: "sts:AssumeRole"
-            Principal:
-              Service: ec2.amazonaws.com
-            Effect: Allow
-            Sid: ""
-      Policies:
-        - PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Action:
-                  - "s3:GetObject"
-                Resource: !Sub "arn:aws:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*"
-                Effect: Allow
-          PolicyName: AuthenticatedS3GetObjects
-
-  NomadClientPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: nomad-client
+      Bucket: !Ref NomadServerLogsBucket
       PolicyDocument:
+        Version: 2012-10-17
         Statement:
-          - Effect: Allow
-            Action: "ec2:DescribeInstances"
-            Resource: "*"
-      Roles:
-        - !Ref NomadClientRole
-
-  NomadClientProfile:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Path: /
-      Roles:
-        - !Ref NomadClientRole
-
-  NomadServerELB:
-    Type: AWS::ElasticLoadBalancing::LoadBalancer
-    Properties:
-      Scheme: "internet-facing"
-      Subnets:
-        - !Ref PublicSubnet1ID
-        - !Ref PublicSubnet2ID
-        - !Ref PublicSubnet3ID
-      SecurityGroups:
-        - !Ref NomadServerELBSecGroup
-      CrossZone: true
-      Listeners:
-        - LoadBalancerPort: "4646"
-          InstancePort: "4646"
-          Protocol: HTTPS
-          SSLCertificateId:
-            !If
-              - GenerateSSL
-              - !GetAtt ConfigureSSLStack.Outputs.ACMCertificate
-              - !Ref SSLCertificateArn
-      HealthCheck:
-        Target: HTTP:4646/v1/status/leader
-        HealthyThreshold: "3"
-        UnhealthyThreshold: "2"
-        Interval: "30"
-        Timeout: "5"
-      ConnectionDrainingPolicy:
-        Enabled: true
-        Timeout: 300
-      AccessLoggingPolicy:
-        S3BucketName: !Ref NomadServerLogsBucket
-        S3BucketPrefix: NomadELBLogs
-        Enabled: true
-        EmitInterval: 60
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-NomadServerELB"
-    DependsOn: NomadServerLogsBucketPolicy
-
-  NomadServerELBSecGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Enables ELB Access to cluster instances.
-      VpcId: !Ref VPCID
-      SecurityGroupIngress:
-        # - IpProtocol: tcp
-        #   FromPort: 80
-        #   ToPort: 80
-        #   CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
-      SecurityGroupEgress:
-        - IpProtocol: "-1"
-          CidrIp: 0.0.0.0/0
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-NomadServerELBSecGroup"
-
-  LoadBalancerFQDNRecord:
-    Condition: SetupRoute53
-    Type: AWS::Route53::RecordSet
-    Properties:
-      Type: A
-      Name: !Ref 'LoadBalancerFQDN'
-      AliasTarget:
-        HostedZoneId: !GetAtt 'NomadServerELB.CanonicalHostedZoneNameID'
-        DNSName: !GetAtt 'NomadServerELB.DNSName'
-      HostedZoneId: !Ref 'HostedZoneID'
-
-  CopyLambdaStack:
-    Condition: GenerateSSL
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/copy-lambdas.template.yaml"
-      Parameters:
-        QSS3BucketName: !Ref QSS3BucketName
-        QSS3KeyPrefix: !Ref QSS3KeyPrefix
-
-  ConfigureSSLStack:
-    Condition: GenerateSSL
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/acm-cert-r53-record.template.yaml"
-      Parameters:
-        LambdaZipsBucketName: !GetAtt 'CopyLambdaStack.Outputs.LambdaZipsBucket'
-        QSS3KeyPrefix: !Ref QSS3KeyPrefix
-        DomainName: !Ref LoadBalancerFQDN
-        HostedZoneID: !Ref HostedZoneID
+          - Sid: NomadQSGELBAccessLogs
+            Action:
+              - "s3:PutObject"
+            Effect: Allow
+            Resource: !Sub "arn:aws:s3:::${NomadServerLogsBucket}/NomadELBLogs/*"
+            Principal:
+              AWS:
+                !Join [
+                  "",
+                  [
+                    "arn:aws:iam::",
+                    !FindInMap [
+                      RegionELBAccountId,
+                      !Ref "AWS::Region",
+                      AccountId,
+                    ],
+                    ":root",
+                  ],
+                ]
 
 Outputs:
   NomadEc2RetryTagKey:
@@ -1323,13 +1027,17 @@ Outputs:
     Description:
       The EC2 instance tag value to filter on when joining to other Nomad nodes.
 
-  NomadServerELB:
+  NomadServerLogsBucket:
+    Value: !Ref NomadServerLogsBucket
     Description:
-      The public URL of your Nomad Load Balancer. Create a CNAME record pointing
-      at this Load Balancer.
-    Value: !Sub "https://${NomadServer.Outputs.ELBDNSName}"
+      The S3 Bucket created for Nomad server logs.
 
-  NomadServerFQDN:
-    Condition: SetupRoute53
-    Description: The public CNAME pointing to your Nomad Load Balancer.
-    Value: !Sub "https://${LoadBalancerFQDN}"
+  CanonicalHostedZoneNameID:
+    Value: !GetAtt NomadServerELB.CanonicalHostedZoneNameID
+    Description:
+      The name of the hosted zone for the Nomad server ELB.
+
+  ELBDNSName:
+    Value: !GetAtt NomadServerELB.DNSName
+    Description:
+      The DNS name of the Nomad server ELB.

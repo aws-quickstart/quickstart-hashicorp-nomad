@@ -23,13 +23,19 @@ Metadata:
           - AccessCIDR
           - KeyPairName
       - Label:
+          default: "Consul cluster configuration"
+        Parameters:
+          - CreateConsulCluster
+          - ConsulServerInstanceType
+          - ConsulServerNodeCount
+          - EnableConsulServiceMesh
+      - Label:
           default: "Nomad cluster setup"
         Parameters:
           - NomadServerInstanceType
           - NomadServerNodeCount
           - NomadClientInstanceType
           - NomadClientNodeCount
-          # - EnablegConsulServiceMesh
       - Label:
           default: "DNS and SSL configuration"
         Parameters:
@@ -72,6 +78,12 @@ Metadata:
         default: Route 53 hosted zone ID
       LoadBalancerFQDN:
         default: Load Balancer FQDN
+      CreateConsulCluster:
+        default: Create Consul cluster
+      ConsulServerInstanceType:
+        default: Consul server node instance type
+      ConsulServerNodeCount:
+        default: Number of Consul server nodes
       NomadServerInstanceType:
         default: Nomad server node instance type
       NomadServerNodeCount:
@@ -80,8 +92,8 @@ Metadata:
         default: Nomad client node instance type
       NomadClientNodeCount:
         default: Number of Nomad client nodes
-      # EnableConsulServiceMesh:
-      #   default: Enable Consul service mesh
+      EnableConsulServiceMesh:
+        default: Enable Consul service mesh
 
 Parameters:
   AvailabilityZones:
@@ -97,6 +109,72 @@ Parameters:
       The CIDR IP range that is permitted to access Nomad. Note: a value of
       0.0.0.0/0 will allow access from ANY ip address
     Type: String
+  CreateConsulCluster:
+    Description: Create a Consul cluster to support this Nomad cluster.
+    Type: String
+    Default: "true"
+    AllowedValues:
+      - "true"
+      - "false"
+  ConsulServerNodeCount:
+    Type: String
+    Description: The number of Consul server nodes that will be created. You can choose 1, 3, 5, or 7 nodes, leave empty for none.
+    AllowedValues:
+      - ""
+      - "1"
+      - "3"
+      - "5"
+      - "7"
+    Default: "3"
+  ConsulServerInstanceType:
+    Type: String
+    Description: The EC2 instance type for the Consul instances.
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - r3.large
+      - r3.xlarge
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - i2.xlarge
+      - i2.2xlarge
+      - i2.4xlarge
+      - i2.8xlarge
+    ConstraintDescription: Choose an instance type.
+    Default: m5.large
+  EnableConsulServiceMesh:
+    Description: Enable Consul service mesh for the Nomad cluster.
+    Type: String
+    Default: "true"
+    AllowedValues:
+      - "true"
+      - "false"
   NomadServerInstanceType:
     Type: String
     Default: m5.large
@@ -143,11 +221,11 @@ Parameters:
     Type: String
     Description: The number of Nomad server nodes that will be created. You can choose 3, 5, or 7 nodes.
     AllowedValues:
-      - '1'
-      - '3'
-      - '5'
-      - '7'
-    Default: '3'
+      - "1"
+      - "3"
+      - "5"
+      - "7"
+    Default: "3"
   NomadClientInstanceType:
     Type: String
     Default: m5.large
@@ -193,7 +271,7 @@ Parameters:
   NomadClientNodeCount:
     Type: String
     Description: The number of Nomad client nodes that will be created.
-    Default: '3'
+    Default: "3"
   KeyPairName:
     Description: >-
       Public/private key pairs allow you to securely connect to your instance
@@ -277,19 +355,13 @@ Parameters:
     Description: The fully qualified domain name for the load balancer. Use with 'HostedZoneID' if you are NOT using SSL.
     Type: String
     Default: ''
-  # EnablegConsulServiceMesh:
-  #   Description: Enable ConsulServiceMesh for the Nomad cluster.
-  #   Type: String
-  #   Default: "false"
-  #   AllowedValues:
-  #     - "true"
-  #     - "false"
 
 Conditions:
   # GovCloudCondition: !Equals [!Ref AWS::Region, "us-gov-west-1" ]
   SetupRoute53: !And
     - !Not [!Equals [!Ref HostedZoneID, '']]
     - !Not [!Equals [!Ref 'LoadBalancerFQDN', '']]
+  DeployConsul: !Equals [!Ref 'CreateConsulCluster', 'true']
 
 Resources:
   VPCStack:
@@ -324,11 +396,12 @@ Resources:
         RemoteAccessCIDR: !Ref AccessCIDR
         VPCID: !GetAtt VPCStack.Outputs.VPCID
 
-  HashiCorpNomadStack:
+  HashiCorpNomadClusterStack:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
       TemplateURL: !Sub >-
-        https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/quickstart-hashicorp-nomad.template.yaml
+        https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/quickstart-hashicorp-nomad-cluster.template.yaml
+
       Parameters:
         BastionSecurityGroupID: !GetAtt BastionStack.Outputs.BastionSecurityGroupID
         PrivateSubnet1ID: !GetAtt VPCStack.Outputs.PrivateSubnet1AID
@@ -339,38 +412,37 @@ Resources:
         PublicSubnet3ID: !GetAtt VPCStack.Outputs.PublicSubnet3ID
         VPCID: !GetAtt VPCStack.Outputs.VPCID
         VPCCIDR: !Ref VPCCIDR
+        KeyPairName: !Ref KeyPairName
+        CreateConsulCluster: !Ref CreateConsulCluster
+        ConsulServerInstanceType: !Ref ConsulServerInstanceType
+        ConsulServerNodeCount: !Ref ConsulServerNodeCount
+        EnableConsulServiceMesh: !If [DeployConsul, !Ref EnableConsulServiceMesh, AWS::NoValue]
         NomadServerInstanceType: !Ref NomadServerInstanceType
         NomadServerNodeCount: !Ref NomadServerNodeCount
         NomadClientInstanceType: !Ref NomadClientInstanceType
         NomadClientNodeCount: !Ref NomadClientNodeCount
-        # EnableConsulServiceMesh: !Ref EnableConsulServiceMesh
-        KeyPairName: !Ref KeyPairName
-        NomadEc2RetryTagKey: "quickstart-nomad-cluster"
-        NomadEc2RetryTagValue: "nomad-member-node"
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         SSLCertificateArn: !Ref SSLCertificateArn
         HostedZoneID: !Ref HostedZoneID
-        LoadBalancerFQDN: !Ref LoadBalancerFQDN
+        LoadBalancerFQDN: !Ref LoadBalancerFQDN 
 
 Outputs:
-  NomadEc2RetryTagKey:
-    Value: !GetAtt HashiCorpNomadStack.Outputs.NomadEc2RetryTagKey
-    Description:
-      The EC2 instance tag key to filter on when joining to other Nomad nodes.
-
-  NomadEc2RetryTagValue:
-    Value: !GetAtt HashiCorpNomadStack.Outputs.NomadEc2RetryTagValue
-    Description:
-      The EC2 instance tag value to filter on when joining to other Nomad nodes.
 
   NomadServerELB:
     Description:
       The public URL of your Nomad Load Balancer. Create a CNAME record pointing
       at this Load Balancer.
-    Value: !GetAtt HashiCorpNomadStack.Outputs.NomadServerELB
+    Value: !GetAtt HashiCorpNomadClusterStack.Outputs.NomadServerELB
+  
+  ConsulServerELB:
+    Condition: DeployConsul
+    Description:
+      The public URL of your Consul Load Balancer. Create a CNAME record pointing
+      at this Load Balancer.
+    Value: !GetAtt HashiCorpNomadClusterStack.Outputs.ConsulServerELB
 
   NomadServerFQDN:
     Condition: SetupRoute53
     Description: The public CNAME pointing to your Nomad Load Balancer.
-    Value: !GetAtt HashiCorpNomadStack.Outputs.NomadServerFQDN
+    Value: !GetAtt HashiCorpNomadClusterStack.Outputs.NomadServerFQDN

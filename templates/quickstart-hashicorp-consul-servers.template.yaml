@@ -6,36 +6,30 @@ Metadata:
   LICENSE: "Apache License, Version 2.0"
   'AWS::CloudFormation::Interface':
     ParameterGroups:
-      - Label:
-          default: "VPC network configuration"
+      - Label: {default: "VPC network configuration"}
         Parameters:
-          - VPCID
           - PrivateSubnet1ID
           - PrivateSubnet2ID
           - PrivateSubnet3ID
           - PublicSubnet1ID
           - PublicSubnet2ID
           - PublicSubnet3ID
-      - Label:
-          default: "SSH Access"
+          - VPCID
+      - Label: {default: "Consul cluster ELB configuration"}
         Parameters:
-          - KeyPairName
-      - Label:
-          default: "Consul cluster setup"
+          - SSLCertificateId
+      - Label: {default: "Consul cluster setup"}
         Parameters:
+          - ConsulServerSecurityGroup
           - ConsulServerInstanceType
           - ConsulServerNodeCount
           - ConsulServerAMIOS
+          - KeyPairName
           - ConsulEc2RetryTagKey
           - ConsulEc2RetryTagValue
+          - ConsulDatacenter
           - EnableConsulServiceMesh
-          - ConsulServerSecurityGroup
-      - Label:
-          default: "ELB SSL configuration"
-        Parameters:
-          - SSLCertificateId
-      - Label:
-          default: "AWS Quick Start configuration"
+      - Label: {default: "AWS Quick Start configuration"}
         Parameters:
           - QSS3BucketName
           - QSS3KeyPrefix
@@ -78,29 +72,7 @@ Metadata:
         default: Consul Server security group ID
 
 Parameters:
-  ConsulEc2RetryTagKey:
-    Description:
-      The EC2 instance tag key to filter on when joining to other Consul
-      nodes.
-    Type: String
-    Default: "quickstart-consul-cluster"
-    ConstraintDescription: Must match EC2 Tag Name requirements.
-  ConsulEc2RetryTagValue:
-    Description:
-      The EC2 instance tag value to filter on when joining to other Consul
-      nodes.
-    Type: String
-    Default: "consul-member-node"
-    ConstraintDescription: Must match EC2 Tag Name requirements.
-  ConsulServerSecurityGroup:
-    Description: 'The security group to apply to client nodes at startup (e.g., sg-7f16e910)'
-    Type: 'AWS::EC2::SecurityGroup::Id'
-
-  KeyPairName:
-    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
-    Type: "AWS::EC2::KeyPair::KeyName"
-    # MinLength: 1
-    ConstraintDescription: Must be the name of an existing EC2 KeyPair.
+  # VPC network configuration
   PrivateSubnet1ID:
     Description: "ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-xxxxxxxx)"
     Type: "AWS::EC2::Subnet::Id"
@@ -119,31 +91,20 @@ Parameters:
   PublicSubnet3ID:
     Description: "ID of the public subnet 3 in Availability Zone 3 (e.g., subnet-xxxxxxxx)"
     Type: "AWS::EC2::Subnet::Id"
-  QSS3BucketName:
-    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
-    ConstraintDescription: >-
-      Quick Start bucket name can include numbers, lowercase letters, uppercase
-      letters, and hyphens (-). It cannot start or end with a hyphen (-).
-    Default: "aws-quickstart"
-    Description: >-
-      S3 bucket name for the Quick Start assets. Quick Start bucket name can
-      include numbers, lowercase letters, uppercase letters, and hyphens (-). It
-      cannot start or end with a hyphen (-).
-    Type: String
-  QSS3KeyPrefix:
-    AllowedPattern: "^[0-9a-zA-Z-/]*$"
-    ConstraintDescription: >-
-      Quick Start key prefix can include numbers, lowercase letters, uppercase
-      letters, hyphens (-), and forward slash (/).
-    Default: "quickstart-hashicorp-consul/"
-    Description: >-
-      S3 key prefix for the Quick Start assets. Quick Start key prefix can
-      include numbers, lowercase letters, uppercase letters, hyphens (-), and
-      forward slash (/).
-    Type: String
   VPCID:
     Description: VPC ID
     Type: "AWS::EC2::VPC::Id"
+
+  # Consul cluster ELB configuration
+  SSLCertificateId:
+    Description: 'The SSL certificate to use for the Consul server ELB.'
+    Type: 'String'
+
+  # Consul cluster setup
+  # -- Consul Instance Configuration --
+  ConsulServerSecurityGroup:
+    Description: 'The security group to apply to client nodes at startup (e.g., sg-7f16e910)'
+    Type: 'AWS::EC2::SecurityGroup::Id'
   ConsulServerInstanceType:
     Type: String
     Description: The EC2 instance type for the Consul instances.
@@ -186,7 +147,6 @@ Parameters:
       - i2.8xlarge
     ConstraintDescription: Choose an instance type.
     Default: m5.large
-
   ConsulServerNodeCount:
     Type: String
     Description: The number of Consul server nodes that will be created. You can choose 3, 5, or 7 nodes.
@@ -196,7 +156,6 @@ Parameters:
       - "5"
       - "7"
     Default: "3"
-
   ConsulServerAMIOS:
     AllowedValues:
       - Amazon-Linux2-HVM
@@ -207,7 +166,32 @@ Parameters:
     Default: Ubuntu-Server-20.04-LTS-HVM
     Description: The Linux distribution for the AMI to be used for the Consul server instances.
     Type: String
-
+  KeyPairName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Type: "AWS::EC2::KeyPair::KeyName"
+    # MinLength: 1
+    ConstraintDescription: Must be the name of an existing EC2 KeyPair.
+  # -- Consul Application Configuration --
+  ConsulEc2RetryTagKey:
+    Description:
+      The EC2 instance tag key to filter on when joining to other Consul
+      nodes.
+    Type: String
+    Default: "quickstart-consul-cluster"
+    ConstraintDescription: Must match EC2 Tag Name requirements.
+  ConsulEc2RetryTagValue:
+    Description:
+      The EC2 instance tag value to filter on when joining to other Consul
+      nodes.
+    Type: String
+    Default: "consul-member-node"
+    ConstraintDescription: Must match EC2 Tag Name requirements.
+  ConsulDatacenter:
+    Description:
+      The datacenter name to use for the Consul cluster configuration.
+    Type: String
+    Default: "dc1"
+    ConstraintDescription: Must be DNS-compatible.
   EnableConsulServiceMesh:
     Description: Enable Consul service mesh on the Consul server cluster.
     Type: String
@@ -216,9 +200,29 @@ Parameters:
       - "true"
       - "false"
 
-  SSLCertificateId:
-    Description: 'The SSL certificate to use for the Consul server ELB.'
-    Type: 'String'
+  # AWS Quick Start configuration
+  QSS3BucketName:
+    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
+    ConstraintDescription: >-
+      Quick Start bucket name can include numbers, lowercase letters, uppercase
+      letters, and hyphens (-). It cannot start or end with a hyphen (-).
+    Default: "aws-quickstart"
+    Description: >-
+      S3 bucket name for the Quick Start assets. Quick Start bucket name can
+      include numbers, lowercase letters, uppercase letters, and hyphens (-). It
+      cannot start or end with a hyphen (-).
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: "^[0-9a-zA-Z-/]*$"
+    ConstraintDescription: >-
+      Quick Start key prefix can include numbers, lowercase letters, uppercase
+      letters, hyphens (-), and forward slash (/).
+    Default: "quickstart-hashicorp-consul/"
+    Description: >-
+      S3 key prefix for the Quick Start assets. Quick Start key prefix can
+      include numbers, lowercase letters, uppercase letters, hyphens (-), and
+      forward slash (/).
+    Type: String
 
 Rules:
   ## This rule is broken for some reason?
@@ -457,7 +461,6 @@ Conditions:
   GovCloudCondition: !Equals [!Ref AWS::Region, "us-gov-west-1"]
 
 Resources:
-
   ConsulServerASG:
     Type: "AWS::AutoScaling::AutoScalingGroup"
     Properties:
@@ -569,22 +572,26 @@ Resources:
     Metadata:
       AWS::CloudFormation::Init:
         configSets:
-          cs_base:
+          _base:
             - install_and_enable_cfn_hup
+            - disable_motd
             - create_consul_group_user_dir
             - fetch_consul
             - fetch_vault
             - fetch_consul_template
-            - setup_dnsmasq
-            
-          cs-consul-service-mesh:
-            - ConfigSet: cs_base
-            - enable_consul_service_mesh
+            - setup_coredns
+
+          _consul:
             - consul_install
 
+          cs-consul-service-mesh:
+            - ConfigSet: _base
+            - enable_consul_service_mesh
+            - ConfigSet: _consul
+
           cs_consul:
-            - ConfigSet: cs_base
-            - consul_install
+            - ConfigSet: _base
+            - ConfigSet: _consul
 
         install_and_enable_cfn_hup:
           files:
@@ -629,6 +636,15 @@ Resources:
             02start_cfn_hup:
               command: systemctl start cfn-hup.service
 
+        disable_motd:
+          files:
+            /home/ubuntu/.hushlogin:
+              content: |
+                # disable motd
+              user: ubuntu
+              group: ubuntu
+              mode: "000400"
+
         create_consul_group_user_dir:
           users:
             consul:
@@ -671,11 +687,11 @@ Resources:
         consul_install:
           files:
             /opt/consul/config/consul.hcl:
-              content: |
+              content: !Sub |
                 data_dir    = "/opt/consul/data"
                 client_addr = "0.0.0.0"
                 bind_addr   = "{{{InterfaceTemplate}}}"
-                datacenter  = "{{Region}}"
+                datacenter  = "${ConsulDatacenter}"
                 log_level   = "WARN"
                 ui_config {
                   enabled = true
@@ -684,7 +700,6 @@ Resources:
                   disable_compat_1.9 = true
                 }
               context:
-                Region: !Ref "AWS::Region"
                 InterfaceTemplate: '{{ GetDefaultInterfaces | include \"type\" \"ipv4\" | attr \"address\" }}'
               owner: root
               group: consul
@@ -707,7 +722,7 @@ Resources:
 
                 [Service]
                 Type=notify
-                EnvironmentFile=~/opt/consul/config/consul.env
+                EnvironmentFile=-/opt/consul/config/consul.env
                 User=consul
                 Group=consul
                 ExecStart=/usr/bin/consul agent -config-dir=/opt/consul/config
@@ -746,11 +761,9 @@ Resources:
                 server=/consul/127.0.0.1#8600
                 listen-address=127.0.0.1
                 bind-interfaces
-            /etc/resolv.conf.new:
+            /usr/local/etc/dnsmasq.conf:
               content: |
-                nameserver 127.0.0.1
-                options edns0 trust-ad
-                search ec2.internal
+                no-resolv
           packages:
             apt:
               dnsmasq-base: []
@@ -759,10 +772,72 @@ Resources:
           commands:
             01_start_dnsmasq:
               command: service dnsmasq restart
-            02_rm_resolv_conf:
-              command: rm /etc/resolv.conf
-            03_cp_resolv_conf:
-              command: mv /etc/resolv.conf.new /etc/resolv.conf
+
+        setup_coredns:
+          users:
+            coredns:
+              homeDir: /srv/coredns
+          sources:
+            /usr/bin: https://github.com/coredns/coredns/releases/download/v1.8.4/coredns_1.8.4_linux_amd64.tgz
+          files:
+            /etc/systemd/system/coredns.service:
+              content: |
+                [Unit]
+                Description=CoreDNS DNS server
+                Documentation=https://coredns.io
+                After=network.target
+
+                [Service]
+                PermissionsStartOnly=true
+                LimitNOFILE=1048576
+                LimitNPROC=512
+                CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+                AmbientCapabilities=CAP_NET_BIND_SERVICE
+                NoNewPrivileges=true
+                User=coredns
+                WorkingDirectory=~
+                ExecStart=/usr/bin/coredns -conf=/etc/coredns/Corefile
+                ExecReload=/bin/kill -SIGUSR1 $MAINPID
+                Restart=on-failure
+
+                [Install]
+                WantedBy=multi-user.target
+            /etc/coredns/Corefile:
+              content: |
+                . {
+                  forward . /run/systemd/resolve/resolv.conf
+                }
+                consul {
+                  forward . dns://127.0.0.1:8600
+                }
+              user: root
+              group: root
+              mode: "000644"
+            /etc/resolv.conf:
+              content: |
+                nameserver 127.0.0.1
+                options edns0 trust-ad
+                search ec2.internal
+              user: root
+              group: root
+              mode: "000644"
+          commands:
+            00_make_homedir:
+              command: mkdir -p /srv/coredns
+            01_change_owner:
+              command: chown -R coredns:coredns /srv/coredns
+            02_reload_systemd:
+              command: systemctl daemon-reload
+            03_disable_resolved_DNSStubListener:
+              command: echo "DNSStubListener=no" >> /etc/systemd/resolved.conf
+            04_restart_resolved:
+              command: systemctl restart systemd-resolved.service
+            05_start_service:
+              command: systemctl start coredns
+            06_enable_service:
+              command: systemctl enable coredns
+
+
     Properties:
       InstanceType: !Ref ConsulServerInstanceType
       AssociatePublicIpAddress: false
@@ -864,6 +939,10 @@ Outputs:
     Description:
       The security group ID of the Consul servers.
 
+  ConsulServerASG:
+    Value: !Ref ConsulServerASG
+    Description: 'The Consul server autoscaling group.'
+
   ConsulServerLogsBucket:
     Value: !Ref ConsulServerLogsBucket
     Description:
@@ -878,4 +957,3 @@ Outputs:
     Value: !GetAtt ConsulServerELB.CanonicalHostedZoneNameID
     Description:
       The CanonicalHostedZoneNameId of the Consul server ELB.
-

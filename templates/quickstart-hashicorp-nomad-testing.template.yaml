@@ -1,5 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: 'HashiCorp Nomad + VPC  Aug,28,2019 QS(0036)'
+Description: 'Creates a VPC and BastionHost sufficient to test the cluster stack
+  against to minimize teardown and recreation of otherwise stable resources.'
 Metadata:
   QuickStartDocumentation:
     EntrypointName: "Launch into a new VPC"

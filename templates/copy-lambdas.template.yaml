@@ -3,6 +3,18 @@ Description: >-
   This template creates an S3 bucket in the same region where the stack is
   launched and copy the Lambda functions code from original bucket to the new
   bucket. (qs-1nae6brn2)
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label: {default: "AWS Quick Start configuration"}
+        Parameters:
+          - QSS3BucketName
+          - QSS3KeyPrefix
+    ParameterLabels:
+      QSS3BucketName:
+        default: Quick Start S3 bucket name
+      QSS3KeyPrefix:
+        default: Quick Start S3 key prefix
 Parameters:
   QSS3BucketName:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$

@@ -515,7 +515,7 @@ Resources:
         - !Ref NomadServerELBSecGroup
       CrossZone: true
       Listeners:
-        - LoadBalancerPort: "4646"
+        - LoadBalancerPort: "443"
           InstancePort: "4646"
           Protocol: HTTPS
           SSLCertificateId: !Ref SSLCertificateId

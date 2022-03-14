@@ -497,7 +497,7 @@ Resources:
         - !Ref ConsulServerELBSecGroup
       CrossZone: true
       Listeners:
-        - LoadBalancerPort: "8500"
+        - LoadBalancerPort: "443"
           InstancePort: "8500"
           Protocol: HTTPS
           SSLCertificateId: !Ref SSLCertificateId

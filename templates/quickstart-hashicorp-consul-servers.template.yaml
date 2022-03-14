@@ -70,6 +70,8 @@ Metadata:
         default: Tag value for Consul cluster nodes
       ConsulServerSecurityGroup:
         default: Consul Server security group ID
+      ConsulDatacenter:
+        default: The datacenter name to use for the Consul cluster configuration.
 
 Parameters:
   # VPC network configuration

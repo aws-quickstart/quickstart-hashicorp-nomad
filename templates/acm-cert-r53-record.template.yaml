@@ -79,7 +79,7 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
       Policies:
         - PolicyName: lambda-acm
@@ -102,7 +102,7 @@ Resources:
                 Action:
                   - route53:ChangeResourceRecordSets
                 Resource:
-                  - !Sub arn:aws:route53:::hostedzone/${HostedZoneID}
+                  - !Sub arn:${AWS::Partition}:route53:::hostedzone/${HostedZoneID}
               - Effect: Allow
                 Action:
                   - logs:FilterLogEvents

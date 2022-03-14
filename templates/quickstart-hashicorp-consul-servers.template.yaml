@@ -539,7 +539,7 @@ Resources:
               - "s3:PutObject"
             Effect: Allow
             Resource:
-              !Sub "arn:aws:s3:::${ConsulServerLogsBucket}/ConsulELBLogs/*"
+              !Sub "arn:${AWS::Partition}:s3:::${ConsulServerLogsBucket}/ConsulELBLogs/*"
             Principal:
               AWS: !Sub
                 - "arn:aws:iam::${RegionELBAccountId}:root"
@@ -901,7 +901,7 @@ Resources:
             Statement:
               - Action:
                   - "s3:GetObject"
-                Resource: !Sub "arn:aws:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*"
+                Resource: !Sub "arn:${AWS::Partition}:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*"
                 Effect: Allow
           PolicyName: AuthenticatedS3GetObjects
 

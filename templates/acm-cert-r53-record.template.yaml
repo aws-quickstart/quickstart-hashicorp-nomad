@@ -92,12 +92,7 @@ Resources:
                   - acm:DescribeCertificate
                   - acm:DeleteCertificate
                 Resource:
-                  - '*'
-              - Effect: Allow
-                Action:
-                  - lambda:InvokeFunction
-                Resource:
-                  - '*'
+                  - !Sub arn:${AWS::Partition}:acm:${AWS::Region}:${AWS::AccountId}:certificate/*
               - Effect: Allow
                 Action:
                   - route53:ChangeResourceRecordSets

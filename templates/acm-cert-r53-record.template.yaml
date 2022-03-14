@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: (qs-1ot302h6c) Creates R53 records and ACM Certificate.
+Description: (qs-1nae6brn2) Creates R53 records and ACM Certificate.
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -103,6 +103,7 @@ Resources:
                   - logs:FilterLogEvents
                 Resource:
                   - '*'
+                  - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-ACMCertificateLambda*:*
   ACMCertificateLambda:
     Condition: SetupRoute53
     Type: AWS::Lambda::Function

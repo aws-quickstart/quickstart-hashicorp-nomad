@@ -1,5 +1,5 @@
-AWSTemplateFormatVersion: 2010-09-09
-Description: "HashiCorp Nomad Client ASG(Please do not remove) Aug,28,2019 QS(0036)"
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "HashiCorp Nomad Client ASG(Please do not remove) Aug,28,2019 (qs-1nae6brn2)"
 Metadata:
   QuickStartDocumentation:
     EntrypointName: "Launch into an existing VPC"
@@ -488,6 +488,10 @@ Resources:
   NomadClientLC:
     Type: AWS::AutoScaling::LaunchConfiguration
     Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E9101 #ignore warning about kill for Linux related command
       AWS::CloudFormation::Init:
         configSets:
           _base:

@@ -469,6 +469,8 @@ Resources:
       MaxSize: !Ref ConsulServerNodeCount
       DesiredCapacity: !Ref ConsulServerNodeCount
       LoadBalancerNames: [!Ref ConsulServerELB]
+      HealthCheckType: "ELB"
+      HealthCheckGracePeriod: "120"
       VPCZoneIdentifier:
         - !Ref PrivateSubnet1ID
         - !Ref PrivateSubnet2ID

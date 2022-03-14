@@ -566,6 +566,8 @@ Resources:
       MaxSize: !Ref NomadServerNodeCount
       DesiredCapacity: !Ref NomadServerNodeCount
       LoadBalancerNames: [!Ref NomadServerELB]
+      HealthCheckType: "ELB"
+      HealthCheckGracePeriod: "120"
       VPCZoneIdentifier:
         - !Ref PrivateSubnet1ID
         - !Ref PrivateSubnet2ID

@@ -573,6 +573,7 @@ Resources:
 
   NomadClients:
     Type: 'AWS::CloudFormation::Stack'
+    DependsOn: NomadServers
     Properties:
       TemplateURL: !Sub >-
         https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/quickstart-hashicorp-nomad-clients.template.yaml

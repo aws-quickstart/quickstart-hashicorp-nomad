@@ -961,7 +961,7 @@ Outputs:
     Description:
       The DNS name of the Consul server ELB.
 
-  EBSCanonicalHostedZoneNameID:
+  ELBCanonicalHostedZoneNameID:
     Value: !GetAtt ConsulServerELB.CanonicalHostedZoneNameID
     Description:
       The CanonicalHostedZoneNameId of the Consul server ELB.

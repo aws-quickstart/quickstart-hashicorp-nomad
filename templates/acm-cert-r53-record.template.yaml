@@ -139,7 +139,6 @@ Resources:
           ValidationDomain: !Ref DomainName
 Outputs:
   ACMCertificate:
-    Condition: UseEmailForACMValidation
     Description: ARN of the ACM-Generated SSL Certificate
     Value: !If
       - SetupRoute53

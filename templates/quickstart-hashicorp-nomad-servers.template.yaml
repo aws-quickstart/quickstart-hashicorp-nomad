@@ -1145,7 +1145,7 @@ Outputs:
     Description:
       The S3 Bucket created for Nomad server logs.
 
-  CanonicalHostedZoneNameID:
+  ELBCanonicalHostedZoneNameID:
     Value: !GetAtt NomadServerELB.CanonicalHostedZoneNameID
     Description:
       The name of the hosted zone for the Nomad server ELB.

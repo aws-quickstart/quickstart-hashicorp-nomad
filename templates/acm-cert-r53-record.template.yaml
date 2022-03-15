@@ -102,8 +102,7 @@ Resources:
                 Action:
                   - logs:FilterLogEvents
                 Resource:
-                  - '*'
-                  - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-ACMCertificateLambda*:*
+                  - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*ACMCertificateLambda*
   ACMCertificateLambda:
     Condition: SetupRoute53
     Type: AWS::Lambda::Function

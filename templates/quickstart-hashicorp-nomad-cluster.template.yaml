@@ -127,27 +127,27 @@ Metadata:
 
 Parameters:
   PrivateSubnet1ID:
-    Description: "ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-0bfd0f545bb088d9d)."
     Type: "AWS::EC2::Subnet::Id"
 
   PrivateSubnet2ID:
-    Description: "ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-0bfd0f545bb088d9d)."
     Type: "AWS::EC2::Subnet::Id"
 
   PrivateSubnet3ID:
-    Description: "ID of the private subnet 3 in Availability Zone 3 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the private subnet 3 in Availability Zone 3 (e.g., subnet-0bfd0f545bb088d9d)."
     Type: "AWS::EC2::Subnet::Id"
 
   PublicSubnet1ID:
-    Description: "ID of the public subnet 1 in Availability Zone 1 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the public subnet 1 in Availability Zone 1 (e.g., subnet-0bfd0f545bb088d9d)."
     Type: "AWS::EC2::Subnet::Id"
 
   PublicSubnet2ID:
-    Description: "ID of the public subnet 2 in Availability Zone 2 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the public subnet 2 in Availability Zone 2 (e.g., subnet-0bfd0f545bb088d9d)."
     Type: "AWS::EC2::Subnet::Id"
 
   PublicSubnet3ID:
-    Description: "ID of the public subnet 3 in Availability Zone 3 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the public subnet 3 in Availability Zone 3 (e.g., subnet-0bfd0f545bb088d9d)."
     Type: "AWS::EC2::Subnet::Id"
 
   QSS3BucketName:
@@ -175,21 +175,21 @@ Parameters:
     Type: String
 
   VPCID:
-    Description: VPC ID
+    Description: VPC ID.
     Type: "AWS::EC2::VPC::Id"
 
   VPCCIDR:
     AllowedPattern: >-
       ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    Description: CIDR block for the VPC
+    Description: CIDR block for the VPC.
     Type: String
 
   BastionSecurityGroupID:
-    Description: ID of the bastion host security group to enable SSH connections (e.g., sg-7f16e910)
+    Description: ID of the bastion host security group to enable SSH connections (e.g., sg-7f16e910).
     Type: "AWS::EC2::SecurityGroup::Id"
 
   KeyPairName:
-    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances.
     Type: "AWS::EC2::KeyPair::KeyName"
     # MinLength: 1
     ConstraintDescription: Must be the name of an existing EC2 KeyPair.
@@ -446,7 +446,7 @@ Parameters:
       - "false"
 
   SSLCertificateArn:
-    Description: The Amazon Resource Name (ARN) of the SSL certificate to use for the load balancer. Use 'SSLCertificateArn' if you are not using 'LoadBalancerFQDN' and 'HostedZoneID'.
+    Description: The Amazon resource name (ARN) of the SSL certificate to use for the load balancer. Use 'SSLCertificateArn' if you are not using 'LoadBalancerFQDN' and 'HostedZoneID'.
     Type: String
     Default: ''
 

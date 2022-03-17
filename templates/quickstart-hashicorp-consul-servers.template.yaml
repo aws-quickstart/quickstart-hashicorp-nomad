@@ -71,30 +71,30 @@ Metadata:
       ConsulServerSecurityGroup:
         default: Consul Server security group ID
       ConsulDatacenter:
-        default: The datacenter name to use for the Consul cluster configuration.
+        default: The datacenter name to use for the Consul cluster configuration
 
 Parameters:
   # VPC network configuration
   PrivateSubnet1ID:
-    Description: "ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-00000000)."
     Type: "AWS::EC2::Subnet::Id"
   PrivateSubnet2ID:
-    Description: "ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-00000000)."
     Type: "AWS::EC2::Subnet::Id"
   PrivateSubnet3ID:
-    Description: "ID of the private subnet 3 in Availability Zone 3 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the private subnet 3 in Availability Zone 3 (e.g., subnet-00000000)."
     Type: "AWS::EC2::Subnet::Id"
   PublicSubnet1ID:
-    Description: "ID of the public subnet 1 in Availability Zone 1 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the public subnet 1 in Availability Zone 1 (e.g., subnet-00000000)."
     Type: "AWS::EC2::Subnet::Id"
   PublicSubnet2ID:
-    Description: "ID of the public subnet 2 in Availability Zone 2 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the public subnet 2 in Availability Zone 2 (e.g., subnet-00000000)."
     Type: "AWS::EC2::Subnet::Id"
   PublicSubnet3ID:
-    Description: "ID of the public subnet 3 in Availability Zone 3 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the public subnet 3 in Availability Zone 3 (e.g., subnet-00000000)."
     Type: "AWS::EC2::Subnet::Id"
   VPCID:
-    Description: VPC ID
+    Description: VPC ID.
     Type: "AWS::EC2::VPC::Id"
 
   # Consul cluster ELB configuration
@@ -105,7 +105,7 @@ Parameters:
   # Consul cluster setup
   # -- Consul Instance Configuration --
   ConsulServerSecurityGroup:
-    Description: 'The security group to apply to client nodes at startup (e.g., sg-7f16e910)'
+    Description: 'The security group to apply to client nodes at startup (e.g., sg-7f16e910).'
     Type: 'AWS::EC2::SecurityGroup::Id'
   ConsulServerInstanceType:
     Type: String

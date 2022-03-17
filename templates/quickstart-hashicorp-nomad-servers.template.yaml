@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: "HashiCorp Nomad (Please do not remove) Aug,28,2019 QS(0036)"
+Description: "HashiCorp Nomad (Please do not remove) Aug,28,2019 (qs-1nae6brn2)"
 Metadata:
   QuickStartDocumentation:
     EntrypointName: "Launch into an existing VPC"
@@ -515,7 +515,7 @@ Resources:
         - !Ref NomadServerELBSecGroup
       CrossZone: true
       Listeners:
-        - LoadBalancerPort: "4646"
+        - LoadBalancerPort: "443"
           InstancePort: "4646"
           Protocol: HTTPS
           SSLCertificateId: !Ref SSLCertificateId
@@ -566,6 +566,8 @@ Resources:
       MaxSize: !Ref NomadServerNodeCount
       DesiredCapacity: !Ref NomadServerNodeCount
       LoadBalancerNames: [!Ref NomadServerELB]
+      HealthCheckType: "ELB"
+      HealthCheckGracePeriod: "120"
       VPCZoneIdentifier:
         - !Ref PrivateSubnet1ID
         - !Ref PrivateSubnet2ID
@@ -585,6 +587,10 @@ Resources:
   NomadServerLC:
     Type: AWS::AutoScaling::LaunchConfiguration
     Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E9101 #ignore warning about kill for Linux related command
       AWS::CloudFormation::Init:
         configSets:
           _base:
@@ -1063,7 +1069,7 @@ Resources:
             Statement:
               - Action:
                   - "s3:GetObject"
-                Resource: !Sub "arn:aws:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*"
+                Resource: !Sub "arn:${AWS::Partition}:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*"
                 Effect: Allow
           PolicyName: AuthenticatedS3GetObjects
 
@@ -1103,7 +1109,7 @@ Resources:
             Action:
               - "s3:PutObject"
             Effect: Allow
-            Resource: !Sub "arn:aws:s3:::${NomadServerLogsBucket}/NomadELBLogs/*"
+            Resource: !Sub "arn:${AWS::Partition}:s3:::${NomadServerLogsBucket}/NomadELBLogs/*"
             Principal:
               AWS:
                 !Join [
@@ -1139,7 +1145,7 @@ Outputs:
     Description:
       The S3 Bucket created for Nomad server logs.
 
-  CanonicalHostedZoneNameID:
+  ELBCanonicalHostedZoneNameID:
     Value: !GetAtt NomadServerELB.CanonicalHostedZoneNameID
     Description:
       The name of the hosted zone for the Nomad server ELB.

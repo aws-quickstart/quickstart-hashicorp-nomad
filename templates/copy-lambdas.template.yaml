@@ -2,7 +2,19 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
   This template creates an S3 bucket in the same region where the stack is
   launched and copy the Lambda functions code from original bucket to the new
-  bucket. (qs-1ot302h6h)
+  bucket. (qs-1nae6brn2)
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label: {default: "AWS Quick Start configuration"}
+        Parameters:
+          - QSS3BucketName
+          - QSS3KeyPrefix
+    ParameterLabels:
+      QSS3BucketName:
+        default: Quick Start S3 bucket name
+      QSS3KeyPrefix:
+        default: Quick Start S3 key prefix
 Parameters:
   QSS3BucketName:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
@@ -123,7 +135,7 @@ Resources:
               Service: lambda.amazonaws.com
         Version: '2012-10-17'
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
       Policies:
         - PolicyDocument:
@@ -132,7 +144,7 @@ Resources:
                   - s3:GetObject
                 Effect: Allow
                 Resource:
-                  - !Sub arn:aws:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*
+                  - !Sub arn:${AWS::Partition}:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*
               - Action:
                   - s3:PutObject
                   - s3:DeleteObject
@@ -144,8 +156,8 @@ Resources:
                   - s3:GetBucketVersioning
                 Effect: Allow
                 Resource:
-                  - !Sub arn:aws:s3:::${LambdaZipsBucket}/${QSS3KeyPrefix}*
-                  - !Sub arn:aws:s3:::${LambdaZipsBucket}
+                  - !Sub arn:${AWS::Partition}:s3:::${LambdaZipsBucket}/${QSS3KeyPrefix}*
+                  - !Sub arn:${AWS::Partition}:s3:::${LambdaZipsBucket}
             Version: '2012-10-17'
           PolicyName: object-copier
     Type: AWS::IAM::Role
@@ -226,13 +238,13 @@ Resources:
                   dest_bucket = event['ResourceProperties']['DestBucket']
                   if event['RequestType'] == 'Delete':
                       CheckifVersioned = client.get_bucket_versioning(Bucket=dest_bucket)
-                      print CheckifVersioned
+                      print (CheckifVersioned)
                       if 'Status' in CheckifVersioned:
-                          print CheckifVersioned['Status']
+                          print (CheckifVersioned['Status'])
                           print ("This is a versioned Bucket")
                           delete_versionedobjects(dest_bucket)
                       else:
-                          print "This is not a versioned bucket"
+                          print ("This is not a versioned bucket")
                           delete_NonVersionedobjects(dest_bucket)
                   else:
                       print("Nothing to do")
@@ -258,7 +270,7 @@ Resources:
               Service: lambda.amazonaws.com
         Version: '2012-10-17'
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
       Policies:
         - PolicyDocument:
@@ -275,7 +287,7 @@ Resources:
                 Effect: Allow
                 Resource:
                   - !GetAtt LambdaZipsBucket.Arn
-                  - arn:aws:s3:::*
+                  - !Sub arn:${AWS::Partition}:s3:::*
             Version: '2012-10-17'
           PolicyName: Empty-bucket
     Type: AWS::IAM::Role

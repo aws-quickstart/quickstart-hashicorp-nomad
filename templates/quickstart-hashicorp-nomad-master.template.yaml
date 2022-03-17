@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: 'HashiCorp Nomad + VPC  Aug,28,2019 QS(0036)'
+Description: 'HashiCorp Nomad + VPC  Aug,28,2019 (qs-1nae6brn2)'
 Metadata:
   QuickStartDocumentation:
     EntrypointName: "Launch into a new VPC"

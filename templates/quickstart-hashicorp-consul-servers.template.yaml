@@ -1,5 +1,5 @@
-AWSTemplateFormatVersion: 2010-09-09
-Description: "HashiCorp Consul (Please do not remove) Aug,28,2019 QS(0036)"
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "HashiCorp Consul (Please do not remove) Aug,28,2019 (qs-1nae6brn2)"
 Metadata:
   QuickStartDocumentation:
     EntrypointName: "Launch into an existing VPC"
@@ -70,6 +70,8 @@ Metadata:
         default: Tag value for Consul cluster nodes
       ConsulServerSecurityGroup:
         default: Consul Server security group ID
+      ConsulDatacenter:
+        default: The datacenter name to use for the Consul cluster configuration.
 
 Parameters:
   # VPC network configuration
@@ -469,6 +471,8 @@ Resources:
       MaxSize: !Ref ConsulServerNodeCount
       DesiredCapacity: !Ref ConsulServerNodeCount
       LoadBalancerNames: [!Ref ConsulServerELB]
+      HealthCheckType: "ELB"
+      HealthCheckGracePeriod: "120"
       VPCZoneIdentifier:
         - !Ref PrivateSubnet1ID
         - !Ref PrivateSubnet2ID
@@ -497,7 +501,7 @@ Resources:
         - !Ref ConsulServerELBSecGroup
       CrossZone: true
       Listeners:
-        - LoadBalancerPort: "8500"
+        - LoadBalancerPort: "443"
           InstancePort: "8500"
           Protocol: HTTPS
           SSLCertificateId: !Ref SSLCertificateId
@@ -537,7 +541,7 @@ Resources:
               - "s3:PutObject"
             Effect: Allow
             Resource:
-              !Sub "arn:aws:s3:::${ConsulServerLogsBucket}/ConsulELBLogs/*"
+              !Sub "arn:${AWS::Partition}:s3:::${ConsulServerLogsBucket}/ConsulELBLogs/*"
             Principal:
               AWS: !Sub
                 - "arn:aws:iam::${RegionELBAccountId}:root"
@@ -570,6 +574,10 @@ Resources:
   ConsulServerLC:
     Type: AWS::AutoScaling::LaunchConfiguration
     Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E9101 #ignore warning about kill for Linux related command
       AWS::CloudFormation::Init:
         configSets:
           _base:
@@ -899,7 +907,7 @@ Resources:
             Statement:
               - Action:
                   - "s3:GetObject"
-                Resource: !Sub "arn:aws:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*"
+                Resource: !Sub "arn:${AWS::Partition}:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*"
                 Effect: Allow
           PolicyName: AuthenticatedS3GetObjects
 
@@ -953,7 +961,7 @@ Outputs:
     Description:
       The DNS name of the Consul server ELB.
 
-  EBSCanonicalHostedZoneNameID:
+  ELBCanonicalHostedZoneNameID:
     Value: !GetAtt ConsulServerELB.CanonicalHostedZoneNameID
     Description:
       The CanonicalHostedZoneNameId of the Consul server ELB.

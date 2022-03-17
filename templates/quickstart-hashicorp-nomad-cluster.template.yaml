@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: "HashiCorp Nomad (Please do not remove) Aug,28,2019 QS(0036)"
+Description: "HashiCorp Nomad (Please do not remove) Aug,28,2019 (qs-1nae6brn2)"
 Metadata:
   QuickStartDocumentation:
     EntrypointName: "Launch into an existing VPC"
@@ -573,6 +573,7 @@ Resources:
 
   NomadClients:
     Type: 'AWS::CloudFormation::Stack'
+    DependsOn: NomadServers
     Properties:
       TemplateURL: !Sub >-
         https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/quickstart-hashicorp-nomad-clients.template.yaml

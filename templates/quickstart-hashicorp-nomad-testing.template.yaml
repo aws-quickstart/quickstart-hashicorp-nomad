@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: 'Creates a VPC and BastionHost sufficient to test the cluster stack
-  against to minimize teardown and recreation of otherwise stable resources.'
+  against to minimize teardown and recreation of otherwise stable resources. (qs-1nae6brn2)'
 Metadata:
   QuickStartDocumentation:
     EntrypointName: "Launch into a new VPC"

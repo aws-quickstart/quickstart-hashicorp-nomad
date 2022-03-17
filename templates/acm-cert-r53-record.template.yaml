@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: (qs-1ot302h6c) Creates R53 records and ACM Certificate.
+Description: (qs-1nae6brn2) Creates R53 records and ACM Certificate.
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -79,7 +79,7 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
       Policies:
         - PolicyName: lambda-acm
@@ -92,22 +92,17 @@ Resources:
                   - acm:DescribeCertificate
                   - acm:DeleteCertificate
                 Resource:
-                  - '*'
-              - Effect: Allow
-                Action:
-                  - lambda:InvokeFunction
-                Resource:
-                  - '*'
+                  - !Sub arn:${AWS::Partition}:acm:${AWS::Region}:${AWS::AccountId}:certificate/*
               - Effect: Allow
                 Action:
                   - route53:ChangeResourceRecordSets
                 Resource:
-                  - !Sub arn:aws:route53:::hostedzone/${HostedZoneID}
+                  - !Sub arn:${AWS::Partition}:route53:::hostedzone/${HostedZoneID}
               - Effect: Allow
                 Action:
                   - logs:FilterLogEvents
                 Resource:
-                  - '*'
+                  - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*ACMCertificateLambda*
   ACMCertificateLambda:
     Condition: SetupRoute53
     Type: AWS::Lambda::Function
@@ -144,7 +139,6 @@ Resources:
           ValidationDomain: !Ref DomainName
 Outputs:
   ACMCertificate:
-    Condition: UseEmailForACMValidation
     Description: ARN of the ACM-Generated SSL Certificate
     Value: !If
       - SetupRoute53

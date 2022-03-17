@@ -1,6 +1,12 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: "HashiCorp Nomad (Please do not remove) Aug,28,2019 (qs-1nae6brn2)"
 Metadata:
+  LintSpellExclude:
+    - datacenter
+    - xxxxxxxx
+  SentenceCaseExclude:
+    - Nomad
+    - Consul
   QuickStartDocumentation:
     EntrypointName: "Launch into an existing VPC"
   LICENSE: "Apache License, Version 2.0"
@@ -16,7 +22,7 @@ Metadata:
           - PublicSubnet1ID
           - PublicSubnet2ID
           - PublicSubnet3ID
-      - Label: {default: "Bastion and SSH Access"}
+      - Label: {default: "Bastion and SSH access"}
         Parameters:
           - KeyPairName
           - BastionSecurityGroupID
@@ -118,7 +124,7 @@ Metadata:
       HostedZoneID:
         default: Route 53 hosted zone ID
       LoadBalancerFQDN:
-        default: Load Balancer FQDN
+        default: Load balancer FQDN
 
       QSS3BucketName:
         default: Quick Start S3 bucket name

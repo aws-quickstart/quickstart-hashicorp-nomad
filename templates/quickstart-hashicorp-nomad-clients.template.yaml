@@ -1,6 +1,13 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: "HashiCorp Nomad Client ASG(Please do not remove) Aug,28,2019 (qs-1nae6brn2)"
 Metadata:
+  LintSpellExclude:
+    - datacenter
+    - xxxxxxxx
+    - plugin
+  SentenceCaseExclude:
+    - Nomad
+    - Consul
   QuickStartDocumentation:
     EntrypointName: "Launch into an existing VPC"
   LICENSE: "Apache License, Version 2.0"
@@ -76,19 +83,19 @@ Metadata:
 Parameters:
   # VPC network configuration
   PrivateSubnet1ID:
-    Description: "ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-00000000)."
+    Description: "ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-xxxxxxxx)."
     Type: "AWS::EC2::Subnet::Id"
   PrivateSubnet2ID:
-    Description: "ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-00000000)."
+    Description: "ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-xxxxxxxx)."
     Type: "AWS::EC2::Subnet::Id"
   PrivateSubnet3ID:
-    Description: "ID of the private subnet 3 in Availability Zone 3 (e.g., subnet-00000000)."
+    Description: "ID of the private subnet 3 in Availability Zone 3 (e.g., subnet-xxxxxxxx)."
     Type: "AWS::EC2::Subnet::Id"
 
   # Nomad cluster setup
   # -- Nomad Instance Configuration --
   NomadClientSecurityGroup:
-    Description: The security group to apply to client nodes at startup (e.g., sg-7f16e910)
+    Description: The security group to apply to client nodes at startup (e.g., sg-7f16e910).
     Type: "AWS::EC2::SecurityGroup::Id"
   NomadClientInstanceType:
     Type: String

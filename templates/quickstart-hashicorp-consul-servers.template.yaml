@@ -1,6 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: "HashiCorp Consul (Please do not remove) Aug,28,2019 (qs-1nae6brn2)"
 Metadata:
+  LintSpellExclude:
+    - datacenter
+    - xxxxxxxx
+  SentenceCaseExclude:
+    - Nomad
+    - Consul
   QuickStartDocumentation:
     EntrypointName: "Launch into an existing VPC"
   LICENSE: "Apache License, Version 2.0"
@@ -169,7 +175,7 @@ Parameters:
     Description: The Linux distribution for the AMI to be used for the Consul server instances.
     Type: String
   KeyPairName:
-    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances.
     Type: "AWS::EC2::KeyPair::KeyName"
     # MinLength: 1
     ConstraintDescription: Must be the name of an existing EC2 KeyPair.

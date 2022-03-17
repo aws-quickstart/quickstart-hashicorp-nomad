@@ -1,6 +1,12 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: 'HashiCorp Nomad + VPC  Aug,28,2019 (qs-1nae6brn2)'
 Metadata:
+  LintSpellExclude:
+    - datacenter
+    - xxxxxxxx
+  SentenceCaseExclude:
+    - Nomad
+    - Consul
   QuickStartDocumentation:
     EntrypointName: "Launch into a new VPC"
   LICENSE: 'Apache License, Version 2.0'
@@ -77,7 +83,7 @@ Metadata:
       HostedZoneID:
         default: Route 53 hosted zone ID
       LoadBalancerFQDN:
-        default: Load Balancer FQDN
+        default: Load balancer FQDN
       CreateConsulCluster:
         default: Create Consul cluster
       ConsulServerInstanceType:

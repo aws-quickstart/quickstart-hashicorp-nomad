@@ -1,6 +1,12 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: "HashiCorp Nomad (Please do not remove) Aug,28,2019 (qs-1nae6brn2)"
 Metadata:
+  LintSpellExclude:
+    - datacenter
+    - xxxxxxxx
+  SentenceCaseExclude:
+    - Nomad
+    - Consul
   QuickStartDocumentation:
     EntrypointName: "Launch into an existing VPC"
   LICENSE: "Apache License, Version 2.0"
@@ -100,25 +106,25 @@ Metadata:
 Parameters:
   # VPC network configuration
   PrivateSubnet1ID:
-    Description: "ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-xxxxxxxx)."
     Type: "AWS::EC2::Subnet::Id"
   PrivateSubnet2ID:
-    Description: "ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-xxxxxxxx)."
     Type: "AWS::EC2::Subnet::Id"
   PrivateSubnet3ID:
-    Description: "ID of the private subnet 3 in Availability Zone 3 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the private subnet 3 in Availability Zone 3 (e.g., subnet-xxxxxxxx)."
     Type: "AWS::EC2::Subnet::Id"
   PublicSubnet1ID:
-    Description: "ID of the public subnet 1 in Availability Zone 1 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the public subnet 1 in Availability Zone 1 (e.g., subnet-xxxxxxxx)."
     Type: "AWS::EC2::Subnet::Id"
   PublicSubnet2ID:
-    Description: "ID of the public subnet 2 in Availability Zone 2 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the public subnet 2 in Availability Zone 2 (e.g., subnet-xxxxxxxx)."
     Type: "AWS::EC2::Subnet::Id"
   PublicSubnet3ID:
-    Description: "ID of the public subnet 3 in Availability Zone 3 (e.g., subnet-xxxxxxxx)"
+    Description: "ID of the public subnet 3 in Availability Zone 3 (e.g., subnet-xxxxxxxx)."
     Type: "AWS::EC2::Subnet::Id"
   VPCID:
-    Description: VPC ID
+    Description: VPC ID.
     Type: "AWS::EC2::VPC::Id"
 
   # Nomad cluster ELB configuration
@@ -129,7 +135,7 @@ Parameters:
   # Nomad cluster setup
   # -- Nomad Instance Configuration --
   NomadServerSecurityGroup:
-    Description: 'The security group to apply to client nodes at startup (e.g., sg-7f16e910)'
+    Description: 'The security group to apply to client nodes at startup (e.g., sg-7f16e910).'
     Type: 'AWS::EC2::SecurityGroup::Id'
   NomadServerInstanceType:
     Type: String
@@ -193,7 +199,7 @@ Parameters:
     Description: The Linux distribution for the AMI to be used for the Nomad server instances.
     Type: String
   KeyPairName:
-    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances.
     Type: "AWS::EC2::KeyPair::KeyName"
     # MinLength: 1
     ConstraintDescription: Must be the name of an existing EC2 KeyPair.

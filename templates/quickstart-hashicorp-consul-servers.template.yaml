@@ -669,15 +669,15 @@ Resources:
 
         fetch_consul:
           sources:
-            /usr/bin/: https://releases.hashicorp.com/consul/1.10.1/consul_1.10.1_linux_amd64.zip
- 
+            /usr/bin/: https://releases.hashicorp.com/consul/1.11.4/consul_1.11.4_linux_amd64.zip
+
         fetch_vault:
           sources:
-            /usr/bin/: https://releases.hashicorp.com/vault/1.7.3/vault_1.7.3_linux_amd64.zip
+            /usr/bin/: https://releases.hashicorp.com/vault/1.9.4/vault_1.9.4_linux_amd64.zip
 
         fetch_consul_template:
           sources:
-            /usr/bin/: https://releases.hashicorp.com/consul-template/0.26.0/consul-template_0.26.0_linux_amd64.zip
+            /usr/bin/: https://releases.hashicorp.com/consul-template/0.28.0/consul-template_0.28.0_linux_amd64.zip
 
         enable_consul_service_mesh:
           files:

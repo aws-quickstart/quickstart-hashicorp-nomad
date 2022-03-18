@@ -435,18 +435,18 @@ Resources:
 
 Outputs:
 
-  NomadServerELB:
+  NomadServerALB:
     Description:
       The public URL of your Nomad Load Balancer. Create a CNAME record pointing
       at this Load Balancer.
-    Value: !GetAtt HashiCorpNomadClusterStack.Outputs.NomadServerELB
+    Value: !GetAtt HashiCorpNomadClusterStack.Outputs.NomadServerALB
   
-  ConsulServerELB:
+  ConsulServerALB:
     Condition: DeployConsul
     Description:
       The public URL of your Consul Load Balancer. Create a CNAME record pointing
       at this Load Balancer.
-    Value: !GetAtt HashiCorpNomadClusterStack.Outputs.ConsulServerELB
+    Value: !GetAtt HashiCorpNomadClusterStack.Outputs.ConsulServerALB
 
   NomadServerFQDN:
     Condition: SetupRoute53

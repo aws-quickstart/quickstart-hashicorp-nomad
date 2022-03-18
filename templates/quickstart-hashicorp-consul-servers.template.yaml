@@ -476,7 +476,8 @@ Resources:
       MinSize: !Ref ConsulServerNodeCount
       MaxSize: !Ref ConsulServerNodeCount
       DesiredCapacity: !Ref ConsulServerNodeCount
-      LoadBalancerNames: [!Ref ConsulServerELB]
+      TargetGroupARNs:
+        - !Ref ConsulServerTargetGroup
       HealthCheckType: "ELB"
       HealthCheckGracePeriod: "120"
       VPCZoneIdentifier:
@@ -495,40 +496,64 @@ Resources:
         Count: !Ref ConsulServerNodeCount
         Timeout: PT20M
 
-  ConsulServerELB:
-    Type: AWS::ElasticLoadBalancing::LoadBalancer
+  ConsulServerTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Scheme: "internet-facing"
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /v1/status/leader
+      HealthCheckPort: 8500
+      HealthCheckProtocol: "HTTP"
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: !Ref ConsulServerNodeCount
+      IpAddressType: ipv4
+      Port: 8500
+      Protocol: "HTTP"
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        # default of one day stickiness
+        # - Key: stickiness.lb_cookie.duration_seconds
+        #   Value: 86400
+      VpcId: !Ref VPCID
+
+  ConsulServerALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      IpAddressType: ipv4
+      Scheme: internet-facing
+      SecurityGroups:
+        - !Ref ConsulServerELBSecGroup
       Subnets:
         - !Ref PublicSubnet1ID
         - !Ref PublicSubnet2ID
         - !Ref PublicSubnet3ID
-      SecurityGroups:
-        - !Ref ConsulServerELBSecGroup
-      CrossZone: true
-      Listeners:
-        - LoadBalancerPort: "443"
-          InstancePort: "8500"
-          Protocol: HTTPS
-          SSLCertificateId: !Ref SSLCertificateId
-      HealthCheck:
-        Target: HTTP:8500/v1/status/leader
-        HealthyThreshold: "3"
-        UnhealthyThreshold: "2"
-        Interval: "30"
-        Timeout: "5"
-      ConnectionDrainingPolicy:
-        Enabled: true
-        Timeout: 300
-      AccessLoggingPolicy:
-        S3BucketName: !Ref ConsulServerLogsBucket
-        S3BucketPrefix: ConsulELBLogs
-        Enabled: true
-        EmitInterval: 60
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-ConsulServerELB"
-    DependsOn: ConsulServerLogsBucketPolicy
+      LoadBalancerAttributes:
+        - Key: access_logs.s3.enabled
+          Value: true
+        - Key: access_logs.s3.bucket
+          Value: !Ref ConsulServerLogsBucket
+        - Key: access_logs.s3.prefix
+          Value: ConsulALBLogs
+        - Key: idle_timeout.timeout_seconds
+          Value: 360
+
+  ConsulServerALBListener:
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    Properties:
+      DefaultActions:
+        - Type: "forward"
+          ForwardConfig:
+            TargetGroups:
+            - TargetGroupArn: !Ref ConsulServerTargetGroup
+      LoadBalancerArn: !Ref ConsulServerALB
+      Port: 443
+      Protocol: "HTTPS"
+      Certificates:
+        - CertificateArn: !Ref SSLCertificateId
 
   ConsulServerLogsBucket:
     Type: AWS::S3::Bucket
@@ -542,15 +567,15 @@ Resources:
       PolicyDocument:
         Version: 2012-10-17
         Statement:
-          - Sid: ConsulQSGELBAccessLogs
+          - Sid: ConsulQSGALBAccessLogs
             Action:
               - "s3:PutObject"
             Effect: Allow
             Resource:
-              !Sub "arn:${AWS::Partition}:s3:::${ConsulServerLogsBucket}/ConsulELBLogs/*"
+              !Sub "arn:${AWS::Partition}:s3:::${ConsulServerLogsBucket}/ConsulALBLogs/*"
             Principal:
               AWS: !Sub
-                - "arn:aws:iam::${RegionELBAccountId}:root"
+                - "arn:${AWS::Partition}:iam::${RegionELBAccountId}:root"
                 - RegionELBAccountId: !FindInMap 
                     - RegionELBAccountId
                     - !Ref "AWS::Region"
@@ -562,10 +587,7 @@ Resources:
       GroupDescription: Enables ELB Access to cluster instances.
       VpcId: !Ref VPCID
       SecurityGroupIngress:
-        # - IpProtocol: tcp
-        #   FromPort: 80
-        #   ToPort: 80
-        #   CidrIp: 0.0.0.0/0
+        # This is for the ALB
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
@@ -962,12 +984,12 @@ Outputs:
     Description:
       The S3 bucket name for the Consul server logs.
 
-  ELBDNSName:
-    Value: !GetAtt ConsulServerELB.DNSName
+  ConsulELBDNSName:
+    Value: !GetAtt ConsulServerALB.DNSName
     Description:
-      The DNS name of the Consul server ELB.
+      The DNS name of the Consul server ALB.
 
-  ELBCanonicalHostedZoneNameID:
-    Value: !GetAtt ConsulServerELB.CanonicalHostedZoneNameID
+  ConsulELBCanonicalHostedZoneID:
+    Value: !GetAtt ConsulServerALB.CanonicalHostedZoneID
     Description:
-      The CanonicalHostedZoneNameId of the Consul server ELB.
+      The CanonicalHostedZoneId of the Consul server ALB.

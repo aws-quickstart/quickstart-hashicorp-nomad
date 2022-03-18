@@ -509,61 +509,6 @@ Conditions:
     - !Equals [!Ref 'EnableConsulServiceMesh', 'true']
 
 Resources:
-  NomadServerELB:
-    Type: AWS::ElasticLoadBalancing::LoadBalancer
-    Properties:
-      Scheme: "internet-facing"
-      Subnets:
-        - !Ref PublicSubnet1ID
-        - !Ref PublicSubnet2ID
-        - !Ref PublicSubnet3ID
-      SecurityGroups:
-        - !Ref NomadServerELBSecGroup
-      CrossZone: true
-      Listeners:
-        - LoadBalancerPort: "443"
-          InstancePort: "4646"
-          Protocol: HTTPS
-          SSLCertificateId: !Ref SSLCertificateId
-      HealthCheck:
-        Target: HTTP:4646/v1/status/leader
-        HealthyThreshold: "3"
-        UnhealthyThreshold: "2"
-        Interval: "30"
-        Timeout: "5"
-      ConnectionDrainingPolicy:
-        Enabled: true
-        Timeout: 300
-      AccessLoggingPolicy:
-        S3BucketName: !Ref NomadServerLogsBucket
-        S3BucketPrefix: NomadELBLogs
-        Enabled: true
-        EmitInterval: 60
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-NomadServerELB"
-
-  NomadServerELBSecGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Enables ELB Access to cluster instances.
-      VpcId: !Ref VPCID
-      SecurityGroupIngress:
-        # - IpProtocol: tcp
-        #   FromPort: 80
-        #   ToPort: 80
-        #   CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
-      SecurityGroupEgress:
-        - IpProtocol: "-1"
-          CidrIp: 0.0.0.0/0
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-NomadServerELBSecGroup"
-
   NomadServerASG:
     Type: "AWS::AutoScaling::AutoScalingGroup"
     Properties:
@@ -571,7 +516,8 @@ Resources:
       MinSize: !Ref NomadServerNodeCount
       MaxSize: !Ref NomadServerNodeCount
       DesiredCapacity: !Ref NomadServerNodeCount
-      LoadBalancerNames: [!Ref NomadServerELB]
+      TargetGroupARNs:
+        - !Ref NomadServerTargetGroup
       HealthCheckType: "ELB"
       HealthCheckGracePeriod: "120"
       VPCZoneIdentifier:
@@ -589,6 +535,108 @@ Resources:
       ResourceSignal:
         Count: !Ref NomadServerNodeCount
         Timeout: PT20M
+
+  NomadServerTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /v1/status/leader
+      HealthCheckPort: 4646
+      HealthCheckProtocol: "HTTP"
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: !Ref NomadServerNodeCount
+      IpAddressType: ipv4
+      Port: 4646
+      Protocol: "HTTP"
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        # default of one day stickiness
+        # - Key: stickiness.lb_cookie.duration_seconds
+        #   Value: 86400
+      VpcId: !Ref VPCID
+
+  NomadServerALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      IpAddressType: ipv4
+      Scheme: internet-facing
+      SecurityGroups:
+        - !Ref NomadServerELBSecGroup
+      Subnets:
+        - !Ref PublicSubnet1ID
+        - !Ref PublicSubnet2ID
+        - !Ref PublicSubnet3ID
+      LoadBalancerAttributes:
+        - Key: access_logs.s3.enabled
+          Value: true
+        - Key: access_logs.s3.bucket
+          Value: !Ref NomadServerLogsBucket
+        - Key: access_logs.s3.prefix
+          Value: NomadALBLogs
+        - Key: idle_timeout.timeout_seconds
+          Value: 360
+
+  NomadServerALBListener:
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    Properties:
+      DefaultActions:
+        - Type: "forward"
+          ForwardConfig:
+            TargetGroups:
+            - TargetGroupArn: !Ref NomadServerTargetGroup
+      LoadBalancerArn: !Ref NomadServerALB
+      Port: 443
+      Protocol: "HTTPS"
+      Certificates:
+        - CertificateArn: !Ref SSLCertificateId
+
+  NomadServerLogsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+
+  NomadServerLogsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref NomadServerLogsBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: NomadQSGALBAccessLogs
+            Action:
+              - "s3:PutObject"
+            Effect: Allow
+            Resource: !Sub "arn:${AWS::Partition}:s3:::${NomadServerLogsBucket}/NomadALBLogs/*"
+            Principal:
+                AWS: !Sub
+                - "arn:${AWS::Partition}:iam::${RegionELBAccountId}:root"
+                - RegionELBAccountId: !FindInMap
+                    - RegionELBAccountId
+                    - !Ref "AWS::Region"
+                    - AccountId
+
+  NomadServerELBSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enables ELB Access to cluster instances.
+      VpcId: !Ref VPCID
+      SecurityGroupIngress:
+        # This is for the ALB
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: "-1"
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-NomadServerELBSecGroup"
 
   NomadServerLC:
     Type: AWS::AutoScaling::LaunchConfiguration
@@ -1099,38 +1147,6 @@ Resources:
       Roles:
         - !Ref NomadServerRole
 
-  NomadServerLogsBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-
-  NomadServerLogsBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref NomadServerLogsBucket
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Sid: NomadQSGELBAccessLogs
-            Action:
-              - "s3:PutObject"
-            Effect: Allow
-            Resource: !Sub "arn:${AWS::Partition}:s3:::${NomadServerLogsBucket}/NomadELBLogs/*"
-            Principal:
-              AWS:
-                !Join [
-                  "",
-                  [
-                    "arn:aws:iam::",
-                    !FindInMap [
-                      RegionELBAccountId,
-                      !Ref "AWS::Region",
-                      AccountId,
-                    ],
-                    ":root",
-                  ],
-                ]
-
 Outputs:
   NomadEc2RetryTagKey:
     Value: !Ref NomadEc2RetryTagKey
@@ -1151,12 +1167,12 @@ Outputs:
     Description:
       The S3 Bucket created for Nomad server logs.
 
-  ELBCanonicalHostedZoneNameID:
-    Value: !GetAtt NomadServerELB.CanonicalHostedZoneNameID
+  NomadALBCanonicalHostedZoneID:
+    Value: !GetAtt NomadServerALB.CanonicalHostedZoneID
     Description:
-      The name of the hosted zone for the Nomad server ELB.
+      The name of the hosted zone for the Nomad server ALB.
 
-  ELBDNSName:
-    Value: !GetAtt NomadServerELB.DNSName
+  NomadALBDNSName:
+    Value: !GetAtt NomadServerALB.DNSName
     Description:
-      The DNS name of the Nomad server ELB.
+      The DNS name of the Nomad server ALB.

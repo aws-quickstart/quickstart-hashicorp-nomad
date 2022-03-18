@@ -143,4 +143,7 @@ Outputs:
     Value: !If
       - SetupRoute53
       - !GetAtt ACMCertificateDNS.Arn
-      - !Ref ACMCertificateEmail
+      - !If
+        - UseEmailForACMValidation
+        - !Ref ACMCertificateEmail
+        - !Sub ${AWS::NoValue}

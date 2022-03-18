@@ -1035,25 +1035,18 @@ Resources:
       PolicyDocument:
         Version: 2012-10-17
         Statement:
-          - Sid: NomadQSGELBAccessLogs
+          - Sid: NomadQSGALBAccessLogs
             Action:
               - "s3:PutObject"
             Effect: Allow
-            Resource: !Sub "arn:${AWS::Partition}:s3:::${NomadClientLogsBucket}/NomadELBLogs/*"
+            Resource: !Sub "arn:${AWS::Partition}:s3:::${NomadClientLogsBucket}/NomadALBLogs/*"
             Principal:
-              AWS:
-                !Join [
-                  "",
-                  [
-                    "arn:aws:iam::",
-                    !FindInMap [
-                      RegionELBAccountId,
-                      !Ref "AWS::Region",
-                      AccountId,
-                    ],
-                    ":root",
-                  ],
-                ]
+              AWS: !Sub
+                - "arn:${AWS::Partition}:iam::${RegionELBAccountId}:root"
+                - RegionELBAccountId: !FindInMap 
+                    - RegionELBAccountId
+                    - !Ref "AWS::Region"
+                    - AccountId
 
 Outputs:
   NomadEc2RetryTagKey:

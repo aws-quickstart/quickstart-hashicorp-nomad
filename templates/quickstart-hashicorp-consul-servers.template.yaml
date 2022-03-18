@@ -21,7 +21,7 @@ Metadata:
           - PublicSubnet2ID
           - PublicSubnet3ID
           - VPCID
-      - Label: {default: "Consul cluster ELB configuration"}
+      - Label: {default: "Consul cluster ALB configuration"}
         Parameters:
           - SSLCertificateId
       - Label: {default: "Consul cluster setup"}
@@ -103,9 +103,9 @@ Parameters:
     Description: VPC ID.
     Type: "AWS::EC2::VPC::Id"
 
-  # Consul cluster ELB configuration
+  # Consul cluster ALB configuration
   SSLCertificateId:
-    Description: 'The SSL certificate to use for the Consul server ELB.'
+    Description: 'The SSL certificate to use for the Consul server ALB.'
     Type: 'String'
 
   # Consul cluster setup
@@ -526,7 +526,7 @@ Resources:
       IpAddressType: ipv4
       Scheme: internet-facing
       SecurityGroups:
-        - !Ref ConsulServerELBSecGroup
+        - !Ref ConsulServerALBSecGroup
       Subnets:
         - !Ref PublicSubnet1ID
         - !Ref PublicSubnet2ID
@@ -581,10 +581,10 @@ Resources:
                     - !Ref "AWS::Region"
                     - AccountId
 
-  ConsulServerELBSecGroup:
+  ConsulServerALBSecGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Enables ELB Access to cluster instances.
+      GroupDescription: Enables ALB Access to cluster instances.
       VpcId: !Ref VPCID
       SecurityGroupIngress:
         # This is for the ALB
@@ -597,7 +597,7 @@ Resources:
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-ConsulServerELBSecGroup"
+          Value: !Sub "${AWS::StackName}-ConsulServerALBSecGroup"
 
   ConsulServerLC:
     Type: AWS::AutoScaling::LaunchConfiguration
@@ -984,12 +984,12 @@ Outputs:
     Description:
       The S3 bucket name for the Consul server logs.
 
-  ConsulELBDNSName:
+  ConsulALBDNSName:
     Value: !GetAtt ConsulServerALB.DNSName
     Description:
       The DNS name of the Consul server ALB.
 
-  ConsulELBCanonicalHostedZoneID:
+  ConsulALBCanonicalHostedZoneID:
     Value: !GetAtt ConsulServerALB.CanonicalHostedZoneID
     Description:
       The CanonicalHostedZoneId of the Consul server ALB.

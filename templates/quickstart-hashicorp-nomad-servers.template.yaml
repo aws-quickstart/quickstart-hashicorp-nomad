@@ -21,7 +21,7 @@ Metadata:
           - PublicSubnet2ID
           - PublicSubnet3ID
           - VPCID
-      - Label: {default: "Nomad cluster ELB configuration"}
+      - Label: {default: "Nomad cluster ALB configuration"}
         Parameters:
           - SSLCertificateId
       - Label: {default: "Nomad cluster setup"}
@@ -62,7 +62,7 @@ Metadata:
       VPCID:
         default: VPC ID
 
-      # Nomad cluster ELB configuration
+      # Nomad cluster ALB configuration
       SSLCertificateId:
         default: SSL certificate ID
 
@@ -127,7 +127,7 @@ Parameters:
     Description: VPC ID.
     Type: "AWS::EC2::VPC::Id"
 
-  # Nomad cluster ELB configuration
+  # Nomad cluster ALB configuration
   SSLCertificateId:
     Description: 'The SSL certificate to use for the Nomad server instances.'
     Type: 'String'
@@ -566,7 +566,7 @@ Resources:
       IpAddressType: ipv4
       Scheme: internet-facing
       SecurityGroups:
-        - !Ref NomadServerELBSecGroup
+        - !Ref NomadServerALBSecGroup
       Subnets:
         - !Ref PublicSubnet1ID
         - !Ref PublicSubnet2ID
@@ -620,10 +620,10 @@ Resources:
                     - !Ref "AWS::Region"
                     - AccountId
 
-  NomadServerELBSecGroup:
+  NomadServerALBSecGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Enables ELB Access to cluster instances.
+      GroupDescription: Enables ALB Access to cluster instances.
       VpcId: !Ref VPCID
       SecurityGroupIngress:
         # This is for the ALB
@@ -636,7 +636,7 @@ Resources:
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-NomadServerELBSecGroup"
+          Value: !Sub "${AWS::StackName}-NomadServerALBSecGroup"
 
   NomadServerLC:
     Type: AWS::AutoScaling::LaunchConfiguration

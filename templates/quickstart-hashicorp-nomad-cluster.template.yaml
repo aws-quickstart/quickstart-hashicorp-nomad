@@ -609,8 +609,8 @@ Resources:
       Type: A
       Name: !Ref 'LoadBalancerFQDN'
       AliasTarget:
-        HostedZoneId: !GetAtt 'NomadServers.Outputs.ALBCanonicalHostedZoneNameID'
-        DNSName: !GetAtt 'NomadServers.Outputs.ALBDNSName'
+        HostedZoneId: !GetAtt 'NomadServers.Outputs.NomadALBCanonicalHostedZoneID'
+        DNSName: !GetAtt 'NomadServers.Outputs.NomadALBDNSName'
       HostedZoneId: !Ref 'HostedZoneID'
 
   CopyLambdaStack:

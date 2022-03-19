@@ -146,4 +146,4 @@ Outputs:
       - !If
         - UseEmailForACMValidation
         - !Ref ACMCertificateEmail
-        - !Sub ${AWS::NoValue}
+        - !Ref AWS::NoValue

@@ -1,0 +1,666 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "HashiCorp Nomad (Please do not remove) Aug,28,2019 (qs-1nae6brn2)"
+Metadata:
+  LintSpellExclude:
+    - datacenter
+    - xxxxxxxx
+  SentenceCaseExclude:
+    - Nomad
+    - Consul
+  QuickStartDocumentation:
+    EntrypointName: "Launch into an existing VPC"
+  LICENSE: "Apache License, Version 2.0"
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label: {default: "VPC network configuration"}
+        Parameters:
+          - VPCID
+          - VPCCIDR
+          - PrivateSubnet1ID
+          - PrivateSubnet2ID
+          - PrivateSubnet3ID
+          - PublicSubnet1ID
+          - PublicSubnet2ID
+          - PublicSubnet3ID
+      - Label: {default: "Bastion and SSH access"}
+        Parameters:
+          - KeyPairName
+          - BastionSecurityGroupID
+      - Label: {default: "Consul cluster setup"}
+        Parameters:
+          - CreateConsulCluster
+          - ConsulServerInstanceType
+          - ConsulServerNodeCount
+          # - ConsulServerAMIOS
+          - ConsulEc2RetryTagKey
+          - ConsulEc2RetryTagValue
+          - ConsulDatacenter
+      - Label: {default: "Nomad cluster setup"}
+        Parameters:
+          - NomadServerInstanceType
+          - NomadServerNodeCount
+          # - NomadServerAMIOS
+          - NomadClientInstanceType
+          - NomadClientNodeCount
+          # - NomadClientAMIOS
+          - NomadEc2RetryTagKey
+          - NomadEc2RetryTagValue
+          - NomadDatacenter
+          - EnableConsulServiceMesh
+          - EnableRawExecDriver
+      - Label: {default: "DNS and SSL configuration"}
+        Parameters:
+          - LoadBalancerFQDN
+          - HostedZoneID
+          - SSLCertificateArn
+      - Label: {default: "AWS Quick Start configuration"}
+        Parameters:
+          - QSS3BucketName
+          - QSS3KeyPrefix
+    ParameterLabels:
+      PrivateSubnet1ID:
+        default: Private Subnet 1 ID
+      PrivateSubnet2ID:
+        default: Private Subnet 2 ID
+      PrivateSubnet3ID:
+        default: Private Subnet 3 ID
+      PublicSubnet1ID:
+        default: Public Subnet 1 ID
+      PublicSubnet2ID:
+        default: Public Subnet 2 ID
+      PublicSubnet3ID:
+        default: Public Subnet 3 ID
+      VPCID:
+        default: VPC ID
+      VPCCIDR:
+        default: VPC CIDR block
+
+      KeyPairName:
+        default: Key name
+      BastionSecurityGroupID:
+        default: Bastion host security group ID
+
+      CreateConsulCluster:
+        default: Deploy a Consul cluster for this Nomad cluster
+      ConsulServerInstanceType:
+        default: Consul server node instance type
+      ConsulServerNodeCount:
+        default: Number of Consul server nodes
+      # ConsulServerAMIOS:
+      #   default: Operating system for Nomad server nodes
+      ConsulEc2RetryTagKey:
+        default: Tag key for Consul cluster nodes
+      ConsulEc2RetryTagValue:
+        default: Tag value for Consul cluster nodes
+      ConsulDatacenter:
+        default: "Consul Config: datacenter"
+
+      NomadServerInstanceType:
+        default: Nomad server node instance type
+      NomadServerNodeCount:
+        default: Number of Nomad server nodes
+      # NomadServerAMIOS:
+      #   default: Operating system for Nomad server nodes
+      NomadClientInstanceType:
+        default: Nomad client node instance type
+      NomadClientNodeCount:
+        default: Number of Nomad client nodes
+      # NomadClientAMIOS:
+      #   default: Operating system for Nomad client nodes
+      NomadEc2RetryTagKey:
+        default: Tag key for Nomad cluster nodes
+      NomadEc2RetryTagValue:
+        default: Tag value for Nomad cluster nodes
+      NomadDatacenter:
+        default: "Nomad Config: datacenter"
+      EnableConsulServiceMesh:
+        default: Enable Consul service mesh for Nomad cluster
+      EnableRawExecDriver:
+        default: Enable raw_exec driver on Nomad clients.
+ 
+
+      SSLCertificateArn:
+        default: SSL certificate ARN
+      HostedZoneID:
+        default: Route 53 hosted zone ID
+      LoadBalancerFQDN:
+        default: Load balancer FQDN
+
+      QSS3BucketName:
+        default: Quick Start S3 bucket name
+      QSS3KeyPrefix:
+        default: Quick Start S3 key prefix
+
+Parameters:
+  PrivateSubnet1ID:
+    Description: "ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-0bfd0f545bb088d9d)."
+    Type: "AWS::EC2::Subnet::Id"
+
+  PrivateSubnet2ID:
+    Description: "ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-0bfd0f545bb088d9d)."
+    Type: "AWS::EC2::Subnet::Id"
+
+  PrivateSubnet3ID:
+    Description: "ID of the private subnet 3 in Availability Zone 3 (e.g., subnet-0bfd0f545bb088d9d)."
+    Type: "AWS::EC2::Subnet::Id"
+
+  PublicSubnet1ID:
+    Description: "ID of the public subnet 1 in Availability Zone 1 (e.g., subnet-0bfd0f545bb088d9d)."
+    Type: "AWS::EC2::Subnet::Id"
+
+  PublicSubnet2ID:
+    Description: "ID of the public subnet 2 in Availability Zone 2 (e.g., subnet-0bfd0f545bb088d9d)."
+    Type: "AWS::EC2::Subnet::Id"
+
+  PublicSubnet3ID:
+    Description: "ID of the public subnet 3 in Availability Zone 3 (e.g., subnet-0bfd0f545bb088d9d)."
+    Type: "AWS::EC2::Subnet::Id"
+
+  QSS3BucketName:
+    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
+    ConstraintDescription: >-
+      Quick Start bucket name can include numbers, lowercase letters, uppercase
+      letters, and hyphens (-). It cannot start or end with a hyphen (-).
+    Default: "aws-quickstart"
+    Description: >-
+      S3 bucket name for the Quick Start assets. Quick Start bucket name can
+      include numbers, lowercase letters, uppercase letters, and hyphens (-). It
+      cannot start or end with a hyphen (-).
+    Type: String
+
+  QSS3KeyPrefix:
+    AllowedPattern: "^[0-9a-zA-Z-/]*$"
+    ConstraintDescription: >-
+      Quick Start key prefix can include numbers, lowercase letters, uppercase
+      letters, hyphens (-), and forward slash (/).
+    Default: "quickstart-hashicorp-nomad/"
+    Description: >-
+      S3 key prefix for the Quick Start assets. Quick Start key prefix can
+      include numbers, lowercase letters, uppercase letters, hyphens (-), and
+      forward slash (/).
+    Type: String
+
+  VPCID:
+    Description: VPC ID.
+    Type: "AWS::EC2::VPC::Id"
+
+  VPCCIDR:
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    Description: CIDR block for the VPC.
+    Type: String
+
+  BastionSecurityGroupID:
+    Description: ID of the bastion host security group to enable SSH connections (e.g., sg-7f16e910).
+    Type: "AWS::EC2::SecurityGroup::Id"
+
+  KeyPairName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances.
+    Type: "AWS::EC2::KeyPair::KeyName"
+    # MinLength: 1
+    ConstraintDescription: Must be the name of an existing EC2 KeyPair.
+
+
+  CreateConsulCluster:
+    Description: Enable Consul service mesh on the Nomad server cluster.
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+
+  ConsulServerInstanceType:
+    Type: String
+    Description: The EC2 instance type for the Consul instances.
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - r3.large
+      - r3.xlarge
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - i2.xlarge
+      - i2.2xlarge
+      - i2.4xlarge
+      - i2.8xlarge
+    ConstraintDescription: Choose an instance type.
+    Default: m5.large
+
+  ConsulServerNodeCount:
+    Type: String
+    Description: The number of Consul server nodes that will be created. You can choose 3, 5, or 7 nodes.
+    AllowedValues:
+      - ""
+      - "1"
+      - "3"
+      - "5"
+      - "7"
+    Default: "3"
+
+  ConsulEc2RetryTagKey:
+    Description: 'The EC2 instance tag key to filter on when joining to other Consul nodes.'
+    Type: String
+    Default: "quickstart-nomad-cluster"
+    ConstraintDescription: 'Must match EC2 Tag Name requirements.'
+
+  ConsulEc2RetryTagValue:
+    Description: 'The EC2 instance tag value to filter on when joining to other Consul nodes.'
+    Type: String
+    Default: "consul-server-node"
+    ConstraintDescription: 'Must match EC2 Tag Name requirements.'
+
+  ConsulDatacenter:
+    Description: 'The "datacenter" value to supply to the Consul configuration.'
+    Type: String
+    Default: "dc1"
+    ConstraintDescription: Must be DNS-compatible name.
+
+  # ConsulServerAMIOS:
+  #   AllowedValues:
+  #     - Amazon-Linux2-HVM
+  #     - Amazon-Linux2-HVM-ARM
+  #     - CentOS-7-HVM
+  #     - Ubuntu-Server-20.04-LTS-HVM
+  #     - SUSE-SLES-15-HVM
+  #   Default: Ubuntu-Server-20.04-LTS-HVM
+  #   Description: The Linux distribution for the AMI to be used for the Consul server instances.
+  #   Type: String
+
+  NomadServerInstanceType:
+    Type: String
+    Description: The EC2 instance type for the Nomad instances.
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - r3.large
+      - r3.xlarge
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - i2.xlarge
+      - i2.2xlarge
+      - i2.4xlarge
+      - i2.8xlarge
+    ConstraintDescription: Choose an instance type.
+    Default: m5.large
+
+  NomadServerNodeCount:
+    Type: String
+    Description: The number of Nomad server nodes that will be created. You can choose 3, 5, or 7 nodes.
+    AllowedValues:
+      - "1"
+      - "3"
+      - "5"
+      - "7"
+    Default: "3"
+
+  # NomadServerAMIOS:
+  #   AllowedValues:
+  #     - Amazon-Linux2-HVM
+  #     - Amazon-Linux2-HVM-ARM
+  #     - CentOS-7-HVM
+  #     - Ubuntu-Server-20.04-LTS-HVM
+  #     - SUSE-SLES-15-HVM
+  #   Default: Ubuntu-Server-20.04-LTS-HVM
+  #   Description: The Linux distribution for the AMI to be used for the Nomad server instances.
+  #   Type: String
+
+  NomadClientInstanceType:
+    Type: String
+    Description: The EC2 instance type for the Nomad instances.
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - r3.large
+      - r3.xlarge
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - i2.xlarge
+      - i2.2xlarge
+      - i2.4xlarge
+      - i2.8xlarge
+    ConstraintDescription: Choose an instance type.
+    Default: m5.large
+
+  NomadClientNodeCount:
+    Type: String
+    Description: The number of Nomad client nodes that will be created.
+    Default: "1"
+
+  # NomadClientAMIOS:
+  #   AllowedValues:
+  #     - Amazon-Linux2-HVM
+  #     - Amazon-Linux2-HVM-ARM
+  #     - CentOS-7-HVM
+  #     - Ubuntu-Server-20.04-LTS-HVM
+  #     - SUSE-SLES-15-HVM
+  #   Default: Ubuntu-Server-20.04-LTS-HVM
+  #   Description: The Linux distribution for the AMI to be used for the Nomad client instances.
+  #   Type: String
+  NomadEc2RetryTagKey:
+    Description:
+      The EC2 instance tag key to filter on when joining to other Nomad
+      nodes.
+    Type: String
+    Default: "quickstart-nomad-cluster"
+    ConstraintDescription: Must match EC2 Tag Name requirements.
+
+  NomadEc2RetryTagValue:
+    Description:
+      The EC2 instance tag value to filter on when joining to other Nomad
+      nodes.
+    Type: String
+    Default: "nomad-member-node"
+    ConstraintDescription: Must match EC2 Tag Name requirements.
+
+  NomadDatacenter:
+    Description: 'The "datacenter" value to supply to the Nomad configuration.'
+    Type: String
+    Default: "dc1"
+    ConstraintDescription: 'Must be DNS-compatible name.'
+  EnableRawExecDriver:
+    Description: Enable the raw_exec task driver on the Nomad clients.
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+
+  EnableConsulServiceMesh:
+    Description: Enable Consul service mesh in the Nomad cluster.
+    Type: String
+    Default: "true"
+    AllowedValues:
+      - "true"
+      - "false"
+
+  SSLCertificateArn:
+    Description: The Amazon resource name (ARN) of the SSL certificate to use for the load balancer. Use 'SSLCertificateArn' if you are not using 'LoadBalancerFQDN' and 'HostedZoneID'.
+    Type: String
+    Default: ''
+
+  HostedZoneID:
+    Description: Route 53 Hosted Zone ID of the domain name. Used in conjunction with 'LoadBalancerFQDN'.
+    Type: String
+    MaxLength: 32
+    Default: ''
+
+  LoadBalancerFQDN:
+    Description: The fully qualified domain name for the nomad load balancer. Use with 'HostedZoneID' if you are not using SSL.
+    Type: String
+    Default: ''
+
+Conditions:
+  # GovCloudCondition: !Equals [!Ref AWS::Region, "us-gov-west-1"]
+  GenerateSSL: !And
+    - !Equals [!Ref SSLCertificateArn, '']
+    - !Not [!Equals [!Ref LoadBalancerFQDN, '']]
+  SetupRoute53: !And
+    - !Not
+      - !Equals [!Ref HostedZoneID, '']
+    - !Not
+      - !Equals [!Ref LoadBalancerFQDN, '']
+  DeployConsul: !Equals [!Ref 'CreateConsulCluster', 'true']
+
+Resources:
+  ConsulSecGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Condition: DeployConsul
+    Properties:
+      GroupDescription: 'Enables SSH access.'
+      VpcId: !Ref 'VPCID'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !Ref BastionSecurityGroupID
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: !Ref VPCCIDR
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-ConsulSecGroup"
+
+  ConsulServers:
+    Type: 'AWS::CloudFormation::Stack'
+    Condition: DeployConsul
+    Properties:
+      TemplateURL: !Sub >-
+        https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/quickstart-hashicorp-consul-servers.template.yaml
+      Parameters:
+        PrivateSubnet1ID: !Ref 'PrivateSubnet1ID'
+        PrivateSubnet2ID: !Ref 'PrivateSubnet2ID'
+        PrivateSubnet3ID: !Ref 'PrivateSubnet3ID'
+        PublicSubnet1ID: !Ref 'PublicSubnet1ID'
+        PublicSubnet2ID: !Ref 'PublicSubnet2ID'
+        PublicSubnet3ID: !Ref 'PublicSubnet3ID'
+        VPCID: !Ref 'VPCID'
+        KeyPairName: !Ref 'KeyPairName'
+        ConsulServerInstanceType: !Ref 'ConsulServerInstanceType'
+        ConsulServerNodeCount: !Ref 'ConsulServerNodeCount'
+        ConsulServerSecurityGroup: !Ref 'ConsulSecGroup'
+        EnableConsulServiceMesh: !Ref 'EnableConsulServiceMesh'
+        ConsulEc2RetryTagKey: !Ref 'ConsulEc2RetryTagKey'
+        ConsulEc2RetryTagValue: !Ref 'ConsulEc2RetryTagValue'
+        ConsulDatacenter: !Ref 'ConsulDatacenter'
+        QSS3BucketName: !Ref 'QSS3BucketName'
+        QSS3KeyPrefix: !Ref 'QSS3KeyPrefix'
+        SSLCertificateId: !If
+              - GenerateSSL
+              - !GetAtt 'ConfigureSSLStack.Outputs.ACMCertificate'
+              - !Ref 'SSLCertificateArn'
+
+  NomadSecGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Enables SSH access.
+      VpcId: !Ref VPCID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !Ref BastionSecurityGroupID
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: !Ref VPCCIDR
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-NomadSecGroup"
+
+  NomadServers:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      TemplateURL: !Sub >-
+        https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/quickstart-hashicorp-nomad-servers.template.yaml
+      Parameters:
+        PrivateSubnet1ID: !Ref 'PrivateSubnet1ID'
+        PrivateSubnet2ID: !Ref 'PrivateSubnet2ID'
+        PrivateSubnet3ID: !Ref 'PrivateSubnet3ID'
+        PublicSubnet1ID: !Ref 'PublicSubnet1ID'
+        PublicSubnet2ID: !Ref 'PublicSubnet2ID'
+        PublicSubnet3ID: !Ref 'PublicSubnet3ID'
+        VPCID: !Ref 'VPCID'
+        NomadServerInstanceType: !Ref 'NomadServerInstanceType'
+        NomadServerNodeCount: !Ref 'NomadServerNodeCount'
+        NomadServerSecurityGroup: !Ref 'NomadSecGroup'
+        KeyPairName: !Ref 'KeyPairName'
+        ConsulEc2RetryTagKey: !If [DeployConsul, !Ref 'ConsulEc2RetryTagKey', '']
+        ConsulEc2RetryTagValue: !If [DeployConsul, !Ref 'ConsulEc2RetryTagValue', '']
+        ConsulDatacenter: !If [DeployConsul, !Ref 'ConsulDatacenter', '']
+        EnableConsulServiceMesh: !If [DeployConsul, !Ref 'EnableConsulServiceMesh', 'false']
+        NomadEc2RetryTagKey: !Ref 'NomadEc2RetryTagKey'
+        NomadEc2RetryTagValue: !Ref 'NomadEc2RetryTagValue'
+        NomadDatacenter: !Ref 'NomadDatacenter'
+        QSS3BucketName: !Ref 'QSS3BucketName'
+        QSS3KeyPrefix: !Ref 'QSS3KeyPrefix'
+        SSLCertificateId: !If
+              - GenerateSSL
+              - !GetAtt 'ConfigureSSLStack.Outputs.ACMCertificate'
+              - !Ref 'SSLCertificateArn'
+
+  NomadClients:
+    Type: 'AWS::CloudFormation::Stack'
+    DependsOn: NomadServers
+    Properties:
+      TemplateURL: !Sub >-
+        https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/quickstart-hashicorp-nomad-clients.template.yaml
+      Parameters:
+        PrivateSubnet1ID: !Ref 'PrivateSubnet1ID'
+        PrivateSubnet2ID: !Ref 'PrivateSubnet2ID'
+        PrivateSubnet3ID: !Ref 'PrivateSubnet3ID'
+        NomadClientInstanceType: !Ref 'NomadClientInstanceType'
+        NomadClientNodeCount: !Ref 'NomadClientNodeCount'
+        NomadClientSecurityGroup: !Ref 'NomadSecGroup'
+        ConsulEc2RetryTagKey: !If [DeployConsul, !Ref 'ConsulEc2RetryTagKey', '']
+        ConsulEc2RetryTagValue: !If [DeployConsul, !Ref 'ConsulEc2RetryTagValue', '']
+        EnableConsulServiceMesh: !If [DeployConsul, !Ref 'EnableConsulServiceMesh', 'false']
+        ConsulDatacenter: !If [DeployConsul, !Ref 'ConsulDatacenter', '']
+        NomadDatacenter: !Ref 'NomadDatacenter'
+        EnableRawExec: !Ref 'EnableRawExecDriver'
+        KeyPairName: !Ref 'KeyPairName'
+        NomadEc2RetryTagKey: !Ref 'NomadEc2RetryTagKey'
+        NomadEc2RetryTagValue: !Ref 'NomadEc2RetryTagValue'
+        QSS3BucketName: !Ref 'QSS3BucketName'
+        QSS3KeyPrefix: !Ref 'QSS3KeyPrefix'
+
+  LoadBalancerFQDNRecord:
+    Condition: SetupRoute53
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Type: A
+      Name: !Ref 'LoadBalancerFQDN'
+      AliasTarget:
+        HostedZoneId: !GetAtt 'NomadServers.Outputs.NomadALBCanonicalHostedZoneID'
+        DNSName: !GetAtt 'NomadServers.Outputs.NomadALBDNSName'
+      HostedZoneId: !Ref 'HostedZoneID'
+
+  CopyLambdaStack:
+    Condition: GenerateSSL
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/copy-lambdas.template.yaml"
+      Parameters:
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+
+  ConfigureSSLStack:
+    Condition: GenerateSSL
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/acm-cert-r53-record.template.yaml"
+      Parameters:
+        LambdaZipsBucketName: !GetAtt 'CopyLambdaStack.Outputs.LambdaZipsBucket'
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        DomainName: !Ref LoadBalancerFQDN
+        HostedZoneID: !Ref HostedZoneID
+
+Outputs:
+  NomadServerALB:
+    Description:
+      The public URL of your Nomad Load Balancer. Create a CNAME record pointing
+      at this Load Balancer.
+    Value: !Sub 'https://${NomadServers.Outputs.NomadALBDNSName}'
+
+  ConsulServerALB:
+    Condition: DeployConsul
+    Description:
+      The public URL of your Consul Load Balancer. Create a CNAME record pointing
+      at this Load Balancer.
+    Value: !Sub 'https://${ConsulServers.Outputs.ConsulALBDNSName}'
+
+  NomadServerFQDN:
+    Condition: SetupRoute53
+    Description: The public CNAME pointing to your Nomad Load Balancer.
+    Value: !Sub 'https://${LoadBalancerFQDN}'
+
+  ConsulServerASG:
+    Condition: DeployConsul
+    Description: 'The AutoScaling Group for your Consul Servers.'
+    Value: !GetAtt 'ConsulServers.Outputs.ConsulServerASG'
+
+  NomadServerASG:
+    Description: 'The AutoScaling Group for your Nomad Servers.'
+    Value: !GetAtt 'NomadServers.Outputs.NomadServerASG'
+
+  NomadClientASG:
+    Description: 'The AutoScaling Group for your Nomad Clients.'
+    Value: !GetAtt 'NomadClients.Outputs.NomadClientASG'

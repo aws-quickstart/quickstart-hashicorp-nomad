@@ -1,0 +1,9 @@
+This guide covers the information you need to deploy the {partner-product-name} Partner Solution in the AWS Cloud.
+
+Nomad is a distributed, highly available, data center-aware cluster manager and scheduler that helps deploy applications on any infrastructure, at any scale, on premises or in the cloud.
+
+Nomad provides a common workflow to deploy applications across an infrastructure. Developers use a declarative job specification to define how an application should be deployed and the resources it requires (CPU, memory, disk). Nomad accepts these jobs and finds available resources to run them. The scheduling algorithm ensures that all constraints are satisfied, and packs as many applications on a host as possible to optimize resource utilization. Additionally, Nomad supports virtualized, containerized, or standalone applications running on all major operating systems, which gives it the flexibility to support a broad range of workloads.
+
+This Partner Solution is for users who are looking to deploy their jobs efficiently by leveraging a scheduler on the AWS Cloud.
+
+*Please know that we may share who uses AWS Partner Solutions with the AWS partner that collaborated with AWS on the content of the Partner Solution.*

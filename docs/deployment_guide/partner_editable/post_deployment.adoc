@@ -1,0 +1,168 @@
+// Include any postdeployment steps here, such as steps necessary to test that the deployment was successful. If there are no postdeployment steps, leave this file empty.
+
+== Postdeployment steps
+
+=== Test the Deployment
+
+To use an SSH agent to access the Nomad environment on macOS or Linux:
+
+[arabic]
+. Use the command:
+
+----
+ssh-add ~/.ssh/id_rsa
+----
+
+[arabic, start=2]
+. At the prompt, type your passphrase or press *Enter* for no passphrase.
+
+Enter passphrase (empty for no passphrase): [Hit Enter Again or Enter passphrase]
+
+Enter same passphrase again: [Hit Enter Again or Enter passphrase]
+
+[arabic, start=3]
+. Log in to the Linux bastion host:
+
+[loweralpha]
+. In the AWS CloudFormation console, select the Linux bastion stack.
+. Choose the *Outputs* tab.
+. Note the value of the Elastic IP (EIP1) key. (In the example, it’s *52.206.189.125*.)
+
+[#postdeploy1]
+.Elastic IP key value for the Linux bastion host
+image::../docs/deployment_guide/images/image2.png[image,width=648,height=516]
+
+[arabic, start=4]
+. Log in, and type *yes* when prompted to continue connecting. (Use the –A option, which enables agent forwarding.)
+
+----
+ssh –A ubuntu@*52.206.189.125*
+----
+
+[#postdeploy2]
+image::../docs/deployment_guide/images/image3.png[image,width=648,height=143]
+
+[arabic, start=5]
+. In the Amazon EC2 console, select one of the Nomad server hosts and note its private IP address. (In the example, it’s *10.0.83.250*.)
+
+[#postdeploy3]
+.Private IP for the Nomad server host instance
+image::../docs/deployment_guide/images/image4.png[image,width=648,height=364]
+
+[arabic, start=6]
+. Log in, and type *yes* when prompted to continue connecting.
+
+----
+ssh –A ubuntu@*10.0.83.250*
+----
+
+[arabic, start=7]
+. Verify the integrity of the Consul cluster:
+
+----
+consul members
+----
+
+[#postdeploy4]
+image::../docs/deployment_guide/images/image5.png[image,width=648,height=360]
+
+[arabic, start=8]
+. Verify that a Nomad leader was elected:
+
+----
+nomad server-members
+----
+
+[#postdeploy5]
+image::../docs/deployment_guide/images/image6.png[image,width=648,height=107]
+
+[arabic, start=9]
+. Verify that the Nomad clients are healthy:
+
+----
+nomad node-status
+----
+
+[#postdeploy6]
+image::../docs/deployment_guide/images/image7.png[image,width=648,height=78]
+
+==== (Optional) Create a Nomad File
+
+To get started using Nomad, you can use the sample Nomad file provided with this Quick Start. This file will start a NGINX web server on port 80.
+
+[arabic]
+. Download the sample Nomad plan file:
+
+----
+curl -s https://s3.amazonaws.com/quickstart-reference/hashicorp/nomad/latest/scripts/webjob.nomad -O
+----
+
+[arabic, start=2]
+. Update the data center name in the Nomad file:
+
+----
+NOMAD_DC=$(nomad node-status | tail -1 | awk '\{print $2}');
+
+sed -i "s/__DC__/$NOMAD_DC/" webjob.nomad
+----
+
+[arabic, start=3]
+. Use the nomad plan command to verify that the scheduler will run successfully:
+
+----
+nomad plan webjob.nomad
+----
+
+[#postdeploy7]
+image::../docs/deployment_guide/images/image8.png[image,width=648,height=274]
+
+[arabic, start=4]
+. Run the job with the nomad run command:
+
+----
+nomad run -check-index 0 webjob.nomad
+----
+
+[#postdeploy8]
+image::../docs/deployment_guide/images/image9.png[image,width=648,height=83]
+
+[arabic, start=10]
+. Record the allocation ID from the job output. (In the example, the ID is *718e59a7*.)
+
+[arabic, start=5]
+. To inspect this allocation further, use the nomad fs command:
+
+----
+nomad fs [alloc id]
+
+nomad fs [alloc id] alloc
+
+nomad fs [alloc id] alloc/logs/frontend.stdout.0
+
+nomad fs [alloc id] frontend
+
+nomad fs [alloc id] frontend/executor.out
+----
+
+[#postdeploy9]
+image::../docs/deployment_guide/images/image10.png[image,width=648,height=424]
+
+[arabic, start=6]
+. Use nomad alloc-status to determine the web server URL:
+
+----
+nomad alloc-status 718e59a7
+----
+
+[#postdeploy10]
+image::../docs/deployment_guide/images/image11.png[image,width=648,height=279]
+
+[arabic, start=7]
+. Use curl to verify that the web job in running:
+
+----
+curl –s 10.0.38.119
+----
+
+[#postdeploy11]
+image::../docs/deployment_guide/images/image12.png[image,width=648,height=332]

@@ -1,0 +1,17 @@
+:partner-solution-project-name: quickstart-hashicorp-nomad
+:partner-solution-github-org: aws-quickstart
+:partner-product-name: Nomad on the AWS Cloud
+:partner-product-short-name: Nomad
+:partner-company-name: HashiCorp, Inc.
+:doc-month: August
+:doc-year: 2023
+:partner-contributors: Alex Dadgar, HashiCorp, Inc.
+// :other-contributors: Akua Mansa, Trek10
+:aws-contributors: Erin McGill and Tony Vattathil, Amazon Web Services
+//:aws-ia-contributors: Toni Jones, AWS Integration & Automation team
+:deployment_time: 35 minutes
+:default_deployment_region: us-east-1
+// :private_repo:
+
+
+// For instructions on creating this deployment guide, refer to "Build your AWS Partner Solution documentation" (https://aws-ia-us-west-2.s3.us-west-2.amazonaws.com/docs/content/index.html#/).

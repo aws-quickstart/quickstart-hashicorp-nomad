@@ -1,0 +1,23 @@
+:xrefstyle: short
+
+Deploying this Partner Solution with default parameters builds the following {partner-product-short-name} environment in the
+AWS Cloud.
+
+// Replace this example diagram with your own. Follow our wiki guidelines: https://w.amazon.com/bin/view/AWS_Quick_Starts/Process_for_PSAs/#HPrepareyourarchitecturediagram. Upload your source PowerPoint file to the GitHub {deployment name}/docs/images/ directory in its repository.
+
+[#architecture1]
+.Partner Solution architecture for {partner-product-short-name} on AWS
+image::../docs/deployment_guide/images/image1.png[Architecture]
+
+Nomad requires an existing HashiCorp Consul environment, which the Partner Solution automatically sets up. This QuickStart deploys the following components:
+
+* A scalable VPC configured with public and private subnets across three Availability Zones. (For more information about this VPC infrastructure, see the https://fwd.aws/jWJNK[Amazon VPC Partner Solution].)*
+* An internet gateway to allow access to the internet. The bastion hosts use this gateway to send and receive traffic.*
+* In the public subnets, NAT gateways to provide outbound Internet connectivity for resources in the private subnets.*
+* In the public subnets, Linux bastion hosts in an Auto Scaling group to allow inbound Secure Shell (SSH) access. One bastion host is deployed by default, but this number is configurable. (For more information about the bastion hosts, see the https://fwd.aws/b5z6d[Linux bastion host Partner Solution].)*
+* An AWS Identity and Access Management (IAM) instance role with fine-grained permissions for access to AWS services necessary for the deployment process.
+* Security groups to enable communication within the VPC and to restrict access to only necessary protocols and ports.
+* In the private subnets, a user-configurable number of HashiCorp Consul server and client instances within separate Auto Scaling groups. If the number of client nodes is set to 0 (which is the default), the Partner Solution won’t create the Consul client Auto Scaling group, and Consul client instances will be co-located on Nomad client and server instances instead.
+* In the private subnets, a user-configurable number of HashiCorp Nomad client and server instances within separate Auto Scaling groups.
+
+[.small]#* The template that deploys this Partner Solution into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.#

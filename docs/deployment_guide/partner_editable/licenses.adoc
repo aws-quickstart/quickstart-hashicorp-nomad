@@ -1,0 +1,5 @@
+// Include details about any licenses and how to sign up. Provide links as appropriate.
+
+There is no cost to use this Partner Solution, but you will be billed for any AWS services or resources that this Partner Solution deploys. For more information, refer to the https://fwd.aws/rA69w?[AWS Partner Solution General Information Guide^].
+
+HashiCorp Nomad is an open-source tool that you can download for free from the https://www.nomadproject.io/downloads.html[Nomad website]. If you would like to deploy Nomad in production in your enterprise environment, see the details about Nomad Enterprise https://www.hashicorp.com/products/nomad/[on] the https://www.hashicorp.com/products/nomad/[HashiCorp website].

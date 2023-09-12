@@ -58,7 +58,7 @@ Resources:
           import threading
           import boto3
           import cfnresponse
-          
+
           def copy_objects(source_bucket, dest_bucket, prefix, objects):
               s3 = boto3.client('s3')
               for o in objects:
@@ -68,7 +68,7 @@ Resources:
                       'Key': key
                   }
                   s3.copy_object(CopySource=copy_source, Bucket=dest_bucket, Key=key)
-          
+
           def delete_objects(bucket):
               client = boto3.client('s3')
               print("Collecting data from" + bucket)
@@ -92,16 +92,16 @@ Resources:
                   except:
                       pass
               print("bucket already empty")
-          
+
           def timeout(event, context):
               logging.error('Execution is about to time out, sending failure response to CloudFormation')
               cfnresponse.send(event, context, cfnresponse.FAILED, {}, None)
-          
+
           def handler(event, context):
               # make sure we send a failure to CloudFormation if the function is going to timeout
               timer = threading.Timer((context.get_remaining_time_in_millis() / 1000.00) - 0.5, timeout, args=[event, context])
               timer.start()
-          
+
               print('Received event: %s' % json.dumps(event))
               status = cfnresponse.SUCCESS
               try:
@@ -164,6 +164,15 @@ Resources:
   LambdaZipsBucket:
     Properties:
       Tags: []
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
       VersioningConfiguration:
         Status: Enabled
     Type: AWS::S3::Bucket
@@ -183,7 +192,7 @@ Resources:
           import boto3
           import cfnresponse
           client = boto3.client('s3')
-          
+
           def delete_NonVersionedobjects(bucket):
               print("Collecting data from" + bucket)
               paginator =     client.get_paginator('list_objects_v2')
@@ -199,7 +208,7 @@ Resources:
                   except:
                       pass
                       print("bucket is already empty")
-          
+
           def delete_versionedobjects(bucket):
               print("Collecting data from" + bucket)
               paginator = client.get_paginator('list_object_versions')
@@ -222,16 +231,16 @@ Resources:
                   except:
                       pass
               print("bucket already empty")
-          
+
           def timeout(event, context):
               logging.error('Execution is about to time out, sending failure response to CloudFormation')
               cfnresponse.send(event, context, cfnresponse.FAILED, {}, None)
-          
+
           def handler(event, context):
               # make sure we send a failure to CloudFormation if the function is going to timeout
               timer = threading.Timer((context.get_remaining_time_in_millis() / 1000.00) - 0.5, timeout, args=[event, context])
               timer.start()
-          
+
               print('Received event: %s' % json.dumps(event))
               status = cfnresponse.SUCCESS
               try:
